@@ -177,7 +177,7 @@ function Sensitivity({ eq, v, sweep, setSweep }: { eq: Equation; v: Vals; sweep:
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="mt-2 w-full" role="img" aria-label={`${eq.output.name} against ${lc(inp.name)} from ${showNum(inp.min)} to ${showNum(inp.max)} ${inp.unit}, other inputs held at their current values.${gaps ? ' The line breaks where the formula is invalid.' : ''}`}>
         {yt.map((t) => <g key={t}><line x1={L} x2={W - R} y1={Y(t)} y2={Y(t)} stroke="var(--color-grid)" /><text x={L - 6} y={Y(t) + 4} textAnchor="end" fontSize={fs} fill="var(--color-ink-2)">{f(t)}</text></g>)}
-        {xt.map((t) => <text key={t} x={X(t)} y={H - B + 16} textAnchor="middle" fontSize={fs} fill="var(--color-ink-2)">{f(t)}</text>)}
+        {xt.map((t, n) => <text key={t} x={X(t)} y={H - B + 16} textAnchor={n === 0 ? 'start' : n === xt.length - 1 ? 'end' : 'middle'} fontSize={fs} fill="var(--color-ink-2)">{f(t)}</text>)}
         <line x1={L} x2={W - R} y1={H - B} y2={H - B} stroke="var(--color-line)" />
         <text x={(W + L) / 2} y={H - 3} textAnchor="middle" fontSize={fs} fill="var(--color-ink-2)">{inp.name} ({inp.unit})</text>
         {segs.map((s, n) => <path key={n} d={s} fill="none" stroke="var(--color-sblue)" strokeWidth="2.5" />)}
