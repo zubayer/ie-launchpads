@@ -66,7 +66,7 @@ const defaultSettings: Settings = {
   dailyNew: 5,
   path: null,
   planStart: today(),
-  planEnd: '2027-05-15',
+  planEnd: today(new Date(Date.now() + 90 * 86400000)),
   focusMin: 25,
 }
 
@@ -117,7 +117,7 @@ export const useStore = create<State>()(
       },
       reset: () => set({ progress: {}, cards: {}, activity: {}, ratings: {}, stories: [], bookmarks: [], mockLog: [], settings: defaultSettings }),
     }),
-    { name: 'ie-launchpad-v1' },
+    { name: 'ie-launchpads-v2' },
   ),
 )
 

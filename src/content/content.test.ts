@@ -52,7 +52,7 @@ describe('content integrity', () => {
       const ck = c.example?.check
       if (!ck) return
       const got = ck.compute()
-      if (Math.abs(got - ck.value) > (ck.tol ?? 1e-6)) fails.push(`${c.id}: expected ${ck.value}, computed ${got}`)
+      if (!Number.isFinite(got) || !Number.isFinite(ck.value) || Math.abs(got - ck.value) > (ck.tol ?? 1e-6)) fails.push(`${c.id}: expected ${ck.value}, computed ${got}`)
     })
     expect(fails).toEqual([])
   })

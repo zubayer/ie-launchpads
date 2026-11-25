@@ -1,8 +1,8 @@
-# IE Launchpad
+# IE Launchpad V2
 
 **Learn industrial engineering the way the job uses it** — from coursework to interview to offer.
 
-Live site: **https://zubayer.github.io/ie-launchpad/**
+Independent V2 repository. Original (read-only baseline): https://github.com/zubayer/ie-launchpad at commit `fe77484d02da34bd40694cddd67f1bb72588dff6`. A separate production deployment is not yet configured.
 
 IE Launchpad is a free, offline-friendly learning platform for industrial engineering students and early-career engineers. Every concept is taught in layers you can stop at any point:
 
@@ -57,6 +57,16 @@ Content lives in `src/content/concepts/<domain>.ts` as typed data — no compone
 
 Vite · React · TypeScript · Tailwind CSS v4 · KaTeX · Fuse.js · Zustand · d3-force · javascript-lp-solver · Vitest. Deployed to GitHub Pages by GitHub Actions (`.github/workflows/deploy.yml`).
 
+## V2 foundation
+
+- Engineering Academy: curated source discovery, software learning paths, engineering missions with downloadable sample data, and a factory bottleneck lab.
+- Independent browser progress key and configurable default 90-day plan.
+- Source metadata schema (optional until lessons are individually reviewed).
+- Stronger finite-number validation in example tests.
+- Existing course content and simulators retained.
+
+See [V2 roadmap](docs/V2-ROADMAP.md) for future work and acceptance criteria.
+
 ## Deploy settings
 
-In the repository: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Every push to `main` then tests, builds and publishes the site.
+Use a NEW Vercel project connected only to this repository (Vite, build: npm run build, output: dist). The original site must remain untouched. Run npm ci, npm test and npm run build before publishing. The original Pages deployment workflow was deliberately excluded.

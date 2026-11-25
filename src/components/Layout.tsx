@@ -14,6 +14,7 @@ const NAV = [
   { to: '/review', label: 'Flashcard review' },
   { to: '/practice', label: 'Practice quiz' },
   { to: '/lab', label: 'Simulator lab' },
+  { to: '/academy', label: 'Engineering academy' },
   { to: '/roles', label: 'Role paths' },
   { to: '/interview', label: 'Interview prep' },
   { to: '/plan', label: 'Daily plan' },
@@ -160,7 +161,7 @@ export default function Layout() {
       >
         <div className="flex h-full flex-col">
           <NavLink to="/" className="block px-5 pb-4 pt-5">
-            <span className="display block whitespace-nowrap text-[1.42rem] leading-none">IE Launchpad</span>
+            <span className="display block text-[1.42rem] leading-none">IE Launchpad V2</span>
             <span className="mt-1 block text-sm text-ink-2">Coursework to job offer</span>
           </NavLink>
           <div className="hazard mx-5 mb-3 h-1.5 rounded-sm" aria-hidden />
@@ -192,7 +193,7 @@ export default function Layout() {
       <div className="min-w-0 flex-1">
         <div className="no-print sticky top-0 z-20 flex items-center justify-between border-b border-line bg-sheet/95 px-4 py-2 backdrop-blur lg:hidden">
           <button className="btn-ghost btn !px-3 !py-1.5" onClick={() => setMenu(true)} aria-label="Open menu">Menu</button>
-          <span className="display text-lg">IE Launchpad</span>
+          <span className="display text-lg">IE Launchpad V2</span>
           <button className="btn-ghost btn !px-3 !py-1.5" onClick={() => setPalette(true)} aria-label="Search">Search</button>
         </div>
         <main id="main" className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-10">

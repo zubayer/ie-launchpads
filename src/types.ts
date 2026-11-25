@@ -32,6 +32,15 @@ export interface InterviewQ {
   type?: 'screen' | 'technical' | 'case' | 'behavioral'
 }
 
+export interface KnowledgeSource {
+  title: string
+  url: string
+  publisher: string
+  kind: 'government' | 'academic' | 'professional' | 'vendor' | 'exploratory'
+  section?: string
+  reviewedOn?: string
+}
+
 export interface Concept {
   id: string
   term: string
@@ -56,6 +65,9 @@ export interface Concept {
   rel?: string[]
   cert?: string[]
   verify?: boolean
+  sources?: KnowledgeSource[]
+  reviewStatus?: 'draft' | 'source-checked' | 'expert-reviewed'
+  assumptions?: string[]
 }
 
 export interface RolePath {
