@@ -1,0 +1,130 @@
+@import "tailwindcss";
+@import "@fontsource-variable/archivo/wdth.css";
+@import "katex/dist/katex.min.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+  /* Clear light: cool off-white page, white sheets, navy ink, one confident blue */
+  --color-paper: #f4f6fa;
+  --color-sheet: #ffffff;
+  --color-grid: #e9edf4;
+  --color-line: #dde3ec;
+  --color-ink: #172033;
+  --color-ink-2: #5a6678;
+  --color-tape: #f2b705;
+  --color-sblue: #2459d6;
+  --color-sgreen: #15803d;
+  --color-sred: #c2283a;
+  --color-sorange: #d4580f;
+}
+
+.dark {
+  --color-paper: #0f1522;
+  --color-sheet: #161e2e;
+  --color-grid: #1a2335;
+  --color-line: #273247;
+  --color-ink: #e7ecf4;
+  --color-ink-2: #9ba8bc;
+  --color-sblue: #7aa5ff;
+  --color-sgreen: #4ade80;
+  --color-sred: #f87185;
+  --color-sorange: #fb9a5b;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Display type: Archivo stretched wide — the label-maker look of plant signage */
+.display { font-stretch: 125%; font-weight: 800; letter-spacing: -0.01em; line-height: 1.02; }
+.wide { font-stretch: 112%; font-weight: 650; }
+.narrow { font-stretch: 88%; }
+
+.sheet { background: var(--color-sheet); border: 1px solid var(--color-line); box-shadow: 0 1px 2px rgb(15 23 42 / 0.04); }
+.dark .sheet { box-shadow: none; }
+.measure { max-width: 70ch; }
+
+/* Floor tape: the one bold device, used to mark domain and progress */
+.tape { height: 6px; border-radius: 1px; }
+.hazard {
+  background: repeating-linear-gradient(-45deg, #f2b705 0 10px, #172033 10px 20px);
+}
+
+:focus-visible { outline: 3px solid var(--color-sblue); outline-offset: 2px; border-radius: 4px; }
+
+button, [role="button"] { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .5; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .55rem 1rem; border-radius: 6px; font-weight: 600; font-size: .95rem;
+  border: 1px solid var(--color-sblue); background: var(--color-sblue); color: #fff;
+  transition: transform .08s ease, filter .15s ease;
+}
+.btn:hover { filter: brightness(1.08); }
+.dark .btn:not(.btn-ghost):not(.btn-tape) { color: #0f1522; }
+.btn:active { transform: translateY(1px); }
+.btn-ghost { background: var(--color-sheet); color: var(--color-ink); border-color: var(--color-line); }
+.btn-ghost:hover { border-color: var(--color-sblue); color: var(--color-sblue); filter: none; }
+.btn-tape { background: var(--color-tape); color: #172033; border-color: #d39e00; }
+.chip { display: inline-flex; align-items: center; gap: .35rem; padding: .1rem .55rem; border-radius: 999px; font-size: .8rem; border: 1px solid var(--color-line); color: var(--color-ink-2); }
+.input { width: 100%; padding: .6rem .8rem; border-radius: 6px; border: 1px solid var(--color-line); background: var(--color-sheet); color: var(--color-ink); }
+.input:focus { border-color: var(--color-sblue); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-sblue) 25%, transparent); }
+.label { font-size: .85rem; font-weight: 600; color: var(--color-ink-2); }
+
+.prose-ie p { margin: .6rem 0; }
+.prose-ie ul { list-style: disc; padding-left: 1.25rem; }
+.prose-ie ol { list-style: decimal; padding-left: 1.25rem; }
+.prose-ie li { margin: .25rem 0; }
+
+input[type="range"] { accent-color: var(--color-sblue); width: 100%; }
+
+.katex { font-size: 1.08em; }
+.katex-display { overflow-x: auto; overflow-y: hidden; padding: .25rem 0; }
+
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.draw { stroke-dasharray: 900; stroke-dashoffset: 900; animation: draw 2.2s ease-out .2s forwards; }
+@keyframes flip-in { from { transform: rotateX(70deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.flip-in { animation: flip-in .25s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .draw { animation: none; stroke-dashoffset: 0; }
+  .flip-in { animation: none; }
+  * { scroll-behavior: auto !important; }
+}
+
+@media print {
+  body { background: #fff; color: #000; font-size: 11pt; }
+  .no-print { display: none !important; }
+  .sheet { border: none; background: #fff; }
+  main { padding: 0 !important; }
+}
+
+/* Glossary hover cards */
+.term-link { color: inherit; text-decoration: underline dotted var(--color-sblue); text-decoration-thickness: 2px; text-underline-offset: 3px; cursor: help; }
+.term-link:hover { color: var(--color-sblue); }
+.wiki-link { color: inherit; text-decoration: underline dashed color-mix(in srgb, var(--color-sgreen) 80%, transparent); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.wiki-link:hover { color: var(--color-sgreen); }
+/* The wrapper touches the word and carries transparent padding, so the pointer can travel into the card without it closing. */
+.hover-pop { position: fixed; z-index: 60; padding-top: 6px; }
+.hover-pop.is-above { padding-top: 0; padding-bottom: 6px; transform: translateY(-100%); }
+.pop-x { position: absolute; top: .35rem; right: .45rem; width: 1.5rem; height: 1.5rem; border-radius: 6px; font-size: 1.1rem; line-height: 1; color: var(--color-ink-2); }
+.pop-x:hover { background: var(--color-paper); color: var(--color-ink); }
+.term-pop {
+  position: relative; display: block; max-height: min(70vh, 30rem); overflow-y: auto;
+  padding: .75rem .85rem; border-radius: 8px; border: 1px solid var(--color-line); background: var(--color-sheet);
+  box-shadow: 0 12px 32px rgb(15 23 42 / .18); font-size: .95rem; font-style: normal; line-height: 1.45; text-align: left;
+}
+.pop-btn { display: inline-flex; align-items: center; gap: .35rem; padding: .2rem .55rem; border-radius: 6px; border: 1px solid var(--color-line); font-size: .8rem; font-weight: 600; color: var(--color-ink); background: var(--color-sheet); }
+.pop-btn:hover { border-color: var(--color-sblue); color: var(--color-sblue); }
+.ext-btn { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .8rem; border-radius: 6px; border: 1px solid var(--color-line); background: var(--color-sheet); font-weight: 600; font-size: .9rem; }
+.ext-btn:hover { border-color: var(--color-sblue); color: var(--color-sblue); }
+.algo-active { outline: 3px solid var(--color-sblue); box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-sblue) 18%, transparent); }
