@@ -29,7 +29,7 @@ const takt = (id: string): NumericItem => ({
     const t = (avail * 60) / demand
     return {
       prompt: `Your line runs ${shifts} shift${shifts > 1 ? 's' : ''} of ${hours} hours a day, each with ${brk} minutes of breaks. Customers need ${f1(demand)} units a day. What is the takt time?`,
-      answer: { value: t, unit: 's', tol: { abs: 0.05, rel: 0.005 }, traps: [{ value: (shifts * hours * 3600) / demand, msg: 'That uses the whole shift. Takt uses available time: subtract the breaks first.' }] },
+      answer: { value: t, unit: 's/unit', acceptNumeratorOnly: true, tol: { abs: 0.05, rel: 0.005 }, traps: [{ value: (shifts * hours * 3600) / demand, msg: 'That uses the whole shift. Takt uses available time: subtract the breaks first.' }] },
       steps: [`Available time = ${shifts} × (${hours * 60} − ${brk}) min = ${f1(avail)} min = ${f1(avail * 60)} s`, `Takt = ${f1(avail * 60)} s ÷ ${f1(demand)} units = ${f1(+t.toFixed(2))} s per unit`],
       hint: 'Takt = available time ÷ demand. Work in seconds.',
     }
@@ -81,7 +81,7 @@ export const PATHWAYS: Pathway[] = [
               const ct = 44 + Math.floor(r.u() * 13), av = pick(r.u(), [0.75, 0.8, 0.85, 0.9])
               return {
                 prompt: `A station’s cycle time is ${ct} s, but it is available only ${Math.round(av * 100)}% of the shift because of changeovers and stops. On average, how much shift time does it need per unit?`,
-                answer: { value: ct / av, unit: 's', tol: { abs: 0.05 }, traps: [{ value: ct, msg: 'That is the time per unit while it runs. Downtime stretches it: divide by availability.' }, { value: ct * av, msg: 'Multiplying makes it shorter, but downtime makes each unit take longer on average. Divide by availability.' }] },
+                answer: { value: ct / av, unit: 's/unit', acceptNumeratorOnly: true, tol: { abs: 0.05 }, traps: [{ value: ct, msg: 'That is the time per unit while it runs. Downtime stretches it: divide by availability.' }, { value: ct * av, msg: 'Multiplying makes it shorter, but downtime makes each unit take longer on average. Divide by availability.' }] },
                 steps: [`Time per unit = cycle time ÷ availability`, `= ${ct} s ÷ ${av} = ${f1(+(ct / av).toFixed(2))} s`],
                 hint: 'If a station runs only part of the time, does each unit take more or less shift time than its cycle time?',
               }

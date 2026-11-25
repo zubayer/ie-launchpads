@@ -227,7 +227,7 @@ function NumericCard({ p, it, confidence }: { p: Pathway; it: NumericItem; confi
       {confidence && !grade && <Confidence value={conf} set={setConf} />}
       <form className="mt-3 flex flex-wrap items-end gap-2" onSubmit={submit}>
         <label htmlFor={inputId} className="block"><span className="label">Your answer, with its unit</span>
-          <input id={inputId} className="input mt-1 w-48" value={val} onChange={(e) => { setVal(e.target.value); if (grade?.kind === 'retry') setGrade(null) }} placeholder={g.answer.unit === '%' ? 'e.g. 75.2 %' : g.answer.unit === 's' ? 'e.g. 48 s' : g.answer.unit === 'days' ? 'e.g. 3 days' : 'number and unit'} autoComplete="off" readOnly={!!grade && grade.kind !== 'retry'} />
+          <input id={inputId} className="input mt-1 w-48" value={val} onChange={(e) => { setVal(e.target.value); if (grade?.kind === 'retry') setGrade(null) }} placeholder={g.answer.unit === '%' ? 'e.g. 75.2 %' : g.answer.unit === 's/unit' ? 'e.g. 48 s/unit' : g.answer.unit === 's' ? 'e.g. 48 s' : g.answer.unit === 'days' ? 'e.g. 3 days' : 'number and unit'} autoComplete="off" readOnly={!!grade && grade.kind !== 'retry'} />
         </label>
         {(!grade || grade.kind === 'retry') && <button className="btn" type="submit">Check</button>}
       </form>

@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { EQUATION_FOR_CONCEPT } from '../content/equationIndex'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { CONCEPTS, CONCEPT_MAP, byDomain, learningOrder, neighbors } from '../content'
 import { DOMAIN_MAP } from '../content/domains'
 import { SIM_META } from '../sims/registry'
@@ -146,8 +146,19 @@ export default function ConceptPage() {
 
   useEffect(() => { if (c) open(c.id) }, [c, open])
   useEffect(() => { if (!c) return; const t = setTimeout(() => prefetchLive(c), 1200); return () => clearTimeout(t) }, [c])
-  const mode = modeOf(useStore((s) => s.settings.learnMode))
+  const [params, setParams] = useSearchParams()
+  const savedMode = useStore((s) => s.settings.learnMode)
+  const requestedMode = params.get('mode')
+  const override = MODES.find((m) => m.id === requestedMode)
+  const mode = override || modeOf(savedMode)
   const setSettings = useStore((s) => s.setSettings)
+  const changeMode = (id: ModeId) => {
+    if (override) {
+      const next = new URLSearchParams(params)
+      next.set('mode', id)
+      setParams(next, { replace: true })
+    } else setSettings({ learnMode: id })
+  }
   const layers = useMemo(() => (c ? applyMode(layersFor(c), mode) : []), [c, mode])
   // Lesson sequence: the domain's prerequisite-respecting order gives every topic a previous and next step.
   const seq = useMemo(() => (c ? learningOrder(byDomain(c.domain)) : []), [c])
@@ -228,7 +239,7 @@ export default function ConceptPage() {
               <p className="mt-2"><Linked text={c.def} self={c.id} /></p>
             </details>
           )}
-          {mode.depth === 'short' && <p className="mt-2 text-sm text-ink-2">Short version for this mode. <button type="button" className="font-semibold text-sblue hover:underline" onClick={() => setSettings({ learnMode: 'full' })}>Show the full lesson</button></p>}
+          {mode.depth === 'short' && <p className="mt-2 text-sm text-ink-2">Short version for this mode. <button type="button" className="font-semibold text-sblue hover:underline" onClick={() => changeMode('full')}>Show the full lesson</button></p>}
           {mode.depth !== 'short' && c.confused?.map(([t, diff]) => (
             <p key={t} className="measure mt-3 border-l-4 border-sorange pl-3 text-[0.95rem]"><strong>Not to be confused with {t}:</strong> <Linked text={diff} self={c.id} max={2} /></p>
           ))}
@@ -396,7 +407,7 @@ export default function ConceptPage() {
           <Link to={`/d/${d.id}`} className="text-sm text-ink-2 hover:text-ink">{d.name}</Link>
           <label className="mt-3 block">
             <span className="label">Learning mode</span>
-            <select className="input mt-1 !py-1.5 text-sm" value={mode.id} onChange={(e) => setSettings({ learnMode: e.target.value as ModeId })}>
+            <select className="input mt-1 !py-1.5 text-sm" value={mode.id} onChange={(e) => changeMode(e.target.value as ModeId)}>
               {MODES.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
           </label>

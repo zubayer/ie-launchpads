@@ -53,6 +53,12 @@ Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXE
 | V2 ↔ V1 switch (same page where V1 has it) | Tested | Link-mapping test. V1 address defaults to the URL in the master prompt; set `VITE_V1_URL` if V1 lives elsewhere |
 | Independent deployment of this repository | Implemented | GitHub Pages workflow (`.github/workflows/deploy.yml`) runs tests + build on every push to `main` → https://zubayer.github.io/ie-launchpads/. Goes live once this branch is merged. A Vercel project remains optional |
 
+## Proposed V3 learning-quality contribution
+
+| Feature | Status | Evidence / notes |
+|---|---|---|
+| Compound-unit grading and bounded Do Next plans | In development | Regression tests added; PR CI and browser checks pending. See `docs/CHATGPT-LEARNING-QUALITY.md`. |
+
 ## Known limitations
 
 - Review statuses on Lean/Quality lessons are AI-assisted; treat `source-checked` as "a source was matched", not expert review.
