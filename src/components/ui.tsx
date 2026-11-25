@@ -10,6 +10,8 @@ export function Tex({ tex, block = false }: { tex: string; block?: boolean }) {
   useEffect(() => {
     if (ref.current) katex.render(tex, ref.current, { displayMode: block, throwOnError: false })
   }, [tex, block])
+  // Display math can be wider than a phone screen: the scroll box must be reachable by keyboard (WCAG 2.1.1).
+  if (block) return <span className="tex-block" tabIndex={0} role="group" aria-label="Formula, scroll sideways if it is cut off"><span ref={ref} /></span>
   return <span ref={ref} />
 }
 

@@ -28,6 +28,7 @@ export interface Settings {
   planStart: string // YYYY-MM-DD
   planEnd: string
   focusMin: number
+  learnMode?: string // learning mode id (src/lib/modes.ts)
   jobLocation?: string // optional city/state for job-board links
 }
 
@@ -53,6 +54,8 @@ interface State {
   settings: Settings
   mockLog: { q: string; rating: number; at: number }[]
   mistakes: Mistake[]
+  pinnedFormulas: string[]
+  togglePinnedFormula: (id: string) => void
   logMistake: (m: Omit<Mistake, 'id' | 'at'>) => void
   resolveMistake: (id: string, resolved: boolean) => void
   clearResolved: () => void
@@ -95,6 +98,8 @@ export const useStore = create<State>()(
       cards: {},
       activity: {},
       mistakes: [],
+      pinnedFormulas: [],
+      togglePinnedFormula: (id) => set((s) => ({ pinnedFormulas: s.pinnedFormulas.includes(id) ? s.pinnedFormulas.filter((x) => x !== id) : [...s.pinnedFormulas, id] })),
       logMistake: (m) => set((s) => ({ mistakes: [{ ...m, id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`, at: Date.now() }, ...s.mistakes].slice(0, 500) })),
       resolveMistake: (id, resolved) => set((s) => ({ mistakes: s.mistakes.map((x) => (x.id === id ? { ...x, resolved: resolved ? Date.now() : undefined } : x)) })),
       clearResolved: () => set((s) => ({ mistakes: s.mistakes.filter((x) => !x.resolved) })),
@@ -135,7 +140,7 @@ export const useStore = create<State>()(
         if (!data || typeof data !== 'object' || !('progress' in data)) throw new Error('This file is not an IE Launchpad progress export.')
         set({ ...get(), ...data, settings: { ...defaultSettings, ...(data.settings || {}) } })
       },
-      reset: () => set({ progress: {}, cards: {}, activity: {}, ratings: {}, stories: [], bookmarks: [], mockLog: [], mistakes: [], settings: defaultSettings }),
+      reset: () => set({ progress: {}, cards: {}, activity: {}, ratings: {}, stories: [], bookmarks: [], mockLog: [], mistakes: [], pinnedFormulas: [], settings: defaultSettings }),
     }),
     {
       name: 'ie-launchpads-v2',
@@ -152,7 +157,7 @@ export const useStore = create<State>()(
           ...current,
           progress: obj(p.progress, current.progress), cards: obj(p.cards, current.cards), activity: obj(p.activity, current.activity),
           ratings: obj(p.ratings, current.ratings), stories: arr(p.stories, current.stories), bookmarks: arr(p.bookmarks, current.bookmarks),
-          mockLog: arr(p.mockLog, current.mockLog), mistakes: arr(p.mistakes, current.mistakes),
+          mockLog: arr(p.mockLog, current.mockLog), mistakes: arr(p.mistakes, current.mistakes), pinnedFormulas: arr(p.pinnedFormulas, current.pinnedFormulas),
           settings: { ...defaultSettings, ...obj<Partial<Settings>>(p.settings, {}) },
         }
       },

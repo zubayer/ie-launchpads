@@ -6,14 +6,17 @@ import { CONCEPTS } from '../content'
 import { DOMAIN_MAP } from '../content/domains'
 import { googleUrl, wiki, wikiSearchUrl } from '../lib/web'
 import { SelectionLookup, WikiCard, useWiki } from './Glossary'
+import { v1Href } from '../lib/version'
 
 const NAV = [
   { to: '/', label: 'Today', end: true },
   { to: '/directory', label: 'A–Z directory' },
   { to: '/domains', label: 'Domains' },
   { to: '/curriculum', label: 'Curriculum coverage' },
+  { to: '/formulas', label: 'Formula library' },
   { to: '/review', label: 'Flashcard review' },
   { to: '/practice', label: 'Practice quiz' },
+  { to: '/notebook', label: 'Error notebook' },
   { to: '/lab', label: 'Simulator lab' },
   { to: '/academy', label: 'Engineering academy' },
   { to: '/roles', label: 'Role paths' },
@@ -166,6 +169,7 @@ export default function Layout() {
             <span className="mt-1 block text-sm text-ink-2">Coursework to job offer</span>
           </NavLink>
           <div className="hazard mx-5 mb-3 h-1.5 rounded-sm" aria-hidden />
+          <VersionSwitch className="mx-4 mb-3" />
           <button onClick={() => setPalette(true)} className="mx-4 mb-3 flex items-center justify-between rounded-md border border-line px-3 py-2 text-left text-sm text-ink-2 hover:border-ink">
             Search terms <kbd className="rounded border border-line px-1.5 text-xs">/</kbd>
           </button>
@@ -194,7 +198,7 @@ export default function Layout() {
       <div className="min-w-0 flex-1">
         <div className="no-print sticky top-0 z-20 flex items-center justify-between border-b border-line bg-sheet/95 px-4 py-2 backdrop-blur lg:hidden">
           <button className="btn-ghost btn !px-3 !py-1.5" onClick={() => setMenu(true)} aria-label="Open menu">Menu</button>
-          <span className="display text-lg">IE Launchpad V2</span>
+          <span className="flex items-center gap-2"><span className="display text-lg">IE Launchpad</span><VersionSwitch compact /></span>
           <button className="btn-ghost btn !px-3 !py-1.5" onClick={() => setPalette(true)} aria-label="Search">Search</button>
         </div>
         <main id="main" className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-10">
@@ -206,6 +210,19 @@ export default function Layout() {
       </div>
       <SearchPalette open={palette} onClose={() => setPalette(false)} />
       <SelectionLookup />
+    </div>
+  )
+}
+
+/** V1 ↔ V2 switch. V2 is this app; V1 opens the original site on the same page where V1 has it. */
+function VersionSwitch({ className = '', compact = false }: { className?: string; compact?: boolean }) {
+  const { pathname } = useLocation()
+  const seg = 'flex-1 rounded px-2 py-1 text-center text-xs font-semibold'
+  return (
+    <div className={`flex items-center rounded-md border border-line p-0.5 ${compact ? 'w-24' : ''} ${className}`} role="group" aria-label="App version">
+      <span className={`${seg} bg-sblue text-sheet`} aria-current="page">V2</span>
+      <a className={`${seg} text-ink-2 hover:bg-paper hover:text-ink`} href={v1Href(pathname)}
+        title="Open this page in the original V1 site. Progress is saved separately in each version.">V1</a>
     </div>
   )
 }

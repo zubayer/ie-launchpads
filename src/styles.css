@@ -88,7 +88,9 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 input[type="range"] { accent-color: var(--color-sblue); width: 100%; }
 
 .katex { font-size: 1.08em; }
-.katex-display { overflow-x: auto; overflow-y: hidden; padding: .25rem 0; }
+.katex-display { margin: .5em 0; padding: .25rem 0; }
+.tex-block { display: block; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+.tex-block:focus-visible { outline: 2px solid var(--color-sblue); outline-offset: 2px; border-radius: 4px; }
 
 @keyframes draw { to { stroke-dashoffset: 0; } }
 .draw { stroke-dasharray: 900; stroke-dashoffset: 900; animation: draw 2.2s ease-out .2s forwards; }

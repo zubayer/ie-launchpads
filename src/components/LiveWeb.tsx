@@ -174,3 +174,55 @@ export function prefetchLive(c: Concept) {
   const name = searchName(c)
   void stackQA(c); void papers(name, 'relevance'); void papers(name, 'recent')
 }
+
+/** Compact preview near the top of a topic: Wikipedia's summary and a free AI explanation, side by side.
+ *  Shares caches with the full live panel, so opening that later costs no extra requests. */
+export function QuickPreview({ c, wiki, hasLive }: { c: Concept; wiki: { data: WikiSummary | null; loading: boolean }; hasLive: boolean }) {
+  const ai = useLoad(() => aiSummary(c.term, `${c.full ? c.full + ', ' : ''}${DOMAIN_HINT[c.domain]}`, 0), [c.id])
+  const ask = askLinks(searchName(c))
+  const lines = (ai.data || '').split(/\n+/).map((l) => l.trim()).filter(Boolean).slice(0, 4)
+  const d = wiki.data
+  return (
+    <div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="rounded-lg border border-line p-4">
+          <p className="label mb-2">Wikipedia</p>
+          {wiki.loading && <div aria-live="polite" className="space-y-2"><span className="sr-only">Loading Wikipedia…</span><div className="h-3 w-4/5 animate-pulse rounded bg-line" /><div className="h-3 w-11/12 animate-pulse rounded bg-line" /><div className="h-3 w-2/3 animate-pulse rounded bg-line" /></div>}
+          {!wiki.loading && !d && <p className="text-sm text-ink-2">Wikipedia isn’t reachable right now. The lesson below works without it.</p>}
+          {d && (
+            <div className="flex gap-3">
+              {d.thumb && <img src={d.thumb} alt="" width={64} height={64} loading="lazy" className="h-16 w-16 shrink-0 rounded border border-line bg-white object-contain" />}
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">{d.title}{d.desc ? <span className="font-normal text-ink-2"> — {d.desc}</span> : null}</p>
+                <p className="line-clamp-4 text-[0.92rem] leading-snug">{d.extract}</p>
+                <p className="mt-1.5 flex flex-wrap gap-1.5">
+                  <a className="pop-btn" href={d.url} target="_blank" rel="noopener noreferrer">Article ↗</a>
+                  {d.permalink && <a className="pop-btn" href={d.permalink} target="_blank" rel="noopener noreferrer" title="Permanent link to the exact revision shown here">Permalink ↗</a>}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="rounded-lg border border-line p-4">
+          <p className="label mb-2 flex items-center gap-2">AI explanation <span className="chip !py-0 text-[11px]">AI-generated</span></p>
+          {ai.loading && <div aria-live="polite" className="space-y-2"><span className="sr-only">Asking a free AI model…</span><div className="h-3 w-11/12 animate-pulse rounded bg-line" /><div className="h-3 w-4/5 animate-pulse rounded bg-line" /><div className="h-3 w-3/4 animate-pulse rounded bg-line" /></div>}
+          {!ai.loading && lines.length > 0 && (
+            <>
+              <ul className="space-y-1 text-[0.92rem] leading-snug">{lines.map((l, i) => <li key={i}>{l.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '• ')}</li>)}</ul>
+              <p className="mt-2 text-xs text-ink-2">From a free AI model (Pollinations). It can be wrong; the lesson below is the reviewed version.</p>
+            </>
+          )}
+          {!ai.loading && !lines.length && <p className="text-sm text-ink-2">The free AI service didn’t answer (about one request per 15 seconds). Ask one of these instead:</p>}
+          <p className="mt-2 flex flex-wrap gap-1.5">
+            {ask.slice(1, 5).map((l) => <a key={l.label} className="pop-btn" href={l.href} target="_blank" rel="noopener noreferrer">{l.label} ↗</a>)}
+          </p>
+        </div>
+      </div>
+      {hasLive && (
+        <p className="mt-2 text-sm">
+          <a href="#live" className="font-semibold text-sblue hover:underline" onClick={(e) => { e.preventDefault(); document.getElementById('live')?.scrollIntoView({ behavior: 'smooth' }) }}>All live sources: research papers, Q&amp;A, related articles ↓</a>
+        </p>
+      )}
+    </div>
+  )
+}
