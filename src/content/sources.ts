@@ -57,6 +57,21 @@ const list: SourceRecord[] = [
     id: 'toc-institute', title: 'The Five Focusing Steps', publisher: 'Theory of Constraints Institute',
     url: 'https://www.tocinstitute.org/five-focusing-steps.html', tier: 3, kind: 'industry', access: 'open', checkedOn: '2026-11-24',
   },
+  {
+    id: 'rockwell-bit-instructions', title: 'Common instructions — Micro800 controller instruction set', publisher: 'Rockwell Automation',
+    url: 'https://www.rockwellautomation.com/en-us/docs/factorytalk-design-workbench/1-01-00/ftdw-help-ditamap/micro800-controller/micro800-instruction-set/common-instructions.html',
+    tier: 3, kind: 'industry', access: 'open', checkedOn: '2026-11-25',
+  },
+  {
+    id: 'openstax-newton', title: 'Calculus Volume 1 — Newton’s Method', publisher: 'OpenStax',
+    url: 'https://openstax.org/books/calculus-volume-1/pages/4-9-newtons-method',
+    tier: 2, kind: 'academic', access: 'open', checkedOn: '2026-11-25',
+  },
+  {
+    id: 'openstax-npv', title: 'Principles of Finance — Net Present Value Method', publisher: 'OpenStax',
+    url: 'https://openstax.org/books/principles-finance/pages/16-2-net-present-value-npv-method',
+    tier: 2, kind: 'academic', access: 'open', checkedOn: '2026-11-25',
+  },
 ]
 
 export const SOURCES: Record<string, SourceRecord> = Object.fromEntries(list.map((s) => [s.id, s]))

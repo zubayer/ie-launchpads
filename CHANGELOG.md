@@ -1,5 +1,11 @@
 # Changelog
 
+## Proposed — Topic Intelligence Studio foundation
+
+- Shared seven-stage topic studio, five explanation lenses, curated citations, opt-in web discovery and five interactive pilot families (six topic IDs).
+- Topic-specific numerical and Boolean models, concept-check evidence, and a new Newton–Raphson lesson.
+- Crossref metadata search with timeout, cancellation and bounded cache; independent reference tests and browser-audit routes added. Full CI verification pending.
+
 ## Proposed — V3 learning quality contribution
 
 - Preserve engineering rate units in numeric grading; add scientific notation and dimensional regression checks.
