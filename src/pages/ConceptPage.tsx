@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { CONCEPTS, CONCEPT_MAP, neighbors } from '../content'
+import { CONCEPTS, CONCEPT_MAP, byDomain, learningOrder, neighbors } from '../content'
 import { DOMAIN_MAP } from '../content/domains'
 import { SIM_META } from '../sims/registry'
 import { VIZ, EXTRA_SIM } from '../content/visuals'
@@ -14,15 +14,17 @@ import { QuestionCard } from '../components/Quiz'
 import { Linked, useWiki } from '../components/Glossary'
 import { MiniMap, Viz } from '../components/Viz'
 import { AlgoFlow } from '../components/Algo'
-import { LiveWeb, prefetchLive } from '../components/LiveWeb'
+import { LiveWeb, QuickPreview, prefetchLive } from '../components/LiveWeb'
+import { MODES, applyMode, modeOf, type ModeId } from '../lib/modes'
 import { JobsBlock, RoleChips } from '../components/Jobs'
+import { ReviewChip, SourcesBlock } from '../components/Sources'
 
 interface Layer { id: string; name: string }
 
 export const simFor = (c: Concept) => SIM_META.find((s) => s.id === (c.sim || EXTRA_SIM[c.id])) || SIM_META.find((s) => s.concepts.includes(c.id))
 
 function layersFor(c: Concept): Layer[] {
-  const L: Layer[] = [{ id: 'keyword', name: 'Keyword' }, { id: 'live', name: 'Live from the web' }, { id: 'plain', name: 'Plain meaning' }]
+  const L: Layer[] = [{ id: 'keyword', name: 'Keyword' }, { id: 'preview', name: 'Quick preview' }, { id: 'plain', name: 'Plain meaning' }]
   if (c.analogy) L.push({ id: 'analogy', name: 'Analogy' })
   L.push({ id: 'picture', name: 'Picture it' })
   if (c.why) L.push({ id: 'why', name: 'Why it matters' })
@@ -34,6 +36,8 @@ function layersFor(c: Concept): Layer[] {
   if (simFor(c)) L.push({ id: 'sim', name: 'Simulate it' })
   L.push({ id: 'try', name: 'Check yourself' })
   if (c.iq?.length) L.push({ id: 'interview', name: 'Interview' })
+  L.push({ id: 'live', name: 'Live from the web' })
+  L.push({ id: 'sources', name: 'Sources & review' })
   L.push({ id: 'more', name: 'Learn more' })
   return L
 }
@@ -71,9 +75,9 @@ function ExploreButtons({ c, big = false, wiki }: { c: Concept; big?: boolean; w
   )
 }
 
-function WorkedExample({ c }: { c: Concept }) {
+function WorkedExample({ c, reveal = false }: { c: Concept; reveal?: boolean }) {
   const ex = c.example!
-  const [shown, setShown] = useState(0)
+  const [shown, setShown] = useState(reveal ? Number.MAX_SAFE_INTEGER : 0)
   const [guess, setGuess] = useState('')
   const all = shown > ex.steps.length
   return (
@@ -141,7 +145,16 @@ export default function ConceptPage() {
 
   useEffect(() => { if (c) open(c.id) }, [c, open])
   useEffect(() => { if (!c) return; const t = setTimeout(() => prefetchLive(c), 1200); return () => clearTimeout(t) }, [c])
-  const layers = useMemo(() => (c ? layersFor(c) : []), [c])
+  const mode = modeOf(useStore((s) => s.settings.learnMode))
+  const setSettings = useStore((s) => s.setSettings)
+  const layers = useMemo(() => (c ? applyMode(layersFor(c), mode) : []), [c, mode])
+  // Lesson sequence: the domain's prerequisite-respecting order gives every topic a previous and next step.
+  const seq = useMemo(() => (c ? learningOrder(byDomain(c.domain)) : []), [c])
+  const pos = c ? seq.findIndex((x) => x.id === c.id) : -1
+  const prev = pos > 0 ? seq[pos - 1] : undefined
+  const next = pos >= 0 && pos < seq.length - 1 ? seq[pos + 1] : undefined
+  const required = (c?.pre || []).map((p) => CONCEPT_MAP[p]).filter(Boolean)
+  const unlocks = useMemo(() => (c ? CONCEPTS.filter((x) => x.pre?.includes(c.id)) : []), [c])
   const near = useMemo(() => (c ? neighbors(c) : []), [c])
   const question = useMemo(() => (c ? makeQuestion(c, CONCEPTS, rng(qSeed * 7919 + c.id.length)) : null), [c, qSeed])
   const onSeen = useMemo(() => (n: number) => { setActive(n); reachLayer(id, n) }, [id, reachLayer])
@@ -157,28 +170,11 @@ export default function ConceptPage() {
   const idx = (lid: string) => layers.findIndex((l) => l.id === lid)
   const spec = VIZ[c.id]
 
-  return (
-    <div className="lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10">
-      <nav aria-label="Concept layers" className="no-print mb-6 lg:mb-0">
-        <div className="lg:sticky lg:top-8">
-          <Link to={`/d/${d.id}`} className="text-sm text-ink-2 hover:text-ink">{d.name}</Link>
-          <ol className="mt-3 flex gap-1 overflow-x-auto pb-2 lg:block lg:space-y-1 lg:overflow-visible">
-            {layers.map((l, i) => (
-              <li key={l.id} className="shrink-0">
-                <a href={`#${l.id}`} onClick={(e) => { e.preventDefault(); document.getElementById(l.id)?.scrollIntoView({ behavior: 'smooth' }) }}
-                  className={`flex items-center gap-2 rounded px-2 py-1 text-sm ${i === active ? 'bg-sheet font-semibold' : 'text-ink-2 hover:text-ink'}`}>
-                  <span className="h-4 w-1.5 rounded-sm" style={{ background: i <= Math.max(deepest, active) ? d.tape : 'var(--color-line)' }} />
-                  {l.name}
-                </a>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-3 hidden text-xs text-ink-2 lg:block">Hover a <span className="term-link">dotted</span> word for its card, a <span className="wiki-link">dashed</span> word for Wikipedia — move into the popup to click. Select any word to look it up.</p>
-        </div>
-      </nav>
-
-      <article className="sheet min-w-0 rounded-lg p-5 sm:p-8">
-        <Block id="keyword" n={idx('keyword')} name="Keyword" onSeen={onSeen}>
+  // Each section's content, keyed by layer id. The learning mode decides which appear and in what order.
+  const sections: Record<string, () => React.ReactNode> = {
+    preview: () => <QuickPreview key={c.id} c={c} wiki={web} hasLive={layers.some((l) => l.id === 'live')} />,
+    keyword: () => (
+      <>
           <div className="grid gap-5 md:grid-cols-[1fr_auto]">
             <div>
               <div className="mb-3 h-1.5 w-20 rounded-sm" style={{ background: d.tape }} />
@@ -186,12 +182,19 @@ export default function ConceptPage() {
               {c.full && c.full !== c.term && <p className="wide mt-2 text-lg text-ink-2">{c.full}</p>}
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <StatusBadge id={c.id} />
+                <ReviewChip c={c} />
                 <span className="chip">{LEVEL_NAME[c.level]}</span>
                 <span className="chip">{c.sub}</span>
                 {c.used?.freq && <span className="chip">In job postings: {c.used.freq}</span>}
                 {c.aka?.slice(0, 5).map((a) => <span key={a} className="chip">also: {a}</span>)}
               </div>
               <RoleChips c={c} />
+              {required.length > 0 && (
+                <p className="mt-3 flex flex-wrap items-center gap-1.5 text-sm">
+                  <span className="text-ink-2">Learn first:</span>
+                  {required.map((r) => <Link key={r.id} to={`/c/${r.id}`} className="chip hover:border-ink">{r.term}</Link>)}
+                </p>
+              )}
             </div>
             {web.data?.thumb && (
               <figure className="hidden w-44 md:block">
@@ -206,30 +209,40 @@ export default function ConceptPage() {
             {sim && <a className="btn-tape btn" href="#sim" onClick={(e) => { e.preventDefault(); document.getElementById('sim')?.scrollIntoView({ behavior: 'smooth' }) }}>Simulate it</a>}
           </div>
           <div className="mt-3"><ExploreButtons c={c} wiki={web.data} /></div>
-        </Block>
-
-        <Block id="live" n={idx('live')} name="Live from the web" onSeen={onSeen}>
-          <LiveWeb key={c.id} c={c} wiki={web} />
-        </Block>
-
-        <Block id="plain" n={idx('plain')} name="Plain meaning" onSeen={onSeen}>
+      </>
+    ),
+    plain: () => (
+      <>
+          {mode.depth !== 'short' && c.objectives?.length ? (
+            <div className="measure mb-4 rounded-lg border border-line bg-paper/60 px-4 py-3">
+              <p className="label mb-1">After this lesson you can</p>
+              <ul className="list-disc space-y-0.5 pl-5 text-[0.95rem]">{c.objectives.map((o) => <li key={o}>{o}</li>)}</ul>
+            </div>
+          ) : null}
           <p className="measure text-xl leading-snug"><Linked text={c.one} self={c.id} max={3} /></p>
-          <p className="measure mt-3"><Linked text={c.def} self={c.id} /></p>
-          {c.confused?.map(([t, diff]) => (
+          {mode.depth === 'full' && <p className="measure mt-3"><Linked text={c.def} self={c.id} /></p>}
+          {mode.depth === 'gentle' && (
+            <details className="measure mt-3 rounded-md border border-line px-4 py-2">
+              <summary className="cursor-pointer text-sm font-semibold">Formal definition (when you're ready)</summary>
+              <p className="mt-2"><Linked text={c.def} self={c.id} /></p>
+            </details>
+          )}
+          {mode.depth === 'short' && <p className="mt-2 text-sm text-ink-2">Short version for this mode. <button type="button" className="font-semibold text-sblue hover:underline" onClick={() => setSettings({ learnMode: 'full' })}>Show the full lesson</button></p>}
+          {mode.depth !== 'short' && c.confused?.map(([t, diff]) => (
             <p key={t} className="measure mt-3 border-l-4 border-sorange pl-3 text-[0.95rem]"><strong>Not to be confused with {t}:</strong> <Linked text={diff} self={c.id} max={2} /></p>
           ))}
-        </Block>
-
-        {c.analogy && (
-          <Block id="analogy" n={idx('analogy')} name="Analogy" onSeen={onSeen}>
+      </>
+    ),
+    analogy: () => (
+      <>
             <div className="measure flex gap-3 rounded-lg bg-tape/10 p-4">
               <span aria-hidden className="text-2xl">💡</span>
-              <p className="text-lg italic"><Linked text={c.analogy} self={c.id} max={2} /></p>
+              <p className="text-lg italic"><Linked text={c.analogy!} self={c.id} max={2} /></p>
             </div>
-          </Block>
-        )}
-
-        <Block id="picture" n={idx('picture')} name="Picture it" onSeen={onSeen}>
+      </>
+    ),
+    picture: () => (
+      <>
           {spec && <div className="rounded-lg border border-line bg-paper/60 p-3"><Viz spec={spec} /></div>}
           {web.data?.thumb && (
             <figure className={`${spec ? 'mt-4' : ''} flex flex-col gap-3 sm:flex-row sm:items-start`}>
@@ -249,44 +262,52 @@ export default function ConceptPage() {
               <div className="rounded-lg border border-line bg-paper/60 p-2"><MiniMap c={c} /></div>
             </div>
           )}
-        </Block>
-
-        {c.why && (
-          <Block id="why" n={idx('why')} name="Why it matters" onSeen={onSeen}>
-            <p className="measure"><Linked text={c.why} self={c.id} /></p>
-          </Block>
-        )}
-
-        {c.formula && (
-          <Block id="math" n={idx('math')} name="The math" onSeen={onSeen}>
-            <div className="rounded-md border border-line bg-paper/50 px-4 py-2"><Tex tex={c.formula.tex} block /></div>
-            {c.formula.vars && (
+      </>
+    ),
+    why: () => (
+      <>
+            <p className="measure"><Linked text={c.why!} self={c.id} /></p>
+            {!c.formula && (c.assumptions?.length ? (
+            <div className="measure mt-4 rounded-lg border-l-4 border-sorange bg-sorange/5 px-4 py-3">
+              <p className="label mb-1">Assumptions and limits</p>
+              <ul className="list-disc space-y-0.5 pl-5 text-[0.95rem]">{c.assumptions.map((a) => <li key={a}><Linked text={a} self={c.id} max={2} /></li>)}</ul>
+            </div>
+          ) : null)}
+      </>
+    ),
+    math: () => (
+      <>
+            <div className="rounded-md border border-line bg-paper/50 px-4 py-2"><Tex tex={c.formula!.tex} block /></div>
+            {c.formula!.vars && (
               <dl className="mt-3 grid gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr]">
-                {c.formula.vars.map(([s, m]) => (
+                {c.formula!.vars.map(([s, m]) => (
                   <div key={s} className="contents"><dt className="font-semibold"><Tex tex={s} /></dt><dd className="text-ink-2"><Linked text={m} self={c.id} max={1} /></dd></div>
                 ))}
               </dl>
             )}
-          </Block>
-        )}
-
-        {ALGOS[c.id] && (
-          <Block id="algo" n={idx('algo')} name="Algorithm" onSeen={onSeen}>
+            {c.assumptions?.length ? (
+            <div className="measure mt-4 rounded-lg border-l-4 border-sorange bg-sorange/5 px-4 py-3">
+              <p className="label mb-1">Assumptions and limits</p>
+              <ul className="list-disc space-y-0.5 pl-5 text-[0.95rem]">{c.assumptions.map((a) => <li key={a}><Linked text={a} self={c.id} max={2} /></li>)}</ul>
+            </div>
+          ) : null}
+      </>
+    ),
+    algo: () => (
+      <>
             <AlgoFlow algo={ALGOS[c.id]} />
-          </Block>
-        )}
-
-        {c.example && (
-          <Block id="example" n={idx('example')} name="Worked example" onSeen={onSeen}>
-            <WorkedExample c={c} />
-          </Block>
-        )}
-
-        {(c.real || c.used) && (
-          <Block id="real" n={idx('real')} name="On the job" onSeen={onSeen}>
+      </>
+    ),
+    example: () => (
+      <>
+            <WorkedExample key={`${c.id}-${mode.id}`} c={c} reveal={mode.revealSteps} />
+      </>
+    ),
+    real: () => (
+      <>
             {c.real && (
               <div className="measure rounded-lg border-l-4 p-4" style={{ borderColor: d.tape, background: 'color-mix(in srgb, var(--color-sblue) 5%, transparent)' }}>
-                <p className="label">Real-life case — {c.real.where}</p>
+                <p className="label">{c.real.kind === 'documented' ? 'Real case' : 'Illustrative scenario'} — {c.real.where}</p>
                 <p className="mt-1"><Linked text={c.real.story} self={c.id} /></p>
               </div>
             )}
@@ -305,27 +326,27 @@ export default function ConceptPage() {
             )}
             {c.cert && <p className="mt-4 text-sm text-ink-2">Shows up in: {c.cert.join(', ')}</p>}
             <p className="mt-4 text-sm"><a className="underline" href={links(c).youtube} target="_blank" rel="noopener noreferrer">▶ See it done in real life on YouTube ↗</a></p>
-          </Block>
-        )}
-
-        <Block id="jobs" n={idx('jobs')} name="Jobs that need it" onSeen={onSeen}>
+      </>
+    ),
+    jobs: () => (
+      <>
           <JobsBlock c={c} />
-        </Block>
-
-        {sim && (
-          <Block id="sim" n={idx('sim')} name="Simulate it" onSeen={onSeen}>
-            <InlineSim key={sim.id} id={sim.id} />
-          </Block>
-        )}
-
-        <Block id="try" n={idx('try')} name="Check yourself" onSeen={onSeen}>
+      </>
+    ),
+    sim: () => (
+      <>
+            <InlineSim key={sim!.id} id={sim!.id} />
+      </>
+    ),
+    try: () => (
+      <>
           {question && <QuestionCard key={qSeed} item={question} onDone={() => setQSeed((s) => s + 1)} />}
-        </Block>
-
-        {c.iq?.length ? (
-          <Block id="interview" n={idx('interview')} name="Interview" onSeen={onSeen}>
+      </>
+    ),
+    interview: () => (
+      <>
             <div className="space-y-2">
-              {c.iq.map((q) => (
+              {c.iq!.map((q) => (
                 <details key={q.q} className="group rounded-md border border-line px-4 py-3">
                   <summary className="cursor-pointer font-medium marker:text-ink-2">{q.q} {q.type && <span className="chip ml-2 align-middle">{q.type}</span>}</summary>
                   <p className="measure mt-2 text-[0.97rem]"><Linked text={q.a} self={c.id} /></p>
@@ -333,10 +354,20 @@ export default function ConceptPage() {
               ))}
             </div>
             <p className="mt-3 text-sm text-ink-2">Say your answer out loud before opening the model answer. More in <Link className="underline" to="/interview">Interview prep</Link>.</p>
-          </Block>
-        ) : null}
-
-        <Block id="more" n={idx('more')} name="Learn more" onSeen={onSeen}>
+      </>
+    ),
+    live: () => (
+      <>
+          <LiveWeb key={c.id} c={c} wiki={web} />
+      </>
+    ),
+    sources: () => (
+      <>
+          <SourcesBlock c={c} />
+      </>
+    ),
+    more: () => (
+      <>
           <p className="label mb-2">Search further (opens a new tab)</p>
           <ExploreButtons c={c} big wiki={web.data} />
           {near.length > 0 && (
@@ -352,7 +383,61 @@ export default function ConceptPage() {
             </div>
           )}
           {c.verify && <p className="mt-6 text-xs text-ink-2">Some figures on this card vary by company or source — verify before quoting them.</p>}
-        </Block>
+      </>
+    ),
+  }
+
+  return (
+    <div className="lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10">
+      <nav aria-label="Concept layers" className="no-print mb-6 lg:mb-0">
+        <div className="lg:sticky lg:top-8">
+          <Link to={`/d/${d.id}`} className="text-sm text-ink-2 hover:text-ink">{d.name}</Link>
+          <label className="mt-3 block">
+            <span className="label">Learning mode</span>
+            <select className="input mt-1 !py-1.5 text-sm" value={mode.id} onChange={(e) => setSettings({ learnMode: e.target.value as ModeId })}>
+              {MODES.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+            </select>
+          </label>
+          <p className="mt-1 text-xs text-ink-2">{mode.blurb}</p>
+          <ol className="mt-3 flex gap-1 overflow-x-auto pb-2 lg:block lg:space-y-1 lg:overflow-visible">
+            {layers.map((l, i) => (
+              <li key={l.id} className="shrink-0">
+                <a href={`#${l.id}`} onClick={(e) => { e.preventDefault(); document.getElementById(l.id)?.scrollIntoView({ behavior: 'smooth' }) }}
+                  className={`flex items-center gap-2 rounded px-2 py-1 text-sm ${i === active ? 'bg-sheet font-semibold' : 'text-ink-2 hover:text-ink'}`}>
+                  <span className="h-4 w-1.5 rounded-sm" style={{ background: i <= Math.max(deepest, active) ? d.tape : 'var(--color-line)' }} />
+                  {l.name}
+                </a>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-3 hidden text-xs text-ink-2 lg:block">Hover a <span className="term-link">dotted</span> word for its card, a <span className="wiki-link">dashed</span> word for Wikipedia — move into the popup to click. Select any word to look it up.</p>
+        </div>
+      </nav>
+
+      <article className="sheet min-w-0 rounded-lg p-5 sm:p-8">
+        {layers.map((l, i) => (
+          <Block key={l.id} id={l.id} n={i} name={l.name} onSeen={onSeen}>{sections[l.id]?.()}</Block>
+        ))}
+        <nav aria-label="Lesson sequence" className="no-print mt-2 border-t border-line pt-5">
+          {unlocks.length > 0 && (
+            <p className="mb-3 flex flex-wrap items-center gap-1.5 text-sm">
+              <span className="text-ink-2">This unlocks:</span>
+              {unlocks.map((u) => <Link key={u.id} to={`/c/${u.id}`} className="chip hover:border-ink">{u.term}</Link>)}
+            </p>
+          )}
+          <div className="grid gap-2 sm:grid-cols-2">
+            {prev ? (
+              <Link to={`/c/${prev.id}`} className="rounded-lg border border-line px-4 py-3 hover:border-sblue">
+                <span className="block text-xs text-ink-2">← Previous in {d.name}</span><span className="font-semibold">{prev.term}</span>
+              </Link>
+            ) : <span />}
+            {next && (
+              <Link to={`/c/${next.id}`} className="rounded-lg border border-line px-4 py-3 text-right hover:border-sblue">
+                <span className="block text-xs text-ink-2">Next in {d.name} →</span><span className="font-semibold">{next.term}</span>
+              </Link>
+            )}
+          </div>
+        </nav>
       </article>
     </div>
   )

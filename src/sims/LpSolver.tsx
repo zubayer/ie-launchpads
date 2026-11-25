@@ -142,7 +142,7 @@ print("Profit:", pulp.value(m.objective))`
             <button className={`chip !text-sm ${tab === 'gurobi' ? '!border-ink !text-ink font-semibold' : ''}`} onClick={() => setTab('gurobi')}>Gurobi (gurobipy)</button>
             <button className={`chip !text-sm ${tab === 'pulp' ? '!border-ink !text-ink font-semibold' : ''}`} onClick={() => setTab('pulp')}>PuLP</button>
           </div>
-          <pre className="max-h-80 overflow-auto rounded-md bg-ink p-3 text-xs leading-relaxed text-sheet"><code>{tab === 'gurobi' ? gurobi : pulp}</code></pre>
+          <pre tabIndex={0} aria-label={`${tab === 'gurobi' ? 'Gurobi' : 'PuLP'} model code`} className="max-h-80 overflow-auto rounded-md bg-ink p-3 text-xs leading-relaxed text-sheet"><code>{tab === 'gurobi' ? gurobi : pulp}</code></pre>
           <button className="btn-ghost btn mt-2 text-sm" onClick={() => navigator.clipboard?.writeText(tab === 'gurobi' ? gurobi : pulp)}>Copy code</button>
         </Panel>
       </div>

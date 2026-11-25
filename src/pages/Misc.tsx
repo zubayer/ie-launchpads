@@ -22,8 +22,10 @@ export function Plan() {
     DOMAINS.forEach((d) => m.push({ id: 'dom:' + d.id, title: d.name, kind: 'Domain', concepts: learningOrder(byDomain(d.id)).map((c) => c.id).slice(0, 12), skills: d.subs.slice(0, 5) }))
     return m
   }, [])
-  const start = new Date(settings.planStart + 'T00:00:00')
-  const end = new Date(settings.planEnd + 'T00:00:00')
+  // A cleared or half-typed date input gives '' — fall back to today so the page keeps working.
+  const isDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(new Date(v + 'T00:00:00').getTime())
+  const start = new Date((isDate(settings.planStart) ? settings.planStart : today()) + 'T00:00:00')
+  const end = new Date((isDate(settings.planEnd) ? settings.planEnd : today()) + 'T00:00:00')
   const days = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000) + 1)
   const dayN = Math.floor((new Date(today() + 'T00:00:00').getTime() - start.getTime()) / 86400000)
   const idx = ((dayN % modules.length) + modules.length) % modules.length

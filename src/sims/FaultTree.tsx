@@ -51,7 +51,7 @@ export default function FaultTree() {
     <li key={n.id} className="mt-2">
       <div className={`flex flex-wrap items-center gap-2 rounded-md border px-3 py-2 ${n.kids ? 'border-ink' : 'border-line'} ${depth === 0 ? 'bg-sred/10' : ''}`}>
         {n.kids ? (
-          <button className={`chip !text-xs font-semibold ${n.gate === 'AND' ? '!border-sblue !text-sblue' : '!border-sorange !text-sorange'}`}
+          <button className={`chip !bg-sheet !text-xs font-semibold ${n.gate === 'AND' ? '!border-sblue !text-sblue' : '!border-sorange !text-sorange'}`}
             onClick={() => setGates({ ...gates, [n.id]: n.gate === 'AND' ? 'OR' : 'AND' })} title="Toggle gate type">{n.gate} gate</button>
         ) : <span className="chip !text-xs">basic event</span>}
         <span className="flex-1">{n.label}</span>

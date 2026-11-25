@@ -247,6 +247,24 @@ export const VIZ: Record<string, VizSpec> = {
   'career.star': { t: 'steps', items: ['Situation (~10%)', 'Task (~10%)', 'Action (~60%)', 'Result (~20%)'] },
   'career.elevator-pitch': { t: 'steps', items: ['Present: who you are now', 'Past: proof with a number', 'Future: why this role'] },
   'career.first-90-days': { t: 'steps', items: ['Days 1–30: learn the floor', 'Days 31–60: quick win', 'Days 61–90: launch a bigger project'] },
+
+  // V2: diagrams for Lean and Quality lessons that had none
+  'quality.imr': { t: 'control' },
+  'quality.p-chart': { t: 'control' },
+  'quality.c-u-chart': { t: 'compare', a: { title: 'c-chart', points: ['Counts defects per inspection unit', 'Same-size unit every time', 'Limits c̄ ± 3√c̄', 'e.g. scratches per panel'] }, b: { title: 'u-chart', points: ['Defects per unit', 'Inspection size can vary', 'Limits ū ± 3√(ū/n)', 'e.g. defects per board, daily volume varies'] } },
+  'quality.ewma-cusum': { t: 'curve', x: [0, 30], y: [-0.2, 1.3], lines: [{ f: (x) => (x < 10 ? 0 : 1), label: 'true mean (shifts +1σ at sample 10)', color: C.red, dash: true }, { f: (x) => (x < 10 ? 0 : 1 - Math.pow(0.8, x - 10)), label: 'EWMA with λ = 0.2 follows the shift' }], xLabel: 'sample number', yLabel: 'shift (σ)', marks: [{ x: 10, label: 'shift' }] },
+  'quality.aql': { t: 'curve', x: [0, 0.1], y: [0, 1], lines: [{ f: (p) => Math.pow(1 - p, 50) + 50 * p * Math.pow(1 - p, 49), label: 'OC curve, n = 50, c = 1' }], xLabel: 'lot fraction defective', yLabel: 'P(accept)', marks: [{ x: 0.02, label: 'Pa ≈ 0.74' }, { x: 0.075, label: 'Pa ≈ 0.10' }] },
+  'quality.iso9001': { t: 'cycle', items: ['4 Context', '5 Leadership', '6 Planning', '7 Support', '8 Operation', '9 Performance evaluation', '10 Improvement'], center: 'ISO 9001:2015 clauses (PDCA)' },
+  'lean.value-added': { t: 'bars', items: [['Value-added work', 12, 'var(--color-sgreen)'], ['Necessary non-value-added (checks, approvals)', 48], ['Transport', 60], ['Waiting in queues', 1320, 'var(--color-sred)']], unit: ' min' },
+  'lean.gemba': { t: 'steps', items: ['Go see the actual work', 'Ask why — and listen', 'Show respect', 'Confirm with facts and data', 'Support the team’s countermeasure'], note: 'Go see, ask why, show respect (LEI).' },
+  'lean.standard-work': { t: 'steps', items: ['Takt time', 'Work sequence', 'Standard in-process stock'], note: 'The three elements of standardized work. Once written down, the standard becomes the baseline for kaizen.' },
+  'lean.cycle-time': { t: 'compare', a: { title: 'Cycle time', points: ['Measured time for one unit at a step', 'Set by the process', 'Must be at or below takt'] }, b: { title: 'Takt time', points: ['Available time ÷ customer demand', 'Set by the customer', 'The pace to match'] } },
+  'lean.lead-time': { t: 'bars', items: [['Processing', 2, 'var(--color-sgreen)'], ['Inspection', 2], ['Transport', 4], ['Waiting in queues', 38, 'var(--color-sred)']], unit: ' h' },
+  'lean.wip': { t: 'curve', x: [0, 400], y: [0, 8], lines: [{ f: (w) => w / 60, label: 'lead time = WIP ÷ 60 jobs per day' }], xLabel: 'WIP (jobs)', yLabel: 'lead time (days)', marks: [{ x: 120, label: '2 days' }, { x: 240, label: '4 days' }] },
+  'lean.jit': { t: 'layers', items: [{ label: 'Goal: best quality, lowest cost, shortest lead time', color: '#2459d6' }, { label: 'Just-in-time: pull · takt time · continuous flow', color: '#0e8a8c', h: 60 }, { label: 'Built on heijunka (leveled production)', color: '#7c4ddb' }, { label: 'Stable processes · standardized work · kaizen', color: '#475569' }], note: 'JIT is one pillar of TPS; jidoka is the other.' },
+  'lean.andon': { t: 'steps', items: ['Operator sees a problem', 'Pulls the cord or presses the button', 'Light and sound show where', 'Leader responds within the takt cycle', 'Fix it, or stop the line and solve it'] },
+  'lean.spaghetti': { t: 'network', h: 260, nodes: [{ id: 'rec', label: 'Receiving', x: 70, y: 60 }, { id: 'saw', label: 'Saw', x: 560, y: 60 }, { id: 'drl', label: 'Drill', x: 150, y: 200 }, { id: 'ins', label: 'Inspect', x: 330, y: 60 }, { id: 'deb', label: 'Deburr', x: 520, y: 210 }, { id: 'pak', label: 'Pack', x: 330, y: 210, hl: true }], edges: [['rec', 'saw', '1'], ['saw', 'drl', '2'], ['drl', 'ins', '3'], ['ins', 'deb', '4'], ['deb', 'pak', '5']] },
+  'lean.hoshin': { t: 'tree', root: { label: 'Breakthrough objective (3–5 years)', kids: [{ label: 'Annual objectives', kids: [{ label: 'Improvement priorities' }, { label: 'Metrics and targets' }] }, { label: 'Catchball with each level', kids: [{ label: 'Team projects (A3s)' }] }] } },
 }
 
 /** Extra concept → simulator links (beyond each simulator's own list). */
