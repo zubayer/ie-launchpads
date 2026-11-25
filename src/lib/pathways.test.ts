@@ -107,54 +107,7 @@ describe('unit-aware grading', () => {
     expect(gradeNumeric('60 s/unit', { ...strict, unit: 's' }).kind).toBe('wrong')
     expect(gradeNumeric('2 units/min', { value: 120, unit: 'units/h', tol: { abs: 0.01 } }).kind).toBe('correct')
     expect(gradeNumeric('$12/unit', { value: 12, unit: '$/unit', tol: { abs: 0 } }).kind).toBe('correct')
-    expect(gradeNumeric('$12/unit', { value: 12, unit: ' and says too high or too low otherwise', () => {
-    expect(gradeNumeric('64 s', takt)).toMatchObject({ kind: 'wrong', trap: true, msg: 'breaks' })
-    expect(gradeNumeric('70 s', takt).msg).toBe('Too high.')
-    expect(gradeNumeric('50 s', takt).msg).toBe('Too low.')
-  })
-  it('parses common number formats', () => {
-    expect(parseQuantity('−3.5 days')).toEqual({ x: -3.5, unit: 'days' })
-    expect(parseQuantity('$5,489')).toEqual({ x: 5489, unit: '$' })
-  })
-})
-
-describe('evidence', () => {
-  it('summarises attempts by dimension and counts distinct correct days', () => {
-    const t0 = new Date(2026, 10, 20, 10).getTime(), t1 = new Date(2026, 10, 21, 10).getTime()
-    const at: Attempt[] = [
-      { item: 'x:1', concept: 'lean.oee', dim: 'calculate', correct: false, at: t0 },
-      { item: 'x:1', concept: 'lean.oee', dim: 'calculate', correct: true, at: t0 + 1000 },
-      { item: 'x:2', concept: 'lean.oee', dim: 'calculate', correct: true, at: t1 },
-      { item: 'x:3', concept: 'lean.oee', dim: 'recall', correct: false, at: t1 },
-    ]
-    const e = evidence(at, 'lean.oee')
-    expect(e.calculate).toEqual({ tries: 3, correct: 2, days: 2, last: true })
-    expect(e.recall).toEqual({ tries: 1, correct: 0, days: 0, last: false })
-    expect(e.apply).toBeNull()
-  })
-})
-
-describe('variants', () => {
-  it('two items built from the same generator show different numbers', () => {
-    const p = PATHWAYS[0]
-    const get = (id: string) => allItems(p).find((it) => it.id === id) as NumericItem
-    let same = 0
-    for (let s = 0; s < 50; s++) if (get('takt').make(s).prompt === get('r-takt-calc').make(s).prompt) same++
-    expect(same).toBeLessThan(5)
-    expect(get('takt').make(0).prompt).not.toBe(get('takt').make(1).prompt)
-  })
-})
-
-describe('factory question traps', () => {
-  it('the 91% trap really falls short and today’s 80% gives about 366 units in the model', () => {
-    const base = SCENARIOS.find((x) => x.id === 'mystery')!.line
-    const at = (a: number) => runLine({ ...base, stations: base.stations.map((st) => (st.name === 'Weld' ? { ...st, avail: a } : st)) }).good
-    expect(at(0.91)).toBeLessThan(420)
-    expect(at(0.92)).toBeGreaterThanOrEqual(420)
-    expect(Math.floor(at(0.8))).toBe(366)
-  })
-})
-, tol: { abs: 0 } }).kind).toBe('wrong')
+    expect(gradeNumeric('$12/unit', { value: 12, unit: '$', tol: { abs: 0 } }).kind).toBe('wrong')
     expect(gradeNumeric('1.2e+3 mm', { value: 1.2, unit: 'm', tol: { abs: 0.001 } }).kind).toBe('correct')
     expect(gradeNumeric('2 kg', { value: 2, unit: '', tol: { abs: 0 } }).kind).toBe('wrong')
     expect(gradeNumeric('2 constructor', { value: 2, unit: 's', tol: { abs: 0 } }).kind).toBe('retry')
