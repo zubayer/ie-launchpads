@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { CONCEPT_MAP, neighbors } from '../content'
 import { ELEMENTS, ELEMENT_IO, FAMILIES, type Element, type FamilyId } from '../content/periodic'
@@ -31,11 +31,11 @@ function Detail({ e }: { e: Element }) {
   const sim = simOf(c)
   const near = neighbors(c).slice(0, 6)
   return (
-    <aside aria-label={`${c.term} details`} className="el-detail sheet rounded-lg p-5 lg:sticky lg:top-6">
-      <div className="flex items-center gap-4">
+    <div>
+      <div className="flex items-center gap-4 pr-10">
         <Tile e={e} big />
         <div className="min-w-0">
-          <h2 className="text-2xl font-extrabold leading-tight">{c.term}</h2>
+          <h2 id="el-title" className="text-2xl font-extrabold leading-tight">{c.term}</h2>
           <p className="text-sm text-ink-2">{FAM[e.family].long} · {LEVEL_NAME[c.level]}</p>
         </div>
       </div>
@@ -66,7 +66,7 @@ function Detail({ e }: { e: Element }) {
         <Link className="btn" to={`/c/${c.id}`}>Open the lesson</Link>
         {sim && <Link className="btn-tape btn" to={`/lab/${sim.id}`}>Run the lab: {sim.name}</Link>}
       </div>
-    </aside>
+    </div>
   )
 }
 
@@ -74,16 +74,22 @@ export function Periodic() {
   const [params, setParams] = useSearchParams()
   const [fam, setFam] = useState<FamilyId | ''>('')
   const [q, setQ] = useState('')
-  const sel = BY_SYM[params.get('el') || ''] || BY_SYM['lean.takt-time'] || ELEMENTS[0]
+  const sel: Element | undefined = BY_SYM[params.get('el') || '']
+  const dlg = useRef<HTMLDialogElement>(null)
+  // The pop-up follows the URL (?el=…), so an element can be linked to and the browser Back button closes it.
+  useEffect(() => {
+    const d = dlg.current
+    if (!d) return
+    if (sel && !d.open) d.showModal()
+    if (!sel && d.open) d.close()
+  }, [sel])
   const ql = q.trim().toLowerCase()
   const match = (e: Element) => (!fam || e.family === fam) && (!ql || e.sym.toLowerCase() === ql || e.c.term.toLowerCase().includes(ql) || (e.c.aka || []).some((a) => a.toLowerCase().includes(ql)))
   const cols = useMemo(() => FAMILIES.map((f) => ({ f, els: ELEMENTS.filter((e) => e.family === f.id) })), [])
   const hits = ELEMENTS.filter(match).length
-  // When the detail panel sits below the table (narrower screens), bring it into view after a pick.
-  const pick = (id: string) => {
-    setParams({ el: id }, { replace: true })
-    if (!window.matchMedia('(min-width: 1500px)').matches) requestAnimationFrame(() => document.querySelector('.el-detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
-  }
+  const pick = (id: string) => setParams({ el: id }, { replace: true })
+  const close = () => { if (params.get('el')) { const p = new URLSearchParams(params); p.delete('el'); setParams(p, { replace: true }) } }
+  const step = (d: number) => { if (sel) pick(ELEMENTS[(sel.n - 1 + d + ELEMENTS.length) % ELEMENTS.length].id) }
   return (
     <div>
       <PageHead title="Periodic Table of Industrial Engineering" sub={`${ELEMENTS.length} core methods in ${FAMILIES.length} families. Inside each family, elements run from Foundation at the top to Advanced at the bottom. Pick one to see what goes in, what comes out, and how it misleads you.`}>
@@ -103,14 +109,14 @@ export function Periodic() {
         ))}
         <span className="ml-auto text-xs text-ink-2">ƒ has a formula · ▸ has a lab · L1 Foundation → L4 Advanced</span>
       </div>
-      <div className="grid gap-6 min-[1500px]:grid-cols-[minmax(0,1fr)_21rem]">
+      <div>
         <div className="overflow-x-auto pb-2" tabIndex={0} role="region" aria-label="The periodic table; scroll sideways on small screens">
           <div className="grid min-w-[52rem] grid-cols-10 gap-2">
             {cols.map(({ f, els }) => (
               <div key={f.id} className="flex flex-col gap-1.5">
                 <div className="el-head" style={famStyle(f.id)}><span className="font-bold">{f.name}</span><span className="block text-[11px] font-normal text-ink-2">{els.length} elements</span></div>
                 {els.map((e) => {
-                  const on = e.id === sel.id
+                  const on = e.id === sel?.id
                   const marks = `${e.c.formula ? 'ƒ' : ''}${simOf(e.c) ? '▸' : ''}`
                   return (
                     <button key={e.id} onClick={() => pick(e.id)} aria-pressed={on} title={e.c.term}
@@ -124,8 +130,21 @@ export function Periodic() {
             ))}
           </div>
         </div>
-        <Detail e={sel} />
       </div>
+      <dialog ref={dlg} className="el-dialog" aria-labelledby="el-title" onClose={close}
+        onClick={(ev) => { if (ev.target === ev.currentTarget) dlg.current?.close() }}>
+        {sel && (
+          <div className="el-dialog-body">
+            <button className="el-x" onClick={() => dlg.current?.close()} aria-label="Close">×</button>
+            <Detail e={sel} />
+            <div className="mt-5 flex items-center justify-between gap-2 border-t border-line pt-4 text-sm">
+              <button className="pop-btn !py-1.5" onClick={() => step(-1)}>← {ELEMENTS[(sel.n - 2 + ELEMENTS.length) % ELEMENTS.length].c.term}</button>
+              <span className="text-ink-2">{sel.n} of {ELEMENTS.length}</span>
+              <button className="pop-btn !py-1.5" onClick={() => step(1)}>{ELEMENTS[sel.n % ELEMENTS.length].c.term} →</button>
+            </div>
+          </div>
+        )}
+      </dialog>
     </div>
   )
 }
