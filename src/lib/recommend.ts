@@ -72,16 +72,34 @@ export function suggestions(s: LearnerState): Suggestion[] {
     const first = CONCEPTS.find((c) => c.level === 1 && !opened(c.id))
     if (first) out.push({ id: `lesson:${first.id}`, kind: 'lesson', title: `Learn ${first.term}`, to: `/c/${first.id}`, minutes: 10, why: 'A foundation lesson you haven’t opened yet.' })
   }
+  // A short alternative for learners who cannot fit a full lesson or lab.
+  // Use it when no normal suggestion fits the selected session.
+  if (due) {
+    out.push({ id: 'micro:review', kind: 'review', title: 'Review up to 3 due flashcards', to: '/review', minutes: 3, why: 'A short retrieval session is useful even if you cannot finish the whole queue. Stop after three cards.' })
+  } else {
+    const target = out.find((x) => x.kind === 'lesson' || x.kind === 'mistake')?.to.split('/c/')[1]
+      || PATHWAYS.find((p) => p.steps.some((st) => st.items.some((it) => triesOf(s.attempts, itemKey(p, it)) > 0)))?.steps[0]?.lessons[0]
+      || PATHWAYS[0]?.steps[0]?.lessons[0]
+      || CONCEPTS.find((c) => c.level === 1)?.id
+    if (target && CONCEPT_MAP[target]) out.push({ id: 'micro:' + target, kind: 'lesson', title: 'Quick learn: ' + CONCEPT_MAP[target].term, to: '/c/' + target + '?mode=quick', minutes: 3, why: 'Open the short learning mode, read the plain meaning and try the recall check. Save the full lesson for a longer session.' })
+  }
   return out
 }
 
-/** Fill a session of `minutes` in priority order (estimates may run 20% over); always at least one item. Skipped ids are left out. */
+/** Never schedule more estimated minutes than the requested budget. Use a short alternative only when no full activity fits. */
 export function plan(list: Suggestion[], minutes: number, skipped: string[] = []) {
-  const pool = list.filter((x) => !skipped.includes(x.id))
+  const budget = Number.isFinite(minutes) ? Math.max(0, minutes) : 0
+  const pool = list.filter((x) => !skipped.includes(x.id) && Number.isFinite(x.minutes) && x.minutes > 0)
+  const full = pool.filter((x) => !x.id.startsWith('micro:'))
+  const short = pool.filter((x) => x.id.startsWith('micro:'))
   const chosen: Suggestion[] = []
   let used = 0
-  for (const x of pool) {
-    if (!chosen.length || used + x.minutes <= minutes * 1.2) { chosen.push(x); used += x.minutes }
+  for (const x of full) {
+    if (used + x.minutes <= budget) { chosen.push(x); used += x.minutes }
+  }
+  if (!chosen.length) {
+    const micro = short.find((x) => x.minutes <= budget)
+    if (micro) { chosen.push(micro); used += micro.minutes }
   }
   return { chosen, rest: pool.filter((x) => !chosen.includes(x)), used }
 }
