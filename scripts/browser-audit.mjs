@@ -30,7 +30,9 @@ for (const theme of ['light', 'dark']) {
   for (const [i, r] of routes.entries()) {
     // A query change forces a full page load, so one crashing route can't blank the routes after it.
     await page.goto(`${BASE}?n=${i}#/${r}`)
-    await page.waitForTimeout(500)
+    // Lazy pages (e.g. the curriculum matrix) can take a moment: wait for the heading rather than a fixed delay.
+    await page.waitForSelector('h1', { timeout: 5000 }).catch(() => {})
+    await page.waitForTimeout(300)
     const h1 = await page.locator('h1').count()
     await page.addScriptTag({ content: axe })
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] })).violations.map((x) => `${x.id} (${x.nodes.length}) ${x.nodes[0]?.target?.join(' ')}`))
