@@ -16,13 +16,14 @@ import { MiniMap, Viz } from '../components/Viz'
 import { AlgoFlow } from '../components/Algo'
 import { LiveWeb, prefetchLive } from '../components/LiveWeb'
 import { JobsBlock, RoleChips } from '../components/Jobs'
+import { ReviewChip, SourcesBlock } from '../components/Sources'
 
 interface Layer { id: string; name: string }
 
 export const simFor = (c: Concept) => SIM_META.find((s) => s.id === (c.sim || EXTRA_SIM[c.id])) || SIM_META.find((s) => s.concepts.includes(c.id))
 
 function layersFor(c: Concept): Layer[] {
-  const L: Layer[] = [{ id: 'keyword', name: 'Keyword' }, { id: 'live', name: 'Live from the web' }, { id: 'plain', name: 'Plain meaning' }]
+  const L: Layer[] = [{ id: 'keyword', name: 'Keyword' }, { id: 'plain', name: 'Plain meaning' }]
   if (c.analogy) L.push({ id: 'analogy', name: 'Analogy' })
   L.push({ id: 'picture', name: 'Picture it' })
   if (c.why) L.push({ id: 'why', name: 'Why it matters' })
@@ -34,6 +35,8 @@ function layersFor(c: Concept): Layer[] {
   if (simFor(c)) L.push({ id: 'sim', name: 'Simulate it' })
   L.push({ id: 'try', name: 'Check yourself' })
   if (c.iq?.length) L.push({ id: 'interview', name: 'Interview' })
+  L.push({ id: 'live', name: 'Live from the web' })
+  L.push({ id: 'sources', name: 'Sources & review' })
   L.push({ id: 'more', name: 'Learn more' })
   return L
 }
@@ -186,6 +189,7 @@ export default function ConceptPage() {
               {c.full && c.full !== c.term && <p className="wide mt-2 text-lg text-ink-2">{c.full}</p>}
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <StatusBadge id={c.id} />
+                <ReviewChip c={c} />
                 <span className="chip">{LEVEL_NAME[c.level]}</span>
                 <span className="chip">{c.sub}</span>
                 {c.used?.freq && <span className="chip">In job postings: {c.used.freq}</span>}
@@ -208,11 +212,13 @@ export default function ConceptPage() {
           <div className="mt-3"><ExploreButtons c={c} wiki={web.data} /></div>
         </Block>
 
-        <Block id="live" n={idx('live')} name="Live from the web" onSeen={onSeen}>
-          <LiveWeb key={c.id} c={c} wiki={web} />
-        </Block>
-
         <Block id="plain" n={idx('plain')} name="Plain meaning" onSeen={onSeen}>
+          {c.objectives?.length ? (
+            <div className="measure mb-4 rounded-lg border border-line bg-paper/60 px-4 py-3">
+              <p className="label mb-1">After this lesson you can</p>
+              <ul className="list-disc space-y-0.5 pl-5 text-[0.95rem]">{c.objectives.map((o) => <li key={o}>{o}</li>)}</ul>
+            </div>
+          ) : null}
           <p className="measure text-xl leading-snug"><Linked text={c.one} self={c.id} max={3} /></p>
           <p className="measure mt-3"><Linked text={c.def} self={c.id} /></p>
           {c.confused?.map(([t, diff]) => (
@@ -254,6 +260,12 @@ export default function ConceptPage() {
         {c.why && (
           <Block id="why" n={idx('why')} name="Why it matters" onSeen={onSeen}>
             <p className="measure"><Linked text={c.why} self={c.id} /></p>
+            {!c.formula && (c.assumptions?.length ? (
+            <div className="measure mt-4 rounded-lg border-l-4 border-sorange bg-sorange/5 px-4 py-3">
+              <p className="label mb-1">Assumptions and limits</p>
+              <ul className="list-disc space-y-0.5 pl-5 text-[0.95rem]">{c.assumptions.map((a) => <li key={a}><Linked text={a} self={c.id} max={2} /></li>)}</ul>
+            </div>
+          ) : null)}
           </Block>
         )}
 
@@ -267,6 +279,12 @@ export default function ConceptPage() {
                 ))}
               </dl>
             )}
+            {c.assumptions?.length ? (
+            <div className="measure mt-4 rounded-lg border-l-4 border-sorange bg-sorange/5 px-4 py-3">
+              <p className="label mb-1">Assumptions and limits</p>
+              <ul className="list-disc space-y-0.5 pl-5 text-[0.95rem]">{c.assumptions.map((a) => <li key={a}><Linked text={a} self={c.id} max={2} /></li>)}</ul>
+            </div>
+          ) : null}
           </Block>
         )}
 
@@ -286,7 +304,7 @@ export default function ConceptPage() {
           <Block id="real" n={idx('real')} name="On the job" onSeen={onSeen}>
             {c.real && (
               <div className="measure rounded-lg border-l-4 p-4" style={{ borderColor: d.tape, background: 'color-mix(in srgb, var(--color-sblue) 5%, transparent)' }}>
-                <p className="label">Real-life case — {c.real.where}</p>
+                <p className="label">{c.real.kind === 'documented' ? 'Real case' : 'Illustrative scenario'} — {c.real.where}</p>
                 <p className="mt-1"><Linked text={c.real.story} self={c.id} /></p>
               </div>
             )}
@@ -335,6 +353,14 @@ export default function ConceptPage() {
             <p className="mt-3 text-sm text-ink-2">Say your answer out loud before opening the model answer. More in <Link className="underline" to="/interview">Interview prep</Link>.</p>
           </Block>
         ) : null}
+
+        <Block id="live" n={idx('live')} name="Live from the web" onSeen={onSeen}>
+          <LiveWeb key={c.id} c={c} wiki={web} />
+        </Block>
+
+        <Block id="sources" n={idx('sources')} name="Sources & review" onSeen={onSeen}>
+          <SourcesBlock c={c} />
+        </Block>
 
         <Block id="more" n={idx('more')} name="Learn more" onSeen={onSeen}>
           <p className="label mb-2">Search further (opens a new tab)</p>

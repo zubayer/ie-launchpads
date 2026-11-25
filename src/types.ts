@@ -32,14 +32,30 @@ export interface InterviewQ {
   type?: 'screen' | 'technical' | 'case' | 'behavioral'
 }
 
-export interface KnowledgeSource {
+// ---------- Knowledge sources and review (V2) ----------
+/** Tier 1: government, standards bodies, professional societies, originators. Tier 2: peer-reviewed, university, textbooks.
+ *  Tier 3: industry and practitioner guidance. Tier 4: community, encyclopedias, AI. */
+export type SourceTier = 1 | 2 | 3 | 4
+export interface SourceRecord {
+  id: string
   title: string
-  url: string
   publisher: string
-  kind: 'government' | 'academic' | 'professional' | 'vendor' | 'exploratory'
-  section?: string
-  reviewedOn?: string
+  url: string
+  tier: SourceTier
+  kind: 'government' | 'standard' | 'professional' | 'academic' | 'industry' | 'community'
+  authors?: string
+  year?: number
+  doi?: string
+  access: 'open' | 'free-account' | 'paywalled'
+  license?: string
+  checkedOn: string // date the URL was last confirmed to exist and match the title (YYYY-MM-DD)
+  note?: string
 }
+/** One citation on a lesson: which source, which section, and the claim it supports. */
+export interface Citation { src: string; section?: string; url?: string; supports: string }
+export type ReviewStatus = 'draft' | 'source-identified' | 'source-checked' | 'math-validated' | 'expert-reviewed' | 'update-required'
+export interface Review { status: ReviewStatus; on: string; by: string; note?: string }
+
 
 export interface Concept {
   id: string
@@ -56,7 +72,7 @@ export interface Concept {
   why?: string // intuition: what problem it solves
   formula?: { tex: string; vars?: [string, string][] }
   example?: WorkedExample
-  real?: { where: string; story: string }
+  real?: { where: string; story: string; kind?: 'documented' | 'illustrative' } // illustrative unless a cited real event
   used?: { ind?: string[]; roles?: string[]; tools?: string[]; freq?: 'very common' | 'common' | 'niche' }
   sim?: string // simulator id
   iq?: InterviewQ[]
@@ -65,9 +81,10 @@ export interface Concept {
   rel?: string[]
   cert?: string[]
   verify?: boolean
-  sources?: KnowledgeSource[]
-  reviewStatus?: 'draft' | 'source-checked' | 'expert-reviewed'
-  assumptions?: string[]
+  objectives?: string[] // "After this lesson you can…"
+  assumptions?: string[] // assumptions and limits of validity
+  cites?: Citation[]
+  review?: Review
 }
 
 export interface RolePath {

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { CONCEPTS, CONCEPT_MAP } from './index'
+import { CONCEPTS, CONCEPT_MAP, ENRICHED_IDS } from './index'
+import { SOURCES } from './sources'
+import katex from 'katex'
 import { DOMAINS } from './domains'
 import { ROLES } from './roles'
 import { CASES } from './cases'
@@ -163,5 +165,81 @@ describe('jobs and Wikipedia keywords', () => {
   })
   it('Stack Exchange site chosen for every domain', () => {
     for (const d of DOMAINS) expect(SE_SITE[d.id]?.site, d.id).toBeTruthy()
+  })
+})
+
+describe('sources and review statuses', () => {
+  const DATE = /^\d{4}-\d{2}-\d{2}$/
+  it('source registry entries are well formed', () => {
+    for (const s of Object.values(SOURCES)) {
+      expect(s.url, s.id).toMatch(/^https:\/\//)
+      expect(s.checkedOn, s.id).toMatch(DATE)
+      expect([1, 2, 3, 4]).toContain(s.tier)
+      if (s.doi) expect(s.doi, s.id).toMatch(/^10\.\d{4,9}\//)
+    }
+  })
+  it('every citation points at a registered source with a claim', () => {
+    for (const c of CONCEPTS) for (const ct of c.cites || []) {
+      expect(SOURCES[ct.src], `${c.id} → ${ct.src}`).toBeTruthy()
+      expect(ct.supports.trim().length, c.id).toBeGreaterThan(5)
+      if (ct.url) expect(ct.url, c.id).toMatch(/^https:\/\//)
+    }
+  })
+  it('review statuses are honest and dated', () => {
+    for (const c of CONCEPTS) {
+      const r = c.review
+      if (!r) continue
+      expect(r.on, c.id).toMatch(DATE)
+      expect(r.by.trim().length, c.id).toBeGreaterThan(2)
+      if (r.status === 'expert-reviewed') expect(r.by, `${c.id}: expert review needs a named human reviewer`).not.toMatch(/AI|Claude|automated/i)
+      if (r.status === 'source-checked' || r.status === 'source-identified') expect(c.cites?.length ?? 0, `${c.id}: ${r.status} needs citations`).toBeGreaterThan(0)
+      if (r.status === 'update-required' || r.status === 'draft') expect(r.note, `${c.id}: say what is missing`).toBeTruthy()
+    }
+  })
+  it('enriched lessons meet the lesson standard', () => {
+    for (const id of ENRICHED_IDS) {
+      const c = CONCEPT_MAP[id]
+      expect(c, id).toBeTruthy()
+      expect(c.objectives?.length, `${id} objectives`).toBeGreaterThanOrEqual(2)
+      expect(c.why, `${id} why`).toBeTruthy()
+      expect(c.mistakes?.length, `${id} mistakes`).toBeGreaterThan(0)
+      expect(c.review, `${id} review`).toBeTruthy()
+      if (c.assumptions?.length) expect(!!(c.why || c.formula), `${id}: assumptions need a why or math layer to show in`).toBe(true)
+    }
+  })
+})
+
+describe('content quality', () => {
+  it('prerequisites form no cycles', () => {
+    const state = new Map<string, 0 | 1 | 2>()
+    const cycles: string[] = []
+    const visit = (id: string, path: string[]) => {
+      if (state.get(id) === 2) return
+      if (state.get(id) === 1) { cycles.push([...path, id].join(' → ')); return }
+      state.set(id, 1)
+      for (const p of CONCEPT_MAP[id]?.pre || []) visit(p, [...path, id])
+      state.set(id, 2)
+    }
+    for (const c of CONCEPTS) visit(c.id, [])
+    expect(cycles).toEqual([])
+  })
+  it('no two lessons share the same term', () => {
+    const seen = new Map<string, string>()
+    const dups: string[] = []
+    for (const c of CONCEPTS) {
+      const k = c.term.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+      if (seen.has(k)) dups.push(`${seen.get(k)} / ${c.id}`); else seen.set(k, c.id)
+    }
+    expect(dups).toEqual([])
+  })
+  it('every formula and inline $math$ renders in KaTeX', () => {
+    const bad: string[] = []
+    const tryTex = (id: string, tex: string) => { try { katex.renderToString(tex, { throwOnError: true }) } catch (e) { bad.push(`${id}: ${tex} — ${(e as Error).message.slice(0, 60)}`) } }
+    for (const c of CONCEPTS) {
+      if (c.formula) { tryTex(c.id, c.formula.tex); c.formula.vars?.forEach(([s]) => tryTex(c.id, s)) }
+      const prose = [c.one, c.def, c.why, c.analogy, c.example?.q, c.example?.a, ...(c.example?.steps || [])].filter(Boolean) as string[]
+      for (const p of prose) for (const m of p.matchAll(/\$([^$]+)\$/g)) tryTex(c.id, m[1])
+    }
+    expect(bad).toEqual([])
   })
 })
