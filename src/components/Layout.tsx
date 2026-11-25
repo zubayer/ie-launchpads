@@ -11,6 +11,7 @@ const NAV = [
   { to: '/', label: 'Today', end: true },
   { to: '/directory', label: 'A–Z directory' },
   { to: '/domains', label: 'Domains' },
+  { to: '/curriculum', label: 'Curriculum coverage' },
   { to: '/review', label: 'Flashcard review' },
   { to: '/practice', label: 'Practice quiz' },
   { to: '/lab', label: 'Simulator lab' },

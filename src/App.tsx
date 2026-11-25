@@ -21,6 +21,7 @@ const Plan = page(() => import('./pages/Misc'), 'Plan')
 const Graph = page(() => import('./pages/Misc'), 'Graph')
 const Progress = page(() => import('./pages/Misc'), 'Progress')
 const Academy = page(() => import('./pages/Academy'), 'Academy')
+const Curriculum = page(() => import('./pages/Curriculum'), 'Curriculum')
 const Method = page(() => import('./pages/Misc'), 'Method')
 
 function NotFound() {
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="graph" element={<Graph />} />
           <Route path="progress" element={<Progress />} />
           <Route path="academy" element={<Academy />} />
+          <Route path="curriculum" element={<Curriculum />} />
           <Route path="method" element={<Method />} />
           <Route path="*" element={<NotFound />} />
         </Route>

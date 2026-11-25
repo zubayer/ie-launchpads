@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "verify": "vitest run"
+    "verify": "vitest run",
+    "docs:gaps": "vitest run --config vitest.docs.config.ts"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.3.0",
