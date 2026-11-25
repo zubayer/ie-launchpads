@@ -29,7 +29,7 @@ export function Notebook() {
 
   return (
     <div>
-      <PageHead title="Error notebook" sub="Every wrong answer from Check yourself and the practice quiz lands here automatically, with the right answer and why. Re-read the lesson, then mark it understood." />
+      <PageHead title="Error notebook" sub="Every wrong answer from Check yourself, the practice quiz, Confused pairs, Factory mysteries and Spot the waste lands here automatically, with the right answer and why. Re-read the lesson, then mark it understood." />
       {recurring.length > 0 && (
         <div className="sheet mb-6 rounded-lg p-4">
           <p className="label mb-2">Missed more than once — re-read these first</p>

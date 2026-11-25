@@ -8,26 +8,43 @@ import { googleUrl, wiki, wikiSearchUrl } from '../lib/web'
 import { SelectionLookup, WikiCard, useWiki } from './Glossary'
 import { v1Href } from '../lib/version'
 
-const NAV = [
-  { to: '/', label: 'Today', end: true },
-  { to: '/directory', label: 'A–Z directory' },
-  { to: '/domains', label: 'Domains' },
-  { to: '/curriculum', label: 'Curriculum coverage' },
-  { to: '/table', label: 'Periodic table' },
-  { to: '/chains', label: 'Reaction chains' },
-  { to: '/formulas', label: 'Formula library' },
-  { to: '/sheets/engecon', label: 'Eng Econ cheat sheet' },
-  { to: '/review', label: 'Flashcard review' },
-  { to: '/practice', label: 'Practice quiz' },
-  { to: '/notebook', label: 'Error notebook' },
-  { to: '/lab', label: 'Simulator lab' },
-  { to: '/academy', label: 'Engineering academy' },
-  { to: '/roles', label: 'Role paths' },
-  { to: '/interview', label: 'Interview prep' },
-  { to: '/plan', label: 'Daily plan' },
-  { to: '/graph', label: 'Knowledge map' },
-  { to: '/progress', label: 'Progress' },
-  { to: '/method', label: 'How to learn fast' },
+const NAV: { group: string; items: { to: string; label: string; end?: boolean }[] }[] = [
+  { group: '', items: [{ to: '/', label: 'Today', end: true }] },
+  { group: 'Learn', items: [
+    { to: '/directory', label: 'A–Z directory' },
+    { to: '/domains', label: 'Domains' },
+    { to: '/curriculum', label: 'Curriculum coverage' },
+    { to: '/table', label: 'Periodic table' },
+    { to: '/chains', label: 'Reaction chains' },
+    { to: '/guide', label: 'Method field guide' },
+    { to: '/formulas', label: 'Formula library' },
+    { to: '/sheets/engecon', label: 'Eng Econ cheat sheet' },
+  ] },
+  { group: 'Practice', items: [
+    { to: '/review', label: 'Flashcard review' },
+    { to: '/practice', label: 'Practice quiz' },
+    { to: '/pairs', label: 'Confused pairs' },
+    { to: '/mysteries', label: 'Factory mysteries' },
+    { to: '/spot-waste', label: 'Spot the waste' },
+    { to: '/notebook', label: 'Error notebook' },
+  ] },
+  { group: 'Labs and tools', items: [
+    { to: '/lab', label: 'Simulator lab' },
+    { to: '/lab/factory', label: 'Visual factory' },
+    { to: '/academy', label: 'Engineering academy' },
+    { to: '/tools', label: 'Tool cards' },
+  ] },
+  { group: 'Career', items: [
+    { to: '/subway', label: 'IE subway map' },
+    { to: '/roles', label: 'Role paths' },
+    { to: '/interview', label: 'Interview prep' },
+  ] },
+  { group: 'You', items: [
+    { to: '/plan', label: 'Daily plan' },
+    { to: '/graph', label: 'Knowledge map' },
+    { to: '/progress', label: 'Progress' },
+    { to: '/method', label: 'How to learn fast' },
+  ] },
 ]
 
 function useTheme() {
@@ -177,17 +194,25 @@ export default function Layout() {
             Search terms <kbd className="rounded border border-line px-1.5 text-xs">/</kbd>
           </button>
           <nav className="flex-1 overflow-y-auto px-2 pb-4" aria-label="Main">
-            {NAV.map((n) => (
-              <NavLink
-                key={n.to}
-                to={n.to}
-                end={n.end}
-                className={({ isActive }) =>
-                  `relative block rounded-md px-3 py-2 text-[0.95rem] ${isActive ? 'bg-sblue/10 font-semibold text-sblue before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-sm before:bg-sblue' : 'text-ink-2 hover:bg-paper hover:text-ink'}`
-                }
-              >
-                {n.label}
-              </NavLink>
+            {NAV.map((g) => (
+              <div key={g.group || 'top'} className={g.group ? 'mt-4' : ''}>
+                {g.group && <p className="px-3 pb-1 text-xs font-bold text-ink-2" id={`nav-${g.group.replace(/\s+/g, "-").toLowerCase()}`}>{g.group}</p>}
+                <ul aria-labelledby={g.group ? `nav-${g.group.replace(/\s+/g, "-").toLowerCase()}` : undefined}>
+                  {g.items.map((n) => (
+                    <li key={n.to}>
+                      <NavLink
+                        to={n.to}
+                        end={n.end ?? n.to === '/lab'}
+                        className={({ isActive }) =>
+                          `relative block rounded-md px-3 py-1.5 text-[0.95rem] ${isActive ? 'bg-sblue/10 font-semibold text-sblue before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-sm before:bg-sblue' : 'text-ink-2 hover:bg-paper hover:text-ink'}`
+                        }
+                      >
+                        {n.label}
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
           </nav>
           <div className="border-t border-line px-4 py-3 text-sm">
