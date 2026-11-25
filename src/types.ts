@@ -23,7 +23,13 @@ export interface WorkedExample {
   a: string
   so?: string // interpretation
   /** Optional machine check: compute() must equal value (within tol) — run by `npm test`. */
-  check?: { value: number; compute: () => number; tol?: number }
+  check?: {
+    value: number
+    compute: () => number
+    tol?: number
+    /** When the answer shows a rounded or converted form of value (e.g. "≈ 30 units", "24 min"): the number shown and how it follows from value. */
+    shown?: { value: number; rule: 'round' | 'ceil' | { scale: number } }
+  }
 }
 
 export interface InterviewQ {

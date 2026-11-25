@@ -163,7 +163,7 @@ export default mk('semiconductor', [
       q: 'An ALD process deposits 0.1 nm per cycle and each cycle takes 4 s. How long to deposit a 3 nm film?',
       steps: ['Cycles = 3 / 0.1 = 30.', 'Time = 30 × 4 s = 120 s.'],
       a: '30 cycles, about 2 minutes (plus overhead).',
-      check: { value: 120, compute: () => (3 / 0.1) * 4, tol: 1e-9 },
+      check: { value: 120, compute: () => (3 / 0.1) * 4, tol: 1e-9, shown: { value: 2, rule: { scale: 1 / 60 } } },
     },
     rel: ['cvd', 'anisotropy', 'deposition'],
   },

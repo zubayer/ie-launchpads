@@ -57,7 +57,7 @@ export default mk('scm', [
       q: 'Daily demand averages 40 with σ = 8; lead time is 5 days. Target service level is 95% (z = 1.645). Compute safety stock.',
       steps: ['σ over lead time = 8 × √5 = 17.89.', 'SS = 1.645 × 17.89 = 29.4.', 'Round up.'],
       a: 'Safety stock ≈ 30 units.',
-      check: { value: 29.43, compute: () => 1.645 * 8 * Math.sqrt(5), tol: 0.01 },
+      check: { value: 29.43, compute: () => 1.645 * 8 * Math.sqrt(5), tol: 0.01, shown: { value: 30, rule: 'ceil' } },
     },
     sim: 'inventory',
     iq: [{ q: 'How would you reduce safety stock without hurting service?', a: 'Reduce the drivers in the formula: improve forecast accuracy (lower σ_d), shorten and stabilize lead times (lower L and σ_L) with suppliers, pool inventory across locations (risk pooling), and segment service levels — keep 99% only for items that truly need it.', type: 'case' }],

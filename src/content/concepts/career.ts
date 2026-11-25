@@ -99,7 +99,7 @@ export default mk('career', [
       q: 'Estimate how many pickers a DC needs: 20,000 order lines/day, 100 lines per picker-hour, 7.5 productive hours per shift, 2 shifts.',
       steps: ['Picker-hours needed = 20,000 / 100 = 200.', 'Per shift: 200 / 2 = 100 picker-hours.', 'Pickers per shift = 100 / 7.5 = 13.3 → 14.'],
       a: 'About 14 pickers per shift (28 total), before absenteeism and peaks.',
-      check: { value: 13.33, compute: () => 20000 / 100 / 2 / 7.5, tol: 0.01 },
+      check: { value: 13.33, compute: () => 20000 / 100 / 2 / 7.5, tol: 0.01, shown: { value: 14, rule: 'ceil' } },
     },
     rel: ['case-interview', 'work.workforce-planning'],
   },

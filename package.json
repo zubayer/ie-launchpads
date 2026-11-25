@@ -9,8 +9,11 @@
     "preview": "vite preview",
     "test": "vitest run",
     "verify": "vitest run",
-    "docs:gaps": "vitest run --config vitest.docs.config.ts",
-    "audit": "node scripts/browser-audit.mjs"
+    "docs:gaps": "vitest run --config vitest.docs.config.ts scripts/gap-analysis.gen.ts",
+    "audit": "node scripts/browser-audit.mjs",
+    "docs:coverage": "vitest run --config vitest.docs.config.ts scripts/coverage.gen.ts",
+    "docs": "vitest run --config vitest.docs.config.ts",
+    "size": "node scripts/bundle-size.mjs"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.3.0",

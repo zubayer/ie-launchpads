@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased — branch `v3/foundation` (2026-11-25)
+
+### Added
+- **Guided pathways** (`/paths`), starting with **Lean throughput** (`/paths/lean-throughput`): takt → bottleneck once downtime is counted → OEE → Little’s Law → Visual factory → factory mystery → delayed check. Calculation questions get new numbers on each try, accept answers with units (“1.5 min” = “90 s”), name known mistakes (“that uses the whole shift”), and save evidence by skill (recall, explain, calculate, apply). Mastery needs correct answers on two different days.
+- **Equation Explorer** (`/formulas/:id`): takt, Little’s Law, OEE from shift data, Cpk, EOQ, NPV, Newton–Raphson for IRR, M/M/1 queue, two-point sensor scaling. Inputs with units and ranges, a units check, clear messages for invalid inputs, a sensitivity chart (also as a table), a predict-first question, and the same formula in a spreadsheet and in Python. Linked from the formula library and the lessons.
+- **Do next** on Today: a short plan for 5, 15, 30 or 60 minutes, ranked by fixed rules (due reviews, repeated mistakes, a started pathway, your role path with prerequisites first, a lab), each with the reason. “Not now” skips an item without penalty.
+- Factory mysteries save the case result as evidence.
+- `docs/V3-EXECUTION-PLAN.md` (register), `docs/CONTENT-COVERAGE.md` (generated), `npm run docs`, `npm run size`, and a pull-request check workflow (tests, build, size, browser audit).
+
+### Changed
+- Saved progress moves to version 2 (adds answer history). Older saves migrate automatically and keep progress, cards and mistakes.
+- Eight worked examples now machine-check the number they show (for example the newsvendor answer 542 units, not only its critical ratio).
+- The formula library and its result grids no longer overflow on 360 px screens.
+- Equation Explorer refuses physically impossible inputs (negative demand, zero holding cost, fractional parts) with a clear message, while keeping signed values such as temperatures and spec limits; a cleared field stays empty while you type.
+- README counts and deployment notes brought up to date.
+
 ## Unreleased — branch `v2/discovery` (2026-11-25)
 
 ### Added

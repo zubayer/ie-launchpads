@@ -1,0 +1,27 @@
+name: Check pull request
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Tests (content integrity, numeric QA, equations, pathways, recommendations)
+        run: npm test
+      - name: Type-check and build
+        run: npm run build
+      - name: Initial JavaScript size
+        run: npm run size
+      - name: Browser and accessibility audit (offline, light and dark)
+        run: |
+          npx vite preview --port 4174 --strictPort &
+          for i in $(seq 1 30); do curl -sf http://localhost:4174/ >/dev/null && break; sleep 1; done
+          CHROME_PATH="$(command -v google-chrome || command -v google-chrome-stable)" npm run audit

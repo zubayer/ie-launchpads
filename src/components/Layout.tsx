@@ -11,6 +11,7 @@ import { v1Href } from '../lib/version'
 const NAV: { group: string; items: { to: string; label: string; end?: boolean }[] }[] = [
   { group: '', items: [{ to: '/', label: 'Today', end: true }] },
   { group: 'Learn', items: [
+    { to: '/paths', label: 'Guided pathways' },
     { to: '/directory', label: 'A–Z directory' },
     { to: '/domains', label: 'Domains' },
     { to: '/curriculum', label: 'Curriculum coverage' },

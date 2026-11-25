@@ -1,14 +1,14 @@
 # Feature backlog
 
-Prioritized from the V2 master prompt (section numbers in brackets) and the 2026-11-24 audit. Pick from the top; move items to `IMPLEMENTATION-STATUS.md` when they ship.
+Prioritized from the V2 master prompt (section numbers in brackets) and the 2026-11-24 audit. **Superseded for planning by `docs/V3-EXECUTION-PLAN.md`**, which maps these items to V3 feature IDs; this list is kept for history.
 
 ## P1 — next session
 
 1. **Fill lesson gaps where learners feel them most** [§9]: only 13% of topics have "why it matters", 2% a real case, 4% common mistakes, 15% interview questions, 24% a worked example. Extend the Lean/Quality enrichment pattern (`src/content/lessons/*.ts`, cited, honest review status) to Stats, DOE, OR, Supply Chain, Safety.
 2. **A visual for every topic** [§9.12, §36]: 212 topics have neither a diagram nor a simulator. Add `VIZ` specs domain by domain; no decorative-only animations.
-3. **Structured units and assumptions on formulas** [§35, §47]: add `units` to formula variables and test them; show in the formula library.
+3. **Structured units and assumptions on formulas** [§35, §47]: started with the Equation Explorer (9 experiments with units and bounds); formula-library symbols still need units.
 4. **Performance** [§44]: split concept content by domain so a single lesson doesn't load all 494; measure LCP/INP before and after.
-5. **Multidimensional mastery** [§12]: separate recall, calculation and application evidence; numeric-answer questions generated from `example.check`.
+5. **Multidimensional mastery** [§12]: evidence by dimension and unit-aware numeric questions shipped in the Lean throughput pathway; extend to lesson pages and the practice quiz.
 
 ## P2
 
