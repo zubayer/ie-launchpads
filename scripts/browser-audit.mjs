@@ -19,7 +19,8 @@ const routes = [
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] })
 let failures = 0
 for (const theme of ['light', 'dark']) {
-  const page = await browser.newPage({ viewport: { width: 1366, height: 900 } })
+  // Reduced motion: check finished states, not frames of an opening animation (which made results flaky).
+  const page = await browser.newPage({ viewport: { width: 1366, height: 900 }, reducedMotion: 'reduce' })
   const errors = []
   page.on('pageerror', (e) => errors.push(`${page.url()}: ${e.message}`))
   await page.route(/^https?:\/\/(?!localhost)/, (r) => r.abort())
