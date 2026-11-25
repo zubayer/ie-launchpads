@@ -244,14 +244,17 @@ export function SpotWaste() {
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="sheet relative overflow-hidden rounded-lg" style={{ aspectRatio: '1000 / 560' }}>
           <FactoryScene />
+          <p className="sr-only">A drawing of a small production cell with eight spots to inspect. Each spot below is a button; its description says what is there.</p>
           {HOTSPOTS.map((x, i) => (
             <button key={x.id} onClick={() => open(x.id)} aria-pressed={active === x.id}
               aria-label={`${x.label}${found[x.id] ? `: ${x.waste}, found` : ''}`}
+              aria-describedby={`seen-${x.id}`}
               className={`spot ${found[x.id] ? 'spot-found' : ''} ${hints ? 'spot-hint' : ''} ${active === x.id ? 'spot-active' : ''}`}
               style={{ left: `${x.x}%`, top: `${x.y}%` }}>
               {found[x.id] ? <span aria-hidden>✓</span> : hints ? <span aria-hidden>{i + 1}</span> : null}
             </button>
           ))}
+          {HOTSPOTS.map((x) => <span key={x.id} id={`seen-${x.id}`} className="sr-only">{x.seen}</span>)}
         </div>
 
         <aside className="space-y-4" aria-live="polite">
@@ -266,6 +269,7 @@ export function SpotWaste() {
             <section className="sheet rounded-lg p-5">
               <p className="label">You picked</p>
               <h2 className="text-xl font-extrabold">{h.label}</h2>
+              <p className="mt-2"><span className="font-semibold">What you see:</span> {h.seen}</p>
               {found[h.id] ? (
                 <p className="mt-3"><strong className="text-sgreen">{h.waste}.</strong> {h.why}</p>
               ) : (

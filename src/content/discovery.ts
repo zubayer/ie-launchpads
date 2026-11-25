@@ -341,15 +341,16 @@ export const TOOLS: Tool[] = [
 /* ---------------- Spot the waste ---------------- */
 export const WASTES = ['Transportation', 'Inventory', 'Motion', 'Waiting', 'Overproduction', 'Over-processing', 'Defects', 'Skills (unused talent)'] as const
 export type Waste = (typeof WASTES)[number]
-export interface Hotspot { id: string; label: string; x: number; y: number; waste: Waste; why: string }
+// seen: what anyone can observe at the spot, written for screen-reader users too. It must not name the waste.
+export interface Hotspot { id: string; label: string; x: number; y: number; waste: Waste; seen: string; why: string }
 // x, y: centre of the hotspot as a percentage of the scene's width and height.
 export const HOTSPOTS: Hotspot[] = [
-  { id: 'forklift', label: 'Forklift route', x: 17, y: 82, waste: 'Transportation', why: 'Parts travel the length of the floor and back between steps. Moving material adds cost and damage risk but no value.' },
-  { id: 'crates', label: 'Crates between stations', x: 37, y: 37, waste: 'Inventory', why: 'Piles of parts between stations hide problems, tie up cash and stretch lead time (Little’s law).' },
-  { id: 'cabinet', label: 'Path to the tool cabinet', x: 88, y: 20, waste: 'Motion', why: 'The operator walks across the cell for tools every changeover. Tools belong at the point of use.' },
-  { id: 'operator', label: 'Operator beside the machine', x: 61, y: 37, waste: 'Waiting', why: 'The operator stands and watches an automatic cycle. People waiting on machines (or the reverse) is time that adds nothing.' },
-  { id: 'board', label: 'Production board', x: 85, y: 64, waste: 'Overproduction', why: 'Built 60, ordered 20: making more, or sooner, than the customer needs. The worst waste, because it causes the others.' },
-  { id: 'polish', label: 'Polishing station', x: 15, y: 30, waste: 'Over-processing', why: 'Three polishing coats where the customer spec asks for one: more work than the customer values.' },
-  { id: 'rework', label: 'Rework bench', x: 51, y: 82, waste: 'Defects', why: 'Rework and scrap consume time and material twice. Fix the cause upstream instead of inspecting it out.' },
-  { id: 'suggestion', label: 'Suggestion box', x: 66, y: 72, waste: 'Skills (unused talent)', why: 'A locked suggestion box with no one reading it: the people closest to the work aren’t being asked how to improve it.' },
+  { id: 'forklift', label: 'Forklift route', x: 17, y: 82, waste: 'Transportation', seen: 'A forklift carries each batch from one end of the cell to the far end and back again between steps.', why: 'Parts travel the length of the floor and back between steps. Moving material adds cost and damage risk but no value.' },
+  { id: 'crates', label: 'Crates between stations', x: 37, y: 37, waste: 'Inventory', seen: 'Six full crates of half-finished housings are stacked between the polishing station and the machine.', why: 'Piles of parts between stations hide problems, tie up cash and stretch lead time (Little’s law).' },
+  { id: 'cabinet', label: 'Path to the tool cabinet', x: 88, y: 20, waste: 'Motion', seen: 'The tool cabinet stands on the far wall. A dotted path runs to it from the machine, and the operator walks it at every changeover.', why: 'The operator walks across the cell for tools every changeover. Tools belong at the point of use.' },
+  { id: 'operator', label: 'Operator beside the machine', x: 61, y: 37, waste: 'Waiting', seen: 'The machine shows AUTO and is running its cycle. The operator stands beside it with nothing to do until the cycle ends.', why: 'The operator stands and watches an automatic cycle. People waiting on machines (or the reverse) is time that adds nothing.' },
+  { id: 'board', label: 'Production board', x: 85, y: 64, waste: 'Overproduction', seen: 'Today’s production board reads: ordered 20, built 60.', why: 'Built 60, ordered 20: making more, or sooner, than the customer needs. The worst waste, because it causes the others.' },
+  { id: 'polish', label: 'Polishing station', x: 15, y: 30, waste: 'Over-processing', seen: 'Each housing gets three polishing coats, labelled coat 1, coat 2 and coat 3. The customer drawing calls for one.', why: 'Three polishing coats where the customer spec asks for one: more work than the customer values.' },
+  { id: 'rework', label: 'Rework bench', x: 51, y: 82, waste: 'Defects', seen: 'A bench labelled Rework holds four housings, each marked with a red cross.', why: 'Rework and scrap consume time and material twice. Fix the cause upstream instead of inspecting it out.' },
+  { id: 'suggestion', label: 'Suggestion box', x: 66, y: 72, waste: 'Skills (unused talent)', seen: 'A box labelled ideas sits on a post, shut with a padlock. Nothing shows that anyone ever empties it.', why: 'A locked suggestion box with no one reading it: the people closest to the work aren’t being asked how to improve it.' },
 ]

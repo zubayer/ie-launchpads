@@ -122,6 +122,11 @@ describe('tool cards, subway, spot the waste', () => {
     expect(new Set(HOTSPOTS.map((h) => h.waste))).toEqual(new Set(WASTES))
     expect(HOTSPOTS.length).toBe(WASTES.length)
     HOTSPOTS.forEach((h) => { expect(h.x).toBeGreaterThan(4); expect(h.x).toBeLessThan(96); expect(h.y).toBeGreaterThan(6); expect(h.y).toBeLessThan(94) })
+    HOTSPOTS.forEach((h) => {
+      expect(h.seen.length, h.id).toBeGreaterThan(30)
+      const name = h.waste.split(/[\s(-]/)[0].toLowerCase()
+      expect(h.seen.toLowerCase(), `${h.id} description gives away the answer`).not.toContain(name.slice(0, 5))
+    })
     expect(CONCEPT_MAP['lean.eight-wastes']).toBeTruthy()
   })
 })
