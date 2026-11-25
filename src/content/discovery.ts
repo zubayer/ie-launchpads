@@ -204,6 +204,17 @@ export const GUIDE: Record<string, GuideNode> = {
   ] },
 }
 
+/** Keep the longest valid prefix of a guide path: each step must be an option of the question before it. */
+export function guidePath(raw: string[]): string[] {
+  const path = ['root']
+  for (const id of raw[0] === 'root' ? raw.slice(1) : raw) {
+    const cur = GUIDE[path[path.length - 1]]
+    if (cur.kind !== 'q' || !cur.options.some((o) => o.next === id)) break
+    path.push(id)
+  }
+  return path
+}
+
 /* ---------------- Confused pairs ---------------- */
 export interface Pair { a: string; b: string; diff: string; quiz: { s: string; ans: 'a' | 'b' }[] }
 export const PAIRS: Pair[] = [

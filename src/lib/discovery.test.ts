@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { CONCEPT_MAP } from '../content'
 import { ROLES } from '../content/roles'
-import { GUIDE, HOTSPOTS, MYSTERIES, PAIRS, TOOLS, WASTES } from '../content/discovery'
+import { GUIDE, guidePath, HOTSPOTS, MYSTERIES, PAIRS, TOOLS, WASTES } from '../content/discovery'
 import { runLine, SCENARIOS } from '../sims/Factory'
 import { SIM_META } from '../sims/registry'
 
@@ -26,6 +26,17 @@ describe('method field guide', () => {
     const ms = leaves.flatMap((n) => (n.kind === 'leaf' ? n.methods : []))
     expect(missing(ms.map((m) => m.id))).toEqual([])
     ms.forEach((m) => { expect(m.when && m.data && m.software, m.id).toBeTruthy() })
+  })
+})
+
+describe('guide paths from the URL', () => {
+  it('keeps valid paths and cuts invalid ones at the first bad step', () => {
+    expect(guidePath(['root', 'flow', 'l-capacity'])).toEqual(['root', 'flow', 'l-capacity'])
+    expect(guidePath(['flow', 'l-capacity'])).toEqual(['root', 'flow', 'l-capacity'])
+    expect(guidePath(['root', 'flow', 'l-capacity', 'flow'])).toEqual(['root', 'flow', 'l-capacity'])
+    expect(guidePath(['root', 'quality', 'l-capacity'])).toEqual(['root', 'quality'])
+    expect(guidePath(['nope', 'flow'])).toEqual(['root'])
+    expect(guidePath([''])).toEqual(['root'])
   })
 })
 

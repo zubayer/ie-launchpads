@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { CONCEPT_MAP } from '../content'
-import { GUIDE, MYSTERIES, PAIRS, type GuideNode } from '../content/discovery'
+import { GUIDE, guidePath, MYSTERIES, PAIRS, type GuideNode } from '../content/discovery'
 import { SIM_META } from '../sims/registry'
 import { EXTRA_SIM } from '../content/visuals'
 import { useStore } from '../lib/store'
@@ -13,8 +13,7 @@ const simOf = (c: Concept) => SIM_META.find((s) => s.id === (c.sim || EXTRA_SIM[
 /* ================= Method Field Guide ================= */
 export function FieldGuide() {
   const [params, setParams] = useSearchParams()
-  const path = (params.get('path') || 'root').split(',').filter((id) => GUIDE[id])
-  if (!path.length || path[0] !== 'root') path.unshift('root')
+  const path = guidePath((params.get('path') || 'root').split(','))
   const node = GUIDE[path[path.length - 1]]
   const go = (p: string[]) => setParams({ path: p.join(',') }, { replace: false })
   // The answer chosen at each step, for the breadcrumb.
