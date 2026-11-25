@@ -388,7 +388,7 @@ export default function ConceptPage() {
   }
 
   return (
-    <div className="lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10">
+    <div className="lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-8">
       <nav aria-label="Concept layers" className="no-print mb-6 lg:mb-0">
         <div className="lg:sticky lg:top-8">
           <Link to={`/d/${d.id}`} className="text-sm text-ink-2 hover:text-ink">{d.name}</Link>
