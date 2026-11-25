@@ -5,7 +5,7 @@ Instructions for coding agents and contributors. The product spec is the V2 mast
 ## Repository protection
 
 - Work only in `zubayer/ie-launchpads`. The original `zubayer/ie-launchpad` repository and its deployments are read-only references: never push, open PRs, or change hosting, DNS or settings there.
-- Deploy only through a Vercel project connected to this repository.
+- Deploy only from this repository: GitHub Pages via `.github/workflows/deploy.yml` on pushes to `main` (https://zubayer.github.io/ie-launchpads/), or a Vercel project connected only to this repository.
 
 ## Commands
 

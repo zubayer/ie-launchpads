@@ -27,5 +27,5 @@ Prioritized from the V2 master prompt (section numbers in brackets) and the 2026
 
 ## Blocked / owner actions
 
-- Create a Vercel project connected only to `zubayer/ie-launchpads` (preview deployments per branch).
-- Confirm which V1 address to link to (`VITE_V1_URL`); the default is the one in the master prompt.
+- Optional: a Vercel project connected only to `zubayer/ie-launchpads`, for per-branch preview links.
+- The GitHub Pages build links the V1 switch to https://zubayer.github.io/ie-launchpad/ (`VITE_V1_URL` in the workflow).

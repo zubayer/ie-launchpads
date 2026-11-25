@@ -32,7 +32,7 @@ Last updated 2026-11-24, branch `v2/learning-engine`.
 | Formula library `/formulas` (91 formulas, pin + print sheet) | Tested | KaTeX renders every formula and symbol (test); route audit |
 | Error notebook `/notebook` (auto-logged wrong answers, recurring misses) | Tested | Store test; browser run |
 | V2 ↔ V1 switch (same page where V1 has it) | Tested | Link-mapping test. V1 address defaults to the URL in the master prompt; set `VITE_V1_URL` if V1 lives elsewhere |
-| Independent Vercel deployment of this repository | Blocked | Needs a Vercel project connected to `zubayer/ie-launchpads` (owner action) |
+| Independent deployment of this repository | Implemented | GitHub Pages workflow (`.github/workflows/deploy.yml`) runs tests + build on every push to `main` → https://zubayer.github.io/ie-launchpads/. Goes live once this branch is merged. A Vercel project remains optional |
 
 ## Known limitations
 
