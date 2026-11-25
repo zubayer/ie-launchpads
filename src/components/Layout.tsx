@@ -201,10 +201,10 @@ export default function Layout() {
           <span className="flex items-center gap-2"><span className="display text-lg">IE Launchpad</span><VersionSwitch compact /></span>
           <button className="btn-ghost btn !px-3 !py-1.5" onClick={() => setPalette(true)} aria-label="Search">Search</button>
         </div>
-        <main id="main" className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-10">
+        <main id="main" className="max-w-[100rem] px-4 py-6 sm:px-8 sm:py-10">
           <Outlet />
         </main>
-        <footer className="no-print mx-auto max-w-6xl px-4 pb-10 text-sm text-ink-2 sm:px-8">
+        <footer className="no-print max-w-[100rem] px-4 pb-10 text-sm text-ink-2 sm:px-8">
           Progress is saved in this browser. Export it from <NavLink className="underline" to="/progress">Progress</NavLink> to move devices.
         </footer>
       </div>
