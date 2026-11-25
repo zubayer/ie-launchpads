@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased — branch `v2/discovery` (2026-11-25)
+
+### Added
+- **Method field guide** (`/guide`): answer a few questions about the problem and get the method, the data it needs and the software people use, with links to the lesson and lab.
+- **Confused pairs** (`/pairs`): 17 pairs interviewers mix up (Cp/Cpk, takt/cycle, NPV/IRR, FMEA/FTA, EOQ/ROP, …). Study side by side or drill 34 scenarios.
+- **Factory mysteries** (`/mysteries`): three short plant cases (scrap spike, bottleneck hidden by downtime, more stock with more stockouts). Clues unlock as you make decisions; each call is explained.
+- **Visual factory** lab (`/lab/factory`): build a serial line and see takt, the true bottleneck, rolled throughput yield, good output, needed availability and Little's-law lead time.
+- **IE subway map** (`/subway`): role paths as subway lines; shared topics are interchanges; stations fill in as you learn.
+- **Tool cards** (`/tools`): 20 tools with cost, learning curve (our estimate), best use, roles and lessons; compare up to three.
+- **Spot the waste** (`/spot-waste`): find one example of each of the eight wastes in an illustrated cell.
+- Wrong answers in Confused pairs, Factory mysteries and Spot the waste go to the error notebook.
+
+### Changed
+- The sidebar is grouped into Learn, Practice, Labs and tools, Career and You.
+- Theory of Constraints and capacity planning now point to the Visual factory lab.
+
 ## Unreleased — branch `v2/periodic-table` (2026-11-25)
 
 ### Added

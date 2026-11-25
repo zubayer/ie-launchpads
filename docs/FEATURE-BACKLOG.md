@@ -13,7 +13,7 @@ Prioritized from the V2 master prompt (section numbers in brackets) and the 2026
 ## P2
 
 6. Numeric and unit-sensitive question types with step feedback [§39].
-7. Method-selection guide and problem-centered maps ("reduce cycle time" → methods, data, software) [§24].
+7. ~~Method-selection guide~~ shipped as `/guide`. Next: more branches (service, healthcare, sustainability) and more factory mysteries.
 8. New domains with the biggest gaps: Engineering Mathematics (1/22), Cognitive Engineering/HCI (3/22), Information & Data Engineering (3/14), Leadership (3/12), Applied AI (3/13) [§5].
 9. Personal notebook with concept-linked notes and Markdown/KaTeX [§33].
 10. Repository-local agent skills (`math-verification`, `source-verification`, `accessibility-audit`, …) [§51].

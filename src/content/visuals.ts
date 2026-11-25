@@ -276,7 +276,7 @@ export const EXTRA_SIM: Record<string, string> = {
   'or.ip': 'lp-solver', 'or.big-m': 'lp-solver', 'or.branch-bound': 'lp-solver', 'or.pulp-pyomo': 'lp-solver', 'or.kendall': 'queueing', 'simulation.des': 'queueing', 'simulation.rng': 'monte-carlo',
   'simulation.replications': 'queueing', 'datasci.supervised-unsupervised': 'ml-playground', 'datasci.bias-variance': 'ml-playground', 'datasci.hierarchical': 'ml-playground',
   'datasci.dbscan': 'ml-playground', 'datasci.moving-average': 'forecasting', 'datasci.arima': 'forecasting', 'scm.forecasting': 'forecasting', 'lean.cycle-time': 'line-balancing',
-  'lean.wip': 'queueing', 'lean.lead-time': 'queueing', 'lean.smed': 'oee', 'reliability.tpm': 'oee', 'manufacturing.capacity-planning': 'oee', 'lean.toc': 'line-balancing',
+  'lean.wip': 'queueing', 'lean.lead-time': 'queueing', 'lean.smed': 'oee', 'reliability.tpm': 'oee', 'lean.toc': 'factory', 'manufacturing.capacity-planning': 'factory',
   'safety.eta': 'fault-tree', 'safety.lopa': 'fault-tree', 'safety.barrier': 'bowtie', 'safety.action-priority': 'fmea', 'safety.fmeca': 'fmea', 'safety.hazard-risk': 'risk-matrix',
   'safety.alarp': 'risk-matrix', 'reliability.redundancy': 'reliability', 'reliability.k-out-of-n': 'reliability', 'reliability.bathtub': 'reliability', 'reliability.exponential': 'reliability',
   'reliability.reliability-fn': 'reliability', 'reliability.mtbf': 'reliability', 'pm.gantt': 'cpm', 'pm.float': 'cpm', 'pm.crashing': 'cpm', 'pm.cpi-spi': 'cpm', 'simulation.monte-carlo': 'monte-carlo',

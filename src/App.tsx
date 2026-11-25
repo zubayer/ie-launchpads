@@ -28,6 +28,12 @@ const Periodic = page(() => import('./pages/Periodic'), 'Periodic')
 const Chains = page(() => import('./pages/Periodic'), 'Chains')
 const Sheet = page(() => import('./pages/Sheets'), 'Sheet')
 const Method = page(() => import('./pages/Misc'), 'Method')
+const FieldGuide = page(() => import('./pages/Discovery'), 'FieldGuide')
+const Pairs = page(() => import('./pages/Discovery'), 'Pairs')
+const Mysteries = page(() => import('./pages/Discovery'), 'Mysteries')
+const Subway = page(() => import('./pages/Explore'), 'Subway')
+const Tools = page(() => import('./pages/Explore'), 'Tools')
+const SpotWaste = page(() => import('./pages/Explore'), 'SpotWaste')
 
 function NotFound() {
   return (
@@ -68,6 +74,12 @@ export default function App() {
           <Route path="chains" element={<Chains />} />
           <Route path="sheets/:id" element={<Sheet />} />
           <Route path="method" element={<Method />} />
+          <Route path="guide" element={<FieldGuide />} />
+          <Route path="pairs" element={<Pairs />} />
+          <Route path="mysteries" element={<Mysteries />} />
+          <Route path="subway" element={<Subway />} />
+          <Route path="tools" element={<Tools />} />
+          <Route path="spot-waste" element={<SpotWaste />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
