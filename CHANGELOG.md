@@ -13,6 +13,7 @@
 - Saved progress moves to version 2 (adds answer history). Older saves migrate automatically and keep progress, cards and mistakes.
 - Eight worked examples now machine-check the number they show (for example the newsvendor answer 542 units, not only its critical ratio).
 - The formula library and its result grids no longer overflow on 360 px screens.
+- Equation Explorer refuses physically impossible inputs (negative demand, zero holding cost, fractional parts) with a clear message, while keeping signed values such as temperatures and spec limits; a cleared field stays empty while you type.
 - README counts and deployment notes brought up to date.
 
 ## Unreleased — branch `v2/discovery` (2026-11-25)

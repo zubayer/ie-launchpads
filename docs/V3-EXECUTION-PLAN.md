@@ -57,7 +57,7 @@ Not measured: field performance (LCP/INP/CLS), real touch devices, screen reader
 
 Shipped: P0, KNOW-03, EDU-04 first tranche, EDU-03 slice, the Lean throughput gold-standard pathway (`/paths/lean-throughput`: takt → bottleneck → OEE → Little’s Law → Visual factory → case → delayed check), UX-03 Do next, PR CI. See `CHANGELOG.md`.
 
-Acceptance evidence: `npm test` 94 passed; `npm run build` passed; `npm run audit` 74 routes × 2 themes clean; scripted browser runs of the pathway (unit-aware answers, misconception feedback, reload persistence, v1 → v2 save migration keeping progress and mistakes) and of Do next; no horizontal overflow at 360, 768, 1024 and 1800 px on the new pages.
+Acceptance evidence: `npm test` 96 passed; `npm run build` passed; `npm run audit` 74 routes × 2 themes clean; scripted browser runs of the pathway (unit-aware answers, misconception feedback, reload persistence, v1 → v2 save migration keeping progress and mistakes) and of Do next; no horizontal overflow at 360, 768, 1024 and 1800 px on the new pages.
 
 ## Next batch
 

@@ -6,6 +6,7 @@ import { PATHWAYS, allItems, type NumericItem } from '../content/pathways'
 import { SIM_META } from '../sims/registry'
 import { evidence, gradeNumeric, parseQuantity } from './answers'
 import { shows } from './numeric'
+import { runLine, SCENARIOS } from '../sims/Factory'
 import type { Attempt } from './store'
 
 const nums = (s: string) => [...s.replace(/(\d),(?=\d{3}\b)/g, '$1').matchAll(/\d+(?:\.\d+)?/g)].map((m) => Number(m[0]))
@@ -50,6 +51,16 @@ describe('pathway content', () => {
       oee: ([a, p, q]) => (a * p * q) / 10000,
       littles: ([L, lam]) => L / lam,
       'r-littles-calc': ([L, lam]) => L / lam,
+      // Independent of the item: search the Visual factory model itself for the lowest whole-percent
+      // Weld availability that makes 420 good units in the "Every station beats takt" preset.
+      'lab-weld': () => {
+        const base = SCENARIOS.find((x) => x.id === 'mystery')!.line
+        for (let a = 1; a <= 100; a++) {
+          const line = { ...base, stations: base.stations.map((st) => (st.name === 'Weld' ? { ...st, avail: a / 100 } : st)) }
+          if (runLine(line).good >= 420 - 1e-9) return a
+        }
+        return NaN
+      },
     }
     PATHWAYS.forEach((p) => allItems(p).filter((it): it is NumericItem => it.kind === 'numeric').forEach((it) => {
       for (let seed = 0; seed < 300; seed++) {
@@ -57,7 +68,8 @@ describe('pathway content', () => {
         const tol = Math.max(g.answer.tol.abs ?? 0, (g.answer.tol.rel ?? 0) * Math.abs(g.answer.value))
         if (!Number.isFinite(g.answer.value) || g.answer.value <= 0) bad.push(`${it.id}#${seed}: answer ${g.answer.value}`)
         const f = recompute[it.id]
-        if (f && Math.abs(f(nums(g.prompt)) - g.answer.value) > 1e-9) bad.push(`${it.id}#${seed}: prompt gives ${f(nums(g.prompt))}, answer ${g.answer.value}`)
+        if (!f) { bad.push(`${it.id}: no independent recomputation; add one to this test`); return }
+        if (Math.abs(f(nums(g.prompt)) - g.answer.value) > 1e-9) bad.push(`${it.id}#${seed}: prompt gives ${f(nums(g.prompt))}, answer ${g.answer.value}`)
         if (!shows(g.steps[g.steps.length - 1], g.answer.unit === '%' ? g.answer.value / 100 : g.answer.value) && !shows(g.steps.join(' '), g.answer.value)) bad.push(`${it.id}#${seed}: steps don't show ${g.answer.value}`)
         g.answer.traps?.forEach((t) => { if (Math.abs(t.value - g.answer.value) <= tol * 2) bad.push(`${it.id}#${seed}: trap ${t.value} is too close to the answer`) })
         if (gradeNumeric(`${g.answer.value} ${g.answer.unit}`, g.answer).kind !== 'correct') bad.push(`${it.id}#${seed}: exact answer not accepted`)
@@ -123,5 +135,15 @@ describe('variants', () => {
     for (let s = 0; s < 50; s++) if (get('takt').make(s).prompt === get('r-takt-calc').make(s).prompt) same++
     expect(same).toBeLessThan(5)
     expect(get('takt').make(0).prompt).not.toBe(get('takt').make(1).prompt)
+  })
+})
+
+describe('factory question traps', () => {
+  it('the 91% trap really falls short and today’s 80% gives about 366 units in the model', () => {
+    const base = SCENARIOS.find((x) => x.id === 'mystery')!.line
+    const at = (a: number) => runLine({ ...base, stations: base.stations.map((st) => (st.name === 'Weld' ? { ...st, avail: a } : st)) }).good
+    expect(at(0.91)).toBeLessThan(420)
+    expect(at(0.92)).toBeGreaterThanOrEqual(420)
+    expect(Math.floor(at(0.8))).toBe(366)
   })
 })

@@ -110,4 +110,17 @@ describe('equation properties', () => {
   it('rejects non-numbers instead of computing NaN', () => {
     expect(evaluate(E('takt'), { A: NaN, D: 900 }).ok).toBe(false)
   })
+  it('rejects physically impossible inputs but keeps legitimately signed ones', () => {
+    const bad = (id: string, v: Record<string, number>) => { const r = evaluate(E(id), v); return r.ok ? null : r.error }
+    expect(bad('takt', { A: 900, D: -900 })).toMatch(/greater than zero/)
+    expect(bad('takt', { A: 900, D: 900.5 })).toMatch(/whole number/)
+    expect(bad('oee', { plan: 420, down: 47, ideal: 1, N: 19271, R: -423 })).toMatch(/negative/)
+    expect(bad('eoq', { D: 12000, S: 75, H: 0 })).toMatch(/greater than zero/)
+    expect(bad('mm1', { lam: -1, mu: 10 })).toMatch(/greater than zero/)
+    expect(bad('littles-law', { L: 0, lam: 60 })).toBeNull() // empty system: zero WIP is valid
+    expect(bad('calibration', { x: 12, x0: 4, x1: 20, y0: -40, y1: 60 })).toBeNull() // negative temperatures are fine
+    expect(bad('cpk', { USL: -1, LSL: -2, mu: -1.5, sigma: 0.1 })).toBeNull()
+    // every input declares a domain explicitly or takes the strict default; defaults and reference cases pass it
+    EQUATIONS.forEach((e) => e.fixtures.forEach((f) => expect(evaluate(e, { ...Object.fromEntries(e.inputs.map((i) => [i.key, i.value])), ...f.inputs }).ok, e.id).toBe(true)))
+  })
 })

@@ -5,7 +5,8 @@
 import { Phi } from '../lib/math'
 
 export type Vals = Record<string, number>
-export interface EqInput { key: string; tex: string; name: string; unit: string; min: number; max: number; step: number; value: number; py: string; integer?: boolean }
+/** sign: the physically valid domain. Default 'positive'; counts and amounts that can be zero are 'nonneg'; signed values (temperatures, spec limits) are 'any'. */
+export interface EqInput { key: string; tex: string; name: string; unit: string; min: number; max: number; step: number; value: number; py: string; integer?: boolean; sign?: 'positive' | 'nonneg' | 'any' }
 export interface EqOutput { tex: string; name: string; unit: string; digits: number; scale?: number }
 export interface EqExtra extends EqOutput { f: (v: Vals) => number }
 /** An independent reference: a hand-worked or published case, not a re-run of compute(). */
@@ -82,7 +83,7 @@ export const EQUATIONS: Equation[] = [
     title: 'Little’s Law', blurb: 'Work in process, throughput and lead time are tied together.',
     tex: 'W=\\dfrac{L}{\\lambda}',
     inputs: [
-      { key: 'L', tex: 'L', name: 'Average work in process', unit: 'units', min: 0, max: 5000, step: 10, value: 240, py: 'wip' },
+      { key: 'L', tex: 'L', name: 'Average work in process', unit: 'units', min: 0, max: 5000, step: 10, value: 240, sign: 'nonneg', py: 'wip' },
       { key: 'lam', tex: '\\lambda', name: 'Throughput', unit: 'units per day', min: 1, max: 1000, step: 1, value: 60, py: 'throughput' },
     ],
     output: { tex: 'W', name: 'Average lead time', unit: 'days', digits: 2 },
@@ -104,10 +105,10 @@ export const EQUATIONS: Equation[] = [
     tex: '\\text{OEE}=A\\times P\\times Q=\\dfrac{\\text{run time}}{\\text{planned time}}\\times\\dfrac{t_{ideal}\\,N}{\\text{run time}}\\times\\dfrac{N-R}{N}',
     inputs: [
       { key: 'plan', tex: 'T_{plan}', name: 'Planned production time', unit: 'min', min: 1, max: 1440, step: 1, value: 420, py: 'planned_min' },
-      { key: 'down', tex: 'T_{down}', name: 'Unplanned downtime', unit: 'min', min: 0, max: 1440, step: 1, value: 47, py: 'downtime_min' },
+      { key: 'down', tex: 'T_{down}', name: 'Unplanned downtime', unit: 'min', min: 0, max: 1440, step: 1, value: 47, sign: 'nonneg', py: 'downtime_min' },
       { key: 'ideal', tex: 't_{ideal}', name: 'Ideal cycle time', unit: 's per part', min: 0.1, max: 120, step: 0.1, value: 1, py: 'ideal_cycle_s' },
-      { key: 'N', tex: 'N', name: 'Parts made', unit: 'parts', min: 0, max: 50000, step: 1, value: 19271, py: 'parts_made', integer: true },
-      { key: 'R', tex: 'R', name: 'Rejected parts', unit: 'parts', min: 0, max: 20000, step: 1, value: 423, py: 'rejects', integer: true },
+      { key: 'N', tex: 'N', name: 'Parts made', unit: 'parts', min: 0, max: 50000, step: 1, value: 19271, sign: 'nonneg', py: 'parts_made', integer: true },
+      { key: 'R', tex: 'R', name: 'Rejected parts', unit: 'parts', min: 0, max: 20000, step: 1, value: 423, sign: 'nonneg', py: 'rejects', integer: true },
     ],
     output: pctOut('OEE', '\\text{OEE}'),
     compute: ({ plan, down, ideal, N, R }) => { const run = plan - down; return (run / plan) * ((ideal * N) / 60 / run) * ((N - R) / N) },
@@ -134,9 +135,9 @@ export const EQUATIONS: Equation[] = [
     title: 'Process capability Cpk', blurb: 'How far the nearer spec limit is from the mean, in units of 3σ.',
     tex: 'C_{pk}=\\min\\!\\left(\\dfrac{USL-\\mu}{3\\sigma},\\ \\dfrac{\\mu-LSL}{3\\sigma}\\right)',
     inputs: [
-      { key: 'USL', tex: 'USL', name: 'Upper spec limit', unit: 'mm', min: 9.95, max: 10.2, step: 0.005, value: 10.06, py: 'usl' },
-      { key: 'LSL', tex: 'LSL', name: 'Lower spec limit', unit: 'mm', min: 9.8, max: 10.05, step: 0.005, value: 9.94, py: 'lsl' },
-      { key: 'mu', tex: '\\mu', name: 'Process mean', unit: 'mm', min: 9.85, max: 10.15, step: 0.001, value: 10.02, py: 'mean' },
+      { key: 'USL', tex: 'USL', name: 'Upper spec limit', unit: 'mm', min: 9.95, max: 10.2, step: 0.005, value: 10.06, sign: 'any', py: 'usl' },
+      { key: 'LSL', tex: 'LSL', name: 'Lower spec limit', unit: 'mm', min: 9.8, max: 10.05, step: 0.005, value: 9.94, sign: 'any', py: 'lsl' },
+      { key: 'mu', tex: '\\mu', name: 'Process mean', unit: 'mm', min: 9.85, max: 10.15, step: 0.001, value: 10.02, sign: 'any', py: 'mean' },
       { key: 'sigma', tex: '\\sigma', name: 'Within-process standard deviation', unit: 'mm', min: 0.002, max: 0.08, step: 0.001, value: 0.015, py: 'sigma' },
     ],
     output: { tex: 'C_{pk}', name: 'Cpk', unit: '', digits: 3 },
@@ -183,11 +184,11 @@ export const EQUATIONS: Equation[] = [
     title: 'Net present value (uniform savings)', blurb: 'Today’s value of a project: savings discounted at your MARR, minus the cost.',
     tex: 'NPV=-P+A\\,\\dfrac{1-(1+i)^{-n}}{i}+S\\,(1+i)^{-n}',
     inputs: [
-      { key: 'P', tex: 'P', name: 'Initial cost', unit: '$', min: 0, max: 500000, step: 1000, value: 40000, py: 'cost' },
-      { key: 'A', tex: 'A', name: 'Net saving per year', unit: '$ per year', min: 0, max: 100000, step: 500, value: 12000, py: 'annual_saving' },
+      { key: 'P', tex: 'P', name: 'Initial cost', unit: '$', min: 0, max: 500000, step: 1000, value: 40000, sign: 'nonneg', py: 'cost' },
+      { key: 'A', tex: 'A', name: 'Net saving per year', unit: '$ per year', min: 0, max: 100000, step: 500, value: 12000, sign: 'nonneg', py: 'annual_saving' },
       { key: 'n', tex: 'n', name: 'Life', unit: 'years', min: 1, max: 40, step: 1, value: 5, py: 'years', integer: true },
-      { key: 'i', tex: 'i', name: 'Discount rate (MARR)', unit: '% per year', min: 0, max: 40, step: 0.5, value: 10, py: 'marr_pct' },
-      { key: 'S', tex: 'S', name: 'Salvage value', unit: '$', min: 0, max: 200000, step: 1000, value: 0, py: 'salvage' },
+      { key: 'i', tex: 'i', name: 'Discount rate (MARR)', unit: '% per year', min: 0, max: 40, step: 0.5, value: 10, sign: 'nonneg', py: 'marr_pct' },
+      { key: 'S', tex: 'S', name: 'Salvage value', unit: '$', min: 0, max: 200000, step: 1000, value: 0, sign: 'nonneg', py: 'salvage' },
     ],
     output: { tex: 'NPV', name: 'Net present value', unit: '$', digits: 0 },
     compute: ({ P, A, n, i, S }) => npvAt(P, A, n, i / 100, S),
@@ -211,8 +212,8 @@ export const EQUATIONS: Equation[] = [
       { key: 'P', tex: 'P', name: 'Initial cost', unit: '$', min: 1000, max: 500000, step: 1000, value: 40000, py: 'cost' },
       { key: 'A', tex: 'A', name: 'Net saving per year', unit: '$ per year', min: 100, max: 100000, step: 500, value: 12000, py: 'annual_saving' },
       { key: 'n', tex: 'n', name: 'Life', unit: 'years', min: 1, max: 40, step: 1, value: 5, py: 'years', integer: true },
-      { key: 'g', tex: 'i_0', name: 'Starting guess', unit: '% per year', min: 0, max: 60, step: 1, value: 10, py: 'guess_pct' },
-      { key: 'k', tex: 'k', name: 'Newton steps', unit: 'steps', min: 0, max: 10, step: 1, value: 3, py: 'steps', integer: true },
+      { key: 'g', tex: 'i_0', name: 'Starting guess', unit: '% per year', min: 0, max: 60, step: 1, value: 10, sign: 'nonneg', py: 'guess_pct' },
+      { key: 'k', tex: 'k', name: 'Newton steps', unit: 'steps', min: 0, max: 10, step: 1, value: 3, sign: 'nonneg', py: 'steps', integer: true },
     ],
     output: { tex: 'i_k', name: 'Estimate of IRR after k steps', unit: '% per year', digits: 4, scale: 100 },
     compute: ({ P, A, n, g, k }) => newtonIrr(P, A, n, g / 100, k),
@@ -257,11 +258,11 @@ export const EQUATIONS: Equation[] = [
     title: 'Two-point sensor scaling', blurb: 'Turning a 4–20 mA signal into an engineering value.',
     tex: 'y=y_0+(x-x_0)\\,\\dfrac{y_1-y_0}{x_1-x_0}',
     inputs: [
-      { key: 'x', tex: 'x', name: 'Signal reading', unit: 'mA', min: 0, max: 24, step: 0.1, value: 12, py: 'signal_ma' },
-      { key: 'x0', tex: 'x_0', name: 'Signal at the low calibration point', unit: 'mA', min: 0, max: 24, step: 0.1, value: 4, py: 'x0' },
-      { key: 'x1', tex: 'x_1', name: 'Signal at the high calibration point', unit: 'mA', min: 0, max: 24, step: 0.1, value: 20, py: 'x1' },
-      { key: 'y0', tex: 'y_0', name: 'Value at the low point', unit: '°C', min: -100, max: 500, step: 1, value: 0, py: 'y0' },
-      { key: 'y1', tex: 'y_1', name: 'Value at the high point', unit: '°C', min: -100, max: 500, step: 1, value: 100, py: 'y1' },
+      { key: 'x', tex: 'x', name: 'Signal reading', unit: 'mA', min: 0, max: 24, step: 0.1, value: 12, sign: 'any', py: 'signal_ma' },
+      { key: 'x0', tex: 'x_0', name: 'Signal at the low calibration point', unit: 'mA', min: 0, max: 24, step: 0.1, value: 4, sign: 'any', py: 'x0' },
+      { key: 'x1', tex: 'x_1', name: 'Signal at the high calibration point', unit: 'mA', min: 0, max: 24, step: 0.1, value: 20, sign: 'any', py: 'x1' },
+      { key: 'y0', tex: 'y_0', name: 'Value at the low point', unit: '°C', min: -100, max: 500, step: 1, value: 0, sign: 'any', py: 'y0' },
+      { key: 'y1', tex: 'y_1', name: 'Value at the high point', unit: '°C', min: -100, max: 500, step: 1, value: 100, sign: 'any', py: 'y1' },
     ],
     output: { tex: 'y', name: 'Scaled value', unit: '°C', digits: 2 },
     compute: ({ x, x0, x1, y0, y1 }) => y0 + ((x - x0) * (y1 - y0)) / (x1 - x0),
@@ -286,7 +287,14 @@ export const equationForConcept = (conceptId: string) => EQUATIONS.find((e) => e
 
 export type EqResult = { ok: true; y: number; extras: number[]; warn: string | null } | { ok: false; error: string }
 export function evaluate(eq: Equation, v: Vals): EqResult {
-  for (const inp of eq.inputs) if (!Number.isFinite(v[inp.key])) return { ok: false, error: `Enter a number for ${inp.name.toLowerCase()}.` }
+  for (const inp of eq.inputs) {
+    const x = v[inp.key], name = inp.name[0] + inp.name.slice(1).toLowerCase()
+    if (!Number.isFinite(x)) return { ok: false, error: `Enter a number for ${inp.name.toLowerCase()}.` }
+    const sign = inp.sign ?? 'positive'
+    if (sign === 'positive' && x <= 0) return { ok: false, error: `${name} must be greater than zero.` }
+    if (sign === 'nonneg' && x < 0) return { ok: false, error: `${name} can’t be negative.` }
+    if (inp.integer && !Number.isInteger(x)) return { ok: false, error: `${name} must be a whole number.` }
+  }
   const bad = eq.invalid?.(v)
   if (bad) return { ok: false, error: bad }
   const y = eq.compute(v)

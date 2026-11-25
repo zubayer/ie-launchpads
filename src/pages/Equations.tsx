@@ -43,10 +43,15 @@ export function EquationPage() {
 
 function Explorer({ eq }: { eq: Equation }) {
   const [params, setParams] = useSearchParams()
-  const defaults = Object.fromEntries(eq.inputs.map((i) => [i.key, i.value])) as Vals
-  const v: Vals = { ...defaults }
-  eq.inputs.forEach((i) => { const p = params.get(i.key); if (p !== null && p !== '' && Number.isFinite(Number(p))) v[i.key] = Number(p) })
-  const set = (next: Vals) => setParams(Object.fromEntries(eq.inputs.map((i) => [i.key, String(next[i.key])])), { replace: true })
+  // The fields hold the text being typed (an empty field stays empty); the URL mirrors it so a setup can be shared.
+  const initial = () => Object.fromEntries(eq.inputs.map((i) => [i.key, params.get(i.key) ?? String(i.value)])) as Record<string, string>
+  const [raw, setRaw] = useState<Record<string, string>>(initial)
+  useEffect(() => {
+    const isDefault = eq.inputs.every((i) => raw[i.key] === String(i.value))
+    setParams(isDefault ? {} : raw, { replace: true })
+  }, [raw]) // eslint-disable-line react-hooks/exhaustive-deps
+  const v = Object.fromEntries(eq.inputs.map((i) => [i.key, raw[i.key].trim() === '' ? NaN : Number(raw[i.key])])) as Vals
+  const set = (next: Vals) => setRaw(Object.fromEntries(eq.inputs.map((i) => [i.key, Number.isFinite(next[i.key]) ? String(next[i.key]) : ''])))
   const r = evaluate(eq, v)
   const c = CONCEPT_MAP[eq.concept]
   const [sweep, setSweep] = useState(eq.sweep)
@@ -70,8 +75,8 @@ function Explorer({ eq }: { eq: Equation }) {
                 <div key={i.key} className="grid grid-cols-[auto_minmax(0,1fr)_7.5rem] items-center gap-x-3 gap-y-1">
                   <span className="min-w-10 text-center text-lg" aria-hidden><Tex tex={i.tex} /></span>
                   <label htmlFor={id} className="text-sm leading-tight"><span className="font-semibold">{i.name}</span><span className="block text-ink-2">{i.unit}</span></label>
-                  <input id={id} className="input !py-1.5 tabular-nums" type="number" inputMode="decimal" step={i.step} value={Number.isFinite(v[i.key]) ? v[i.key] : ''}
-                    onChange={(e) => set({ ...v, [i.key]: e.target.value === '' ? NaN : Number(e.target.value) })} />
+                  <input id={id} className="input !py-1.5 tabular-nums" type="number" inputMode="decimal" step={i.step} min={i.sign === 'any' ? undefined : 0} value={raw[i.key]}
+                    onChange={(e) => setRaw({ ...raw, [i.key]: e.target.value })} />
                   <span />
                   <input type="range" className="col-span-2" min={i.min} max={i.max} step={i.step} value={Math.min(i.max, Math.max(i.min, Number.isFinite(v[i.key]) ? v[i.key] : i.min))}
                     aria-label={`${i.name} slider`} onChange={(e) => set({ ...v, [i.key]: Number(e.target.value) })} />
@@ -84,7 +89,7 @@ function Explorer({ eq }: { eq: Equation }) {
             {eq.fixtures.map((f, n) => (
               <button key={n} className="pop-btn !py-1.5 !text-sm" onClick={() => set({ ...v, ...f.inputs })} title={f.source}>Load reference case{eq.fixtures.length > 1 ? ` ${n + 1}` : ''}</button>
             ))}
-            <button className="pop-btn !py-1.5 !text-sm" onClick={() => setParams({}, { replace: true })}>Reset</button>
+            <button className="pop-btn !py-1.5 !text-sm" onClick={() => setRaw(Object.fromEntries(eq.inputs.map((i) => [i.key, String(i.value)])))}>Reset</button>
           </div>
           <ul className="mt-2 space-y-0.5 text-xs text-ink-2">{eq.fixtures.map((f, n) => <li key={n}>Reference case{eq.fixtures.length > 1 ? ` ${n + 1}` : ''}: {f.source}. Checked by the test suite.</li>)}</ul>
         </section>
