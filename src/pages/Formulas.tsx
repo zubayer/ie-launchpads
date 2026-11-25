@@ -36,7 +36,7 @@ export function Formulas() {
   return (
     <div>
       <PageHead title="Formula library" sub={`${FORMULAS.length} formulas from the lessons, each with its variables, assumptions, a worked example and a calculator where one exists. Pin the ones you need and print them as your own formula sheet.`} />
-      <div className="no-print sheet mb-6 grid gap-3 rounded-lg p-4 sm:grid-cols-[1fr_14rem_auto_auto] sm:items-end">
+      <div className="no-print sheet mb-6 grid gap-3 rounded-lg p-4 sm:grid-cols-[1fr_14rem_auto_auto_auto] sm:items-end">
         <label className="block"><span className="label">Search</span><input className="input mt-1" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Try “capability”, “inventory” or “demand”…" /></label>
         <label className="block"><span className="label">Domain</span>
           <select className="input mt-1" value={dom} onChange={(e) => setDom(e.target.value)}>
@@ -46,6 +46,7 @@ export function Formulas() {
         </label>
         <label className="flex items-center gap-2 pb-2 text-sm"><input type="checkbox" checked={pinnedOnly} onChange={(e) => setPinnedOnly(e.target.checked)} /> My sheet only ({pinned.length})</label>
         <button className="btn-ghost btn" onClick={() => window.print()}>Print this list</button>
+        <Link className="btn-ghost btn" to="/sheets/engecon">Eng Econ cheat sheet</Link>
       </div>
       <p className="mb-3 text-sm text-ink-2" aria-live="polite">{list.length} of {FORMULAS.length} formulas</p>
       {list.length === 0 && (

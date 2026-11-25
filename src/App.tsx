@@ -24,6 +24,9 @@ const Academy = page(() => import('./pages/Academy'), 'Academy')
 const Curriculum = page(() => import('./pages/Curriculum'), 'Curriculum')
 const Formulas = page(() => import('./pages/Formulas'), 'Formulas')
 const Notebook = page(() => import('./pages/Notebook'), 'Notebook')
+const Periodic = page(() => import('./pages/Periodic'), 'Periodic')
+const Chains = page(() => import('./pages/Periodic'), 'Chains')
+const Sheet = page(() => import('./pages/Sheets'), 'Sheet')
 const Method = page(() => import('./pages/Misc'), 'Method')
 
 function NotFound() {
@@ -61,6 +64,9 @@ export default function App() {
           <Route path="curriculum" element={<Curriculum />} />
           <Route path="formulas" element={<Formulas />} />
           <Route path="notebook" element={<Notebook />} />
+          <Route path="table" element={<Periodic />} />
+          <Route path="chains" element={<Chains />} />
+          <Route path="sheets/:id" element={<Sheet />} />
           <Route path="method" element={<Method />} />
           <Route path="*" element={<NotFound />} />
         </Route>
