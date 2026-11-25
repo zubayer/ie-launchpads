@@ -166,7 +166,7 @@ export default mk('stats', [
       q: 'n = 25 parts, x̄ = 50.2 mm, s = 1.5 mm. Build a 95% CI for the mean (t₀.₀₂₅,₂₄ = 2.064).',
       steps: ['Standard error = 1.5 / √25 = 0.30.', 'Margin = 2.064 × 0.30 = 0.619.', 'Interval = 50.2 ± 0.619.'],
       a: '(49.58, 50.82) mm.', so: 'If the target is 50.0, the interval includes it — no evidence the process is off target.',
-      check: { value: 0.6192, compute: () => 2.064 * (1.5 / Math.sqrt(25)), tol: 0.0005 },
+      check: { value: 50.8192, compute: () => 50.2 + 2.064 * (1.5 / Math.sqrt(25)), tol: 0.0005, shown: { value: 50.82, rule: 'round' } },
     },
     mistakes: ['Saying “there is a 95% probability the true mean is in this interval” — the probability refers to the method, not this one interval.', 'Confusing a CI for the mean with a tolerance interval for individual parts.'],
     rel: ['clt', 'hypothesis-test', 't-test'], pre: ['clt'],

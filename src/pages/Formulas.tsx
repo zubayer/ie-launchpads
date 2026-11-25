@@ -6,6 +6,8 @@ import { SIM_META } from '../sims/registry'
 import { EXTRA_SIM } from '../content/visuals'
 import { useStore } from '../lib/store'
 import { PageHead, Tex } from '../components/ui'
+import { equationForConcept } from '../content/equations'
+import { EquationStrip } from './Equations'
 import type { Concept } from '../types'
 
 const simOf = (c: Concept) => SIM_META.find((s) => s.id === (c.sim || EXTRA_SIM[c.id])) || SIM_META.find((s) => s.concepts.includes(c.id))
@@ -36,6 +38,7 @@ export function Formulas() {
   return (
     <div>
       <PageHead title="Formula library" sub={`${FORMULAS.length} formulas from the lessons, each with its variables, assumptions, a worked example and a calculator where one exists. Pin the ones you need and print them as your own formula sheet.`} />
+      <EquationStrip />
       <div className="no-print sheet mb-6 grid gap-3 rounded-lg p-4 sm:grid-cols-[1fr_14rem_auto_auto_auto] sm:items-end">
         <label className="block"><span className="label">Search</span><input className="input mt-1" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Try “capability”, “inventory” or “demand”…" /></label>
         <label className="block"><span className="label">Domain</span>
@@ -52,7 +55,7 @@ export function Formulas() {
       {list.length === 0 && (
         <p className="sheet rounded-lg p-6 text-ink-2">{pinnedOnly && !pinned.length ? 'Your sheet is empty. Use “Pin to my sheet” on any formula to add it.' : 'No formula matches. Try a broader word, or clear the domain filter.'}</p>
       )}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {list.map((c) => {
           const f = c.formula!
           const sim = simOf(c)
@@ -86,6 +89,7 @@ export function Formulas() {
               )}
               <p className="no-print mt-3 flex flex-wrap gap-2 text-sm">
                 <Link className="pop-btn" to={`/c/${c.id}`}>Open the lesson</Link>
+                {equationForConcept(c.id) && <Link className="pop-btn !border-sblue" to={`/formulas/${equationForConcept(c.id)!.id}`}>Explore the equation</Link>}
                 {sim && <Link className="pop-btn !border-tape" to={`/lab/${sim.id}`}>Calculator: {sim.name}</Link>}
               </p>
             </article>

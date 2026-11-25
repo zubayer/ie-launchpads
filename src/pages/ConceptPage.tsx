@@ -1,4 +1,5 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { EQUATION_FOR_CONCEPT } from '../content/equationIndex'
 import { Link, useParams } from 'react-router-dom'
 import { CONCEPTS, CONCEPT_MAP, byDomain, learningOrder, neighbors } from '../content'
 import { DOMAIN_MAP } from '../content/domains'
@@ -285,6 +286,7 @@ export default function ConceptPage() {
                 ))}
               </dl>
             )}
+            {EQUATION_FOR_CONCEPT[c.id] && <p className="mt-3"><Link className="pop-btn !border-sblue" to={`/formulas/${EQUATION_FOR_CONCEPT[c.id]}`}>Explore this equation: change the inputs, see units and sensitivity</Link></p>}
             {c.assumptions?.length ? (
             <div className="measure mt-4 rounded-lg border-l-4 border-sorange bg-sorange/5 px-4 py-3">
               <p className="label mb-1">Assumptions and limits</p>

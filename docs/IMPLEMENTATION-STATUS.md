@@ -2,7 +2,7 @@
 
 The single registry of what exists. Statuses: **Planned** → **In development** → **Implemented** (code merged) → **Tested** (automated tests and a browser run passed) → **Verified** (a named human reviewed it). **Blocked** means it can't proceed without something outside the repo. Nothing here is Verified yet: no human expert review has happened.
 
-Last updated 2026-11-25, branch `v2/discovery`.
+Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXECUTION-PLAN.md`.
 
 ## Baseline (from V1, preserved)
 
@@ -23,7 +23,7 @@ Last updated 2026-11-25, branch `v2/discovery`.
 | Engineering Academy: source directory, software pathways, missions with synthetic CSVs, checklists, bottleneck lab | Tested | Route audit; numeric checks |
 | Curriculum blueprint (30 areas, 580 topics) + `/curriculum` coverage matrix + generated gap analysis | Tested | `npm run docs:gaps`; route audit |
 | Source registry (`src/content/sources.ts`), citations, review statuses | Implemented | Lean (30) and Quality (26) lessons carry citations. Statuses were set by an AI-assisted pass; none are expert-reviewed |
-| Browser + accessibility audit (`npm run audit`) | Tested | 67 routes × light/dark, offline, axe WCAG 2.2 AA rule set: 0 violations, 0 script errors |
+| Browser + accessibility audit (`npm run audit`) | Tested | 74 routes × light/dark, offline, axe WCAG 2.2 AA rule set: 0 violations, 0 script errors |
 | Saved-progress hardening (versioned persist, merge with defaults) | Tested | Audit seeds partial saved state; no crashes |
 | Daily plan crash on a cleared date field | Fixed, Tested | Audit |
 | Learning modes (9) changing sections, order and depth | Tested | `src/lib/learning.test.ts`; browser run of all 9 modes |
@@ -43,6 +43,12 @@ Last updated 2026-11-25, branch `v2/discovery`.
 | Tool cards `/tools` (20 tools, filters, compare up to 3) | Tested | Lesson links and https sites checked by test. Learning-curve ratings are our estimate; costs and licences should be re-checked with vendors |
 | Spot the waste `/spot-waste` (8 hotspots, one per TIMWOODS waste, timer, hints) | Tested | One hotspot per waste (test); full playthrough in a browser; keyboard-operable buttons with neutral labels |
 | Sidebar grouped into Learn, Practice, Labs and tools, Career, You | Tested | Route audit |
+| V3: numeric QA (shown answer must contain the checked value; ratchets) | Tested | `src/lib/numeric-qa.test.ts`; 8 examples corrected to check the number shown |
+| V3: coverage dashboard `docs/CONTENT-COVERAGE.md` | Tested | Generated from live content by `npm run docs:coverage` |
+| V3: Equation Explorer `/formulas/:id` (9 experiments) | Tested | `src/lib/equations.test.ts`: independent reference cases and properties; route audit; 360–1800 px overflow check |
+| V3: Guided pathway `/paths/lean-throughput` with evidence by skill | Tested | `src/lib/pathways.test.ts` (300 seeds per generated question); scripted browser run incl. reload and save migration |
+| V3: Do next on Today | Tested | `src/lib/recommend.test.ts` scenario tests; browser run |
+| V3: PR check workflow | Implemented | `.github/workflows/ci.yml`; first run happens on the batch-1 pull request |
 | Wide-screen layout (content beside the sidebar) | Tested | Route audit at 1366 and 1800 px |
 | V2 ↔ V1 switch (same page where V1 has it) | Tested | Link-mapping test. V1 address defaults to the URL in the master prompt; set `VITE_V1_URL` if V1 lives elsewhere |
 | Independent deployment of this repository | Implemented | GitHub Pages workflow (`.github/workflows/deploy.yml`) runs tests + build on every push to `main` → https://zubayer.github.io/ie-launchpads/. Goes live once this branch is merged. A Vercel project remains optional |

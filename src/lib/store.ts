@@ -30,6 +30,7 @@ export interface Settings {
   focusMin: number
   learnMode?: string // learning mode id (src/lib/modes.ts)
   jobLocation?: string // optional city/state for job-board links
+  sessionMin?: number // preferred study session length for Do next (5, 15, 30 or 60)
 }
 
 /** A wrong answer kept for later review (error notebook). */
@@ -44,6 +45,20 @@ export interface Mistake {
   resolved?: number // when the learner marked it understood
 }
 
+/** Kinds of evidence a learner can show for a concept (EDU-03). Opening a page is engagement, not evidence. */
+export type Dimension = 'recall' | 'explain' | 'calculate' | 'implement' | 'apply' | 'communicate'
+/** One answered item: what was asked, how it went, and when. */
+export interface Attempt {
+  item: string // stable item id, e.g. "lean-throughput:takt"
+  concept: string
+  dim: Dimension
+  correct: boolean
+  at: number
+  variant?: number // seed of a generated question
+  given?: string
+  confidence?: 1 | 2 | 3 // guessing, unsure, sure
+}
+
 interface State {
   progress: Record<string, ConceptProgress>
   cards: Record<string, SrsCard> // key = conceptId
@@ -55,6 +70,8 @@ interface State {
   mockLog: { q: string; rating: number; at: number }[]
   mistakes: Mistake[]
   pinnedFormulas: string[]
+  attempts: Attempt[]
+  recordAttempt: (a: Omit<Attempt, 'at'>) => void
   togglePinnedFormula: (id: string) => void
   logMistake: (m: Omit<Mistake, 'id' | 'at'>) => void
   resolveMistake: (id: string, resolved: boolean) => void
@@ -98,6 +115,8 @@ export const useStore = create<State>()(
       cards: {},
       activity: {},
       mistakes: [],
+      attempts: [],
+      recordAttempt: (a) => set((s) => ({ attempts: [...s.attempts, { ...a, at: Date.now() }].slice(-3000), activity: bump(s.activity) })),
       pinnedFormulas: [],
       togglePinnedFormula: (id) => set((s) => ({ pinnedFormulas: s.pinnedFormulas.includes(id) ? s.pinnedFormulas.filter((x) => x !== id) : [...s.pinnedFormulas, id] })),
       logMistake: (m) => set((s) => ({ mistakes: [{ ...m, id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`, at: Date.now() }, ...s.mistakes].slice(0, 500) })),
@@ -138,15 +157,16 @@ export const useStore = create<State>()(
       importAll: (json) => {
         const data = JSON.parse(json)
         if (!data || typeof data !== 'object' || !('progress' in data)) throw new Error('This file is not an IE Launchpad progress export.')
-        set({ ...get(), ...data, settings: { ...defaultSettings, ...(data.settings || {}) } })
+        const attempts = Array.isArray(data.attempts) ? data.attempts.filter((a: Attempt) => a && typeof a.item === 'string' && typeof a.correct === 'boolean') : get().attempts
+        set({ ...get(), ...data, attempts, settings: { ...defaultSettings, ...(data.settings || {}) } })
       },
-      reset: () => set({ progress: {}, cards: {}, activity: {}, ratings: {}, stories: [], bookmarks: [], mockLog: [], mistakes: [], pinnedFormulas: [], settings: defaultSettings }),
+      reset: () => set({ progress: {}, cards: {}, activity: {}, ratings: {}, stories: [], bookmarks: [], mockLog: [], mistakes: [], pinnedFormulas: [], attempts: [], settings: defaultSettings }),
     }),
     {
       name: 'ie-launchpads-v2',
-      version: 1,
-      // v0 → v1 changed no fields; merge() below fills any gaps.
-      migrate: (persisted) => persisted as State,
+      version: 2,
+      // v0 → v1 changed no fields. v1 → v2 adds `attempts` (EDU-03 evidence); older saves start with none.
+      migrate: (persisted) => ({ attempts: [], ...(persisted as object) }) as unknown as State,
       // Saved data can be partial (older versions, manual edits, an interrupted write). Keep what is valid,
       // fall back to defaults for the rest, so a damaged save can't crash a page.
       merge: (persisted, current) => {
@@ -158,6 +178,7 @@ export const useStore = create<State>()(
           progress: obj(p.progress, current.progress), cards: obj(p.cards, current.cards), activity: obj(p.activity, current.activity),
           ratings: obj(p.ratings, current.ratings), stories: arr(p.stories, current.stories), bookmarks: arr(p.bookmarks, current.bookmarks),
           mockLog: arr(p.mockLog, current.mockLog), mistakes: arr(p.mistakes, current.mistakes), pinnedFormulas: arr(p.pinnedFormulas, current.pinnedFormulas),
+          attempts: arr<Attempt>(p.attempts, current.attempts).filter((a) => a && typeof a.item === 'string' && typeof a.correct === 'boolean'),
           settings: { ...defaultSettings, ...obj<Partial<Settings>>(p.settings, {}) },
         }
       },

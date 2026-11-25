@@ -54,7 +54,7 @@ describe('confused pairs', () => {
 describe('factory mysteries', () => {
   it('has valid answers, clue references and method lessons', () => {
     MYSTERIES.forEach((m) => {
-      expect(missing(m.methods)).toEqual([])
+      expect(missing([...m.methods, m.concept])).toEqual([])
       m.questions.forEach((q) => {
         expect(q.answer).toBeGreaterThanOrEqual(0)
         expect(q.answer).toBeLessThan(q.options.length)

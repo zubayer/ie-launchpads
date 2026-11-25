@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Suspense, lazy, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { CONCEPTS, CONCEPT_MAP } from '../content'
 import { DOMAINS, DOMAIN_MAP } from '../content/domains'
@@ -31,6 +31,8 @@ function ChartMark() {
     </svg>
   )
 }
+
+const DoNext = lazy(() => import('../components/DoNext'))
 
 export default function Home() {
   const [q, setQ] = useState('')
@@ -91,7 +93,8 @@ export default function Home() {
             <h2 className="wide text-xl">Today</h2>
             <span className="text-sm text-ink-2">{role ? `Path: ${role.title}` : <Link className="underline" to="/roles">Choose a role path</Link>}</span>
           </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <Suspense fallback={<p className="mt-4 text-sm text-ink-2">Working out what to do next…</p>}><DoNext /></Suspense>
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
             <Link to="/review" className={`rounded-md border p-4 ${due ? 'border-sorange' : 'border-line'} hover:border-ink`}>
               <span className="display block text-3xl">{due}</span>
               <span className="text-sm text-ink-2">{due === 1 ? 'card due for review' : 'cards due for review'}</span>
@@ -105,7 +108,7 @@ export default function Home() {
               <span className="text-sm text-ink-2">concepts opened of {CONCEPTS.length}</span>
             </div>
           </div>
-          <h3 className="label mt-6">New for today</h3>
+          <h3 className="label mt-6">New lessons {role ? 'on your path' : 'to start with'}</h3>
           <div className="mt-1">
             {todays.map((c) => <ConceptRow key={c.id} c={c} />)}
             {!todays.length && <p className="py-3 text-ink-2">You've opened everything on this path. Run a <Link className="underline" to="/practice">mixed quiz</Link> to lock it in.</p>}

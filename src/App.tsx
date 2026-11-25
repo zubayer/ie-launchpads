@@ -23,6 +23,9 @@ const Progress = page(() => import('./pages/Misc'), 'Progress')
 const Academy = page(() => import('./pages/Academy'), 'Academy')
 const Curriculum = page(() => import('./pages/Curriculum'), 'Curriculum')
 const Formulas = page(() => import('./pages/Formulas'), 'Formulas')
+const EquationPage = page(() => import('./pages/Equations'), 'EquationPage')
+const Pathways = page(() => import('./pages/Pathways'), 'Pathways')
+const PathwayPage = page(() => import('./pages/Pathways'), 'PathwayPage')
 const Notebook = page(() => import('./pages/Notebook'), 'Notebook')
 const Periodic = page(() => import('./pages/Periodic'), 'Periodic')
 const Chains = page(() => import('./pages/Periodic'), 'Chains')
@@ -69,6 +72,9 @@ export default function App() {
           <Route path="academy" element={<Academy />} />
           <Route path="curriculum" element={<Curriculum />} />
           <Route path="formulas" element={<Formulas />} />
+          <Route path="formulas/:id" element={<EquationPage />} />
+          <Route path="paths" element={<Pathways />} />
+          <Route path="paths/:id" element={<PathwayPage />} />
           <Route path="notebook" element={<Notebook />} />
           <Route path="table" element={<Periodic />} />
           <Route path="chains" element={<Chains />} />

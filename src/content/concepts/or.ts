@@ -1,5 +1,5 @@
 import { mk } from '../helpers'
-import { mmc } from '../../lib/math'
+import { mmc, PhiInv } from '../../lib/math'
 
 export default mk('or', [
   {
@@ -165,7 +165,7 @@ export default mk('or', [
       q: 'A repair station gets λ = 8 jobs/h and serves μ = 10 jobs/h. Find ρ, Wq and L.',
       steps: ['ρ = 8 / 10 = 0.8.', 'Wq = 0.8 / (10 − 8) = 0.4 h = 24 min.', 'L = 0.8 / 0.2 = 4 jobs in the system.'],
       a: 'ρ = 80%, average wait 24 min, 4 jobs in the system on average.', so: 'If arrivals rise to 9/h (+12.5%), Wq becomes 0.9/1 = 0.9 h — more than double.',
-      check: { value: 0.4, compute: () => mmc(8, 10, 1).wq, tol: 1e-9 },
+      check: { value: 0.4, compute: () => mmc(8, 10, 1).wq, tol: 1e-9, shown: { value: 24, rule: { scale: 60 } } },
     },
     sim: 'queueing',
     iq: [{ q: 'Why not run a bottleneck machine at 100% utilization?', a: 'With variability in arrivals and processing, queue time grows non-linearly as utilization approaches 100% — in M/M/1 it’s proportional to ρ/(1 − ρ). You need some capacity buffer to keep lead times and WIP under control.', type: 'technical' }],
@@ -180,7 +180,7 @@ export default mk('or', [
       q: 'Clinic: λ = 10 patients/h, μ = 4 per nurse per hour, c = 3 nurses. Find utilization and Wq.',
       steps: ['ρ = 10 / (3 × 4) = 0.833.', 'Erlang C gives P(wait) ≈ 0.702.', 'Wq = 0.702 / (12 − 10) = 0.351 h ≈ 21 min.'],
       a: 'ρ ≈ 83%, average wait ≈ 21 minutes.', so: 'A fourth nurse cuts ρ to 62.5% and the wait to under 4 minutes.',
-      check: { value: 0.351, compute: () => mmc(10, 4, 3).wq, tol: 0.002 },
+      check: { value: 0.351, compute: () => mmc(10, 4, 3).wq, tol: 0.002, shown: { value: 21, rule: { scale: 60 } } },
     },
     sim: 'queueing',
     rel: ['mm1', 'service.erlang-staffing'], pre: ['mm1'],
@@ -211,7 +211,7 @@ export default mk('or', [
       q: 'Price $12, cost $5, salvage $1. Demand ~ Normal(500, 120). Find the critical ratio and Q*.',
       steps: ['Cu = 12 − 5 = 7; Co = 5 − 1 = 4.', 'Critical ratio = 7 / 11 = 0.636.', 'z for 0.636 ≈ 0.349.', 'Q* = 500 + 0.349 × 120 ≈ 542.'],
       a: 'Stock about 542 units.', so: 'Because shortages cost more than leftovers, stock above mean demand.',
-      check: { value: 0.6364, compute: () => 7 / 11, tol: 0.0001 },
+      check: { value: 541.85, compute: () => 500 + PhiInv(7 / (7 + 4)) * 120, tol: 0.01, shown: { value: 542, rule: 'round' } },
     },
     sim: 'inventory',
     rel: ['eoq', 'scm.service-level'],

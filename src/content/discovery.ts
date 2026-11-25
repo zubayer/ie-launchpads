@@ -257,11 +257,11 @@ export const PAIRS: Pair[] = [
 /* ---------------- Factory mysteries ---------------- */
 export interface Clue { title: string; cols: string[]; rows: (string | number)[][]; note?: string }
 export interface MysteryQ { q: string; options: string[]; answer: number; why: string; clue?: number }
-export interface Mystery { id: string; title: string; area: string; role: string; brief: string; clues: Clue[]; questions: MysteryQ[]; solution: string; methods: string[] }
+export interface Mystery { id: string; title: string; area: string; role: string; concept: string /* main lesson the case gives evidence for */; brief: string; clues: Clue[]; questions: MysteryQ[]; solution: string; methods: string[] }
 
 export const MYSTERIES: Mystery[] = [
   {
-    id: 'tuesday-scrap', title: 'The Tuesday-night scrap spike', area: 'Quality', role: 'Quality engineer, stamping plant',
+    id: 'tuesday-scrap', title: 'The Tuesday-night scrap spike', area: 'Quality', concept: 'safety.rca', role: 'Quality engineer, stamping plant',
     brief: 'Scrap at the stamping plant doubled this month. The plant manager wants it fixed, and the first suggestion in the meeting is to buy a new press.',
     clues: [
       { title: 'Scrapped parts by press, last 4 weeks', cols: ['Press', 'Scrapped parts'], rows: [['Press 1', 18], ['Press 2', 22], ['Press 3', 124], ['Press 4', 36], ['Total', 200]] },
@@ -278,7 +278,7 @@ export const MYSTERIES: Mystery[] = [
     methods: ['quality.pareto', 'safety.rca', 'lean.standard-work', 'quality.control-chart'],
   },
   {
-    id: 'beats-takt', title: 'Every station beats takt, yet we miss demand', area: 'Lean & flow', role: 'Industrial engineer, fabrication line',
+    id: 'beats-takt', title: 'Every station beats takt, yet we miss demand', area: 'Lean & flow', concept: 'lean.toc', role: 'Industrial engineer, fabrication line',
     brief: 'The line must ship 420 units per shift. Every station’s cycle time is under takt, but the line keeps falling short. Overtime is becoming routine.',
     clues: [
       { title: 'Shift facts', cols: ['Item', 'Value'], rows: [['Net available time', '7 h = 25,200 s'], ['Demand', '420 units per shift']] },
@@ -294,7 +294,7 @@ export const MYSTERIES: Mystery[] = [
     methods: ['lean.takt-time', 'lean.toc', 'lean.oee', 'lean.smed'],
   },
   {
-    id: 'more-stock-more-stockouts', title: 'More inventory, more stockouts', area: 'Supply chain', role: 'Supply chain analyst, spare-parts distributor',
+    id: 'more-stock-more-stockouts', title: 'More inventory, more stockouts', area: 'Supply chain', concept: 'scm.safety-stock', role: 'Supply chain analyst, spare-parts distributor',
     brief: 'Inventory value rose 30% this year, yet the most important items keep running out. Finance wants inventory cut; sales wants more stock.',
     clues: [
       { title: 'Item classes', cols: ['Class', 'Share of items', 'Share of annual value'], rows: [['A', '10%', '70%'], ['B', '20%', '20%'], ['C', '70%', '10%']] },

@@ -196,6 +196,7 @@ function Case({ m, back }: { m: (typeof MYSTERIES)[number]; back: () => void }) 
   const [pick, setPick] = useState<number | null>(null)
   const [right, setRight] = useState(0)
   const logMistake = useStore((s) => s.logMistake)
+  const recordAttempt = useStore((s) => s.recordAttempt)
   const done = step >= m.questions.length
   const q = m.questions[Math.min(step, m.questions.length - 1)]
   // Clues unlock as the case moves on: everything up to the current question's clue.
@@ -238,7 +239,10 @@ function Case({ m, back }: { m: (typeof MYSTERIES)[number]; back: () => void }) 
               {pick !== null && (
                 <div className="mt-4">
                   <p><strong className={pick === q.answer ? 'text-sgreen' : 'text-sorange'}>{pick === q.answer ? 'Good call.' : 'Not the best move.'}</strong> {q.why}</p>
-                  <button className="btn mt-4" onClick={() => { setPick(null); setStep((s) => s + 1) }}>{step === m.questions.length - 1 ? 'See the solution' : 'Next decision →'}</button>
+                  <button className="btn mt-4" onClick={() => {
+                    if (step === m.questions.length - 1) recordAttempt({ item: `case:${m.id}`, concept: m.concept, dim: 'apply', correct: right >= m.questions.length - 1, given: `${right} of ${m.questions.length} best calls` })
+                    setPick(null); setStep((s) => s + 1)
+                  }}>{step === m.questions.length - 1 ? 'See the solution' : 'Next decision →'}</button>
                 </div>
               )}
             </>
