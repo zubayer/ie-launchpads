@@ -16,8 +16,9 @@ Instructions for coding agents and contributors. The product spec is the V2 mast
 | Type-check + build | `npm run build` |
 | Tests (content integrity, math checks, sources) | `npm test` |
 | Regenerate the curriculum gap analysis | `npm run docs:gaps` |
+| Browser + accessibility audit (offline, light/dark, axe WCAG 2.2 AA) | `npx vite preview --port 4174 &` then `npm run audit` |
 
-A change is done only when `npm test` and `npm run build` pass and the affected pages were opened in a browser.
+A change is done only when `npm test`, `npm run build` and `npm run audit` pass and the affected pages were opened in a browser. Record what shipped in `docs/IMPLEMENTATION-STATUS.md` and `CHANGELOG.md`.
 
 ## Content rules
 

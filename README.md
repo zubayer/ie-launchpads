@@ -8,6 +8,17 @@ IE Launchpad is a free, offline-friendly learning platform for industrial engine
 
 > Keyword → plain meaning → analogy → why it matters → the math → step-by-step worked example → on-the-job use → quick check → interview answer → teach it back
 
+
+## New in this branch (`v2/learning-engine`)
+
+- **Learning modes** on every topic: Quick learn, Absolute beginner, Visual, Math deep dive, On the job, Interview prep, Revision, Research, Zero to mastery.
+- **Quick preview**: Wikipedia summary (with revision permalink) and a labelled free-AI explanation near the top of each topic.
+- **Formula library** (`#/formulas`) and **error notebook** (`#/notebook`).
+- **V2 ↔ V1 switch**: set `VITE_V1_URL` at build time if V1 is hosted somewhere other than the default.
+- `npm run audit`: offline browser + axe WCAG 2.2 AA run over every route and simulator (needs a running `vite preview` on port 4174 and Chrome; set `CHROME_PATH`).
+
+Status: [`docs/IMPLEMENTATION-STATUS.md`](docs/IMPLEMENTATION-STATUS.md) · Backlog: [`docs/FEATURE-BACKLOG.md`](docs/FEATURE-BACKLOG.md) · [`CHANGELOG.md`](CHANGELOG.md)
+
 ## What's inside
 
 | | |

@@ -3,7 +3,7 @@
 ## Non-negotiables
 Do not write to the original repository or change its deployment. Preserve original routes, concept IDs and 28 simulators. Do not claim that AI output is professionally verified. Do not expose API keys or transmit personal data without consent.
 
-## Phase 1 — implemented foundation (pending build/browser validation)
+## Phase 1 — implemented foundation (build, tests and browser audit pass as of 2026-11-24; see IMPLEMENTATION-STATUS.md)
 Engineering Academy with source directory, software pathways, mission datasets, local checklists and bottleneck exercise; optional provenance metadata; finite-number checks; isolated local storage.
 
 ## Phase 2 — curriculum and verification
