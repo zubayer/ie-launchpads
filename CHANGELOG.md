@@ -1,5 +1,11 @@
 # Changelog
 
+## Proposed — V3 learning quality contribution
+
+- Preserve engineering rate units in numeric grading; add scientific notation and dimensional regression checks.
+- Keep Do Next estimated activities within the selected budget, with quick learning alternatives and shareable per-lesson mode links.
+- Verification pending PR CI; see `docs/CHATGPT-LEARNING-QUALITY.md`.
+
 ## Unreleased — branch `v3/foundation` (2026-11-25)
 
 ### Added
