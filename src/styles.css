@@ -157,7 +157,16 @@ input[type="range"] { accent-color: var(--color-sblue); width: 100%; }
 .el-sym-inline { color: var(--fam-l); font-weight: 850; }
 .dark .el-sym-inline { color: var(--fam-d); }
 @media (prefers-reduced-motion: reduce) { .el-btn { transition: none; } }
+/* Element pop-up: a native modal <dialog> (focus stays inside, Esc closes, focus returns to the tile) */
+.el-dialog { margin: auto; width: min(40rem, calc(100vw - 2rem)); max-height: calc(100vh - 3rem); padding: 0; border: 1px solid var(--color-line); border-radius: 14px; background: var(--color-sheet); color: var(--color-ink); box-shadow: 0 24px 64px rgb(0 0 0 / .35); }
+.el-dialog::backdrop { background: rgb(15 21 34 / .55); }
+.el-dialog[open] { animation: el-pop .16s ease-out; }
+@keyframes el-pop { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+.el-dialog-body { position: relative; padding: 1.5rem; }
+.el-x { position: absolute; top: .75rem; right: .75rem; width: 2.75rem; height: 2.75rem; border-radius: 8px; font-size: 1.5rem; line-height: 1; color: var(--color-ink-2); }
+.el-x:hover { background: var(--color-paper); color: var(--color-ink); }
+@media (prefers-reduced-motion: reduce) { .el-dialog[open] { animation: none; } }
 @media print {
-  .el-detail { display: none; }
+  .el-dialog { display: none; }
   .el-tile, .el-head { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
