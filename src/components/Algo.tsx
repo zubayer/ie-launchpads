@@ -47,7 +47,7 @@ export function AlgoFlow({ algo }: { algo: Algo }) {
             )
           })}
         </ol>
-        {code && algo.code && <pre className="h-fit overflow-auto rounded-md bg-ink p-4 text-xs leading-relaxed text-sheet"><code>{algo.code}</code></pre>}
+        {code && algo.code && <pre tabIndex={0} aria-label="Pseudocode" className="h-fit overflow-auto rounded-md bg-ink p-4 text-xs leading-relaxed text-sheet"><code>{algo.code}</code></pre>}
       </div>
       {algo.note && <p className="mt-3 text-sm text-ink-2">{algo.note}</p>}
     </div>

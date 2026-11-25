@@ -31,6 +31,18 @@ export interface Settings {
   jobLocation?: string // optional city/state for job-board links
 }
 
+/** A wrong answer kept for later review (error notebook). */
+export interface Mistake {
+  id: string
+  concept: string
+  prompt: string
+  given: string
+  correct: string
+  explain: string
+  at: number
+  resolved?: number // when the learner marked it understood
+}
+
 interface State {
   progress: Record<string, ConceptProgress>
   cards: Record<string, SrsCard> // key = conceptId
@@ -40,6 +52,10 @@ interface State {
   bookmarks: string[]
   settings: Settings
   mockLog: { q: string; rating: number; at: number }[]
+  mistakes: Mistake[]
+  logMistake: (m: Omit<Mistake, 'id' | 'at'>) => void
+  resolveMistake: (id: string, resolved: boolean) => void
+  clearResolved: () => void
   open: (id: string) => void
   reachLayer: (id: string, layer: number) => void
   addCard: (id: string) => void
@@ -78,6 +94,10 @@ export const useStore = create<State>()(
       progress: {},
       cards: {},
       activity: {},
+      mistakes: [],
+      logMistake: (m) => set((s) => ({ mistakes: [{ ...m, id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`, at: Date.now() }, ...s.mistakes].slice(0, 500) })),
+      resolveMistake: (id, resolved) => set((s) => ({ mistakes: s.mistakes.map((x) => (x.id === id ? { ...x, resolved: resolved ? Date.now() : undefined } : x)) })),
+      clearResolved: () => set((s) => ({ mistakes: s.mistakes.filter((x) => !x.resolved) })),
       ratings: {},
       stories: [],
       bookmarks: [],
@@ -115,9 +135,28 @@ export const useStore = create<State>()(
         if (!data || typeof data !== 'object' || !('progress' in data)) throw new Error('This file is not an IE Launchpad progress export.')
         set({ ...get(), ...data, settings: { ...defaultSettings, ...(data.settings || {}) } })
       },
-      reset: () => set({ progress: {}, cards: {}, activity: {}, ratings: {}, stories: [], bookmarks: [], mockLog: [], settings: defaultSettings }),
+      reset: () => set({ progress: {}, cards: {}, activity: {}, ratings: {}, stories: [], bookmarks: [], mockLog: [], mistakes: [], settings: defaultSettings }),
     }),
-    { name: 'ie-launchpads-v2' },
+    {
+      name: 'ie-launchpads-v2',
+      version: 1,
+      // v0 → v1 changed no fields; merge() below fills any gaps.
+      migrate: (persisted) => persisted as State,
+      // Saved data can be partial (older versions, manual edits, an interrupted write). Keep what is valid,
+      // fall back to defaults for the rest, so a damaged save can't crash a page.
+      merge: (persisted, current) => {
+        const p = (persisted && typeof persisted === 'object' ? persisted : {}) as Partial<State>
+        const obj = <T,>(v: unknown, d: T): T => (v && typeof v === 'object' && !Array.isArray(v) ? (v as T) : d)
+        const arr = <T,>(v: unknown, d: T[]): T[] => (Array.isArray(v) ? (v as T[]) : d)
+        return {
+          ...current,
+          progress: obj(p.progress, current.progress), cards: obj(p.cards, current.cards), activity: obj(p.activity, current.activity),
+          ratings: obj(p.ratings, current.ratings), stories: arr(p.stories, current.stories), bookmarks: arr(p.bookmarks, current.bookmarks),
+          mockLog: arr(p.mockLog, current.mockLog), mistakes: arr(p.mistakes, current.mistakes),
+          settings: { ...defaultSettings, ...obj<Partial<Settings>>(p.settings, {}) },
+        }
+      },
+    },
   ),
 )
 

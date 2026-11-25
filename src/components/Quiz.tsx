@@ -7,11 +7,13 @@ import { Tex } from './ui'
 export function QuestionCard({ item, n, total, onDone }: { item: QuizItem; n?: number; total?: number; onDone?: (correct: boolean) => void }) {
   const [pick, setPick] = useState<number | null>(null)
   const quizResult = useStore((s) => s.quizResult)
+  const logMistake = useStore((s) => s.logMistake)
   const answered = pick !== null
   const choose = (i: number) => {
     if (answered) return
     setPick(i)
     quizResult(item.conceptId, i === item.answer)
+    if (i !== item.answer) logMistake({ concept: item.conceptId, prompt: item.prompt + (item.promptTex ? ` [${item.promptTex}]` : ''), given: item.options[i], correct: item.options[item.answer], explain: item.explain })
   }
   return (
     <div className="sheet rounded-lg p-5">
