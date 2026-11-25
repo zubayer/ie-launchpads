@@ -31,6 +31,11 @@ Last updated 2026-11-24, branch `v2/learning-engine`.
 | Learn first / This unlocks / previous–next lesson pager | Tested | Browser run |
 | Formula library `/formulas` (91 formulas, pin + print sheet) | Tested | KaTeX renders every formula and symbol (test); route audit |
 | Error notebook `/notebook` (auto-logged wrong answers, recurring misses) | Tested | Store test; browser run |
+| Periodic Table of IE `/table` (107 elements, 10 families, detail panel, print poster) | Tested | Data tests (ids, unique symbols, level order); route audit; browser run. Inputs/outputs written for 6 elements so far |
+| Reaction chains `/chains` (4 chains) | Tested | Every step id checked by test; route audit |
+| Scheduling Grand Prix lab | Tested | Hand-computed example + SPT/EDD theorems on 500 random job sets |
+| Engineering Economics cheat sheet `/sheets/engecon` | Tested | Worked example and trap numbers recomputed in tests; prints on one A4 page |
+| Wide-screen layout (content beside the sidebar) | Tested | Route audit at 1366 and 1800 px |
 | V2 ↔ V1 switch (same page where V1 has it) | Tested | Link-mapping test. V1 address defaults to the URL in the master prompt; set `VITE_V1_URL` if V1 lives elsewhere |
 | Independent deployment of this repository | Implemented | GitHub Pages workflow (`.github/workflows/deploy.yml`) runs tests + build on every push to `main` → https://zubayer.github.io/ie-launchpads/. Goes live once this branch is merged. A Vercel project remains optional |
 

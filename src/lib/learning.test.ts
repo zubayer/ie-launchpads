@@ -69,3 +69,69 @@ describe('V1 switch', async () => {
     for (const p of ['/academy', '/curriculum', '/formulas', '/notebook']) expect(v1Href(p, 'https://v1.example/')).toBe('https://v1.example/#/')
   })
 })
+
+describe('periodic table and chains', async () => {
+  const { ELEMENTS, FAMILIES, RAW_ELEMENT_IDS, ELEMENT_IO } = await import('../content/periodic')
+  const { CHAINS } = await import('../content/chains')
+  const { CONCEPT_MAP: CM } = await import('../content')
+  it('107 elements, every id real, symbols unique, every family filled', () => {
+    expect(RAW_ELEMENT_IDS.filter((id) => !CM[id])).toEqual([])
+    expect(ELEMENTS.length).toBe(107)
+    expect(new Set(ELEMENTS.map((e) => e.sym)).size).toBe(ELEMENTS.length)
+    expect(new Set(ELEMENTS.map((e) => e.id)).size).toBe(ELEMENTS.length)
+    for (const f of FAMILIES) expect(ELEMENTS.filter((e) => e.family === f.id).length, f.id).toBeGreaterThan(5)
+    for (const id of Object.keys(ELEMENT_IO)) expect(ELEMENTS.some((e) => e.id === id), id).toBe(true)
+  })
+  it('elements are numbered in order and run Foundation → Advanced inside each family', () => {
+    ELEMENTS.forEach((e, i) => expect(e.n).toBe(i + 1))
+    for (const f of FAMILIES) { const lv = ELEMENTS.filter((e) => e.family === f.id).map((e) => e.c.level); expect([...lv].sort()).toEqual(lv) }
+  })
+  it('every chain step is a real lesson', () => {
+    for (const c of CHAINS) for (const s of c.steps) expect(CM[s.id], `${c.id}: ${s.id}`).toBeTruthy()
+  })
+})
+
+describe('scheduling grand prix', async () => {
+  const { DEFAULT_JOBS, RULES, runSchedule, sequence } = await import('../sims/Scheduling')
+  const r = (rule: 'FCFS' | 'SPT' | 'EDD') => runSchedule(sequence(rule, DEFAULT_JOBS))
+  it('matches hand-computed results for the default jobs', () => {
+    expect([r('FCFS').avgFlow, r('FCFS').avgTardiness, r('FCFS').late]).toEqual([15.4, 2.2, 3])
+    expect([r('SPT').avgFlow, r('SPT').avgTardiness, r('SPT').late]).toEqual([13, 1.8, 3])
+    expect([r('EDD').avgFlow, r('EDD').avgTardiness, r('EDD').late]).toBeTruthy()
+    expect(r('EDD').avgFlow).toBeCloseTo(13.6, 10)
+    expect(r('EDD').avgTardiness).toBeCloseTo(1.2, 10)
+    expect(r('EDD').late).toBe(2)
+    for (const x of RULES) expect(r(x.id).makespan).toBe(28)
+  })
+  it('single-machine theorems hold on random job sets: SPT minimises mean flow time, EDD minimises max lateness', () => {
+    let seed = 7
+    const rand = (lo: number, hi: number) => { seed = (seed * 16807) % 2147483647; return lo + (seed % (hi - lo + 1)) }
+    for (let k = 0; k < 500; k++) {
+      const jobs = Array.from({ length: rand(2, 8) }, (_, i) => ({ id: String.fromCharCode(65 + i), p: rand(1, 12), d: rand(0, 40) }))
+      const res = RULES.map((x) => runSchedule(sequence(x.id, jobs)))
+      const spt = runSchedule(sequence('SPT', jobs)), edd = runSchedule(sequence('EDD', jobs))
+      for (const x of res) { expect(spt.avgFlow).toBeLessThanOrEqual(x.avgFlow + 1e-9); expect(edd.maxLateness).toBeLessThanOrEqual(x.maxLateness); expect(x.makespan).toBe(res[0].makespan) }
+    }
+  })
+})
+
+describe('cheat sheets', async () => {
+  const { SHEETS } = await import('../content/sheets')
+  const { CONCEPT_MAP: CM } = await import('../content')
+  const i = 0.1, AP = (n: number) => (i * (1 + i) ** n) / ((1 + i) ** n - 1)
+  it('every row links to a real lesson', () => {
+    for (const s of Object.values(SHEETS)) for (const row of s.rows) expect(CM[row.concept], row.concept).toBeTruthy()
+  })
+  it('engecon worked example and traps are numerically right', () => {
+    const cr = (50000 - 10000) * AP(5) + 10000 * i
+    expect(AP(5)).toBeCloseTo(0.2638, 4)
+    expect(cr).toBeCloseTo(11551.9, 1)
+    // Excel PMT(i, n, -P, S) solves -P(1+i)^n + PMT·((1+i)^n − 1)/i + S = 0
+    expect((50000 * (1 + i) ** 5 - 10000) / (((1 + i) ** 5 - 1) / i)).toBeCloseTo(cr, 6)
+    expect(((1.01 ** 12 - 1) * 100)).toBeCloseTo(12.68, 2)
+    const e = SHEETS.engecon
+    expect(e.example.work).toContain('11,552')
+    expect(e.example.excel).toContain('11,551.90')
+    expect(e.traps[1].text).toContain('12.68%')
+  })
+})

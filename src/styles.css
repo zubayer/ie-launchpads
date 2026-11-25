@@ -130,3 +130,34 @@ input[type="range"] { accent-color: var(--color-sblue); width: 100%; }
 .ext-btn { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .8rem; border-radius: 6px; border: 1px solid var(--color-line); background: var(--color-sheet); font-weight: 600; font-size: .9rem; }
 .ext-btn:hover { border-color: var(--color-sblue); color: var(--color-sblue); }
 .algo-active { outline: 3px solid var(--color-sblue); box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-sblue) 18%, transparent); }
+
+/* Periodic Table of IE: family colours come in as --fam-l (light theme) and --fam-d (dark), tint by level */
+.el-tile { display: flex; flex-direction: column; justify-content: space-between; gap: 2px; height: 5rem; padding: .35rem .45rem; border-radius: 8px; border: 1px solid var(--color-line); background: color-mix(in srgb, var(--fam-l) var(--tint), var(--color-sheet)); text-align: left; }
+.dark .el-tile { background: color-mix(in srgb, var(--fam-d) var(--tint-d), var(--color-sheet)); }
+.el-big { width: 6rem; height: 6.5rem; flex-shrink: 0; border: 2px solid var(--fam-l); }
+.dark .el-big { border-color: var(--fam-d); }
+.el-sym { font-size: 1.55rem; line-height: 1; font-weight: 800; font-stretch: 112%; color: var(--fam-l); }
+.dark .el-sym { color: var(--fam-d); }
+.el-big .el-sym { font-size: 2.4rem; }
+.el-name { font-size: .7rem; line-height: 1.15; color: var(--color-ink); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.el-btn { position: relative; display: block; width: 100%; border-radius: 8px; transition: opacity .15s; }
+.el-btn:hover .el-tile { border-color: var(--color-ink-2); }
+.el-on .el-tile, .el-step.el-on { outline: 2px solid var(--color-sblue); outline-offset: 1px; }
+.el-dim { opacity: .28; }
+.el-marks { flex-shrink: 0; font-size: .65rem; line-height: 1.15; color: var(--color-ink); }
+.el-head { padding: .25rem .1rem .4rem; border-bottom: 3px solid var(--fam-l); font-size: .8rem; }
+.dark .el-head { border-color: var(--fam-d); }
+.el-swatch { display: inline-block; width: .6rem; height: .6rem; border-radius: 3px; background: var(--fam-l); }
+.dark .el-swatch { background: var(--fam-d); }
+.el-out { border: 1px solid var(--fam-l); }
+.dark .el-out { border-color: var(--fam-d); }
+.el-step { display: flex; flex-direction: column; justify-content: space-between; gap: .3rem; width: 8rem; min-height: 7.5rem; padding: .6rem .7rem; border-radius: 10px; border: 1px solid var(--color-line); background: color-mix(in srgb, var(--fam-l, var(--color-sblue)) var(--tint, 6%), var(--color-sheet)); text-align: left; }
+.dark .el-step { background: color-mix(in srgb, var(--fam-d, var(--color-sblue)) var(--tint-d, 9%), var(--color-sheet)); }
+.el-step .el-sym { font-size: 2rem; }
+.el-sym-inline { color: var(--fam-l); font-weight: 850; }
+.dark .el-sym-inline { color: var(--fam-d); }
+@media (prefers-reduced-motion: reduce) { .el-btn { transition: none; } }
+@media print {
+  .el-detail { display: none; }
+  .el-tile, .el-head { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
