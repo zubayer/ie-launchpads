@@ -243,6 +243,7 @@ export default function ConceptPage() {
             <button className="btn" onClick={() => addCard(c.id)} disabled={inDeck}>{inDeck ? 'In your review deck' : 'Add to review deck'}</button>
             <button className="btn-ghost btn" onClick={() => toggleBookmark(c.id)}>{bookmarked ? 'Bookmarked' : 'Bookmark'}</button>
             {PAIRS.some(p=>p.a===c.id||p.b===c.id)&&<Link className="btn-ghost btn" to={'/pairs?concept='+encodeURIComponent(c.id)}>Compare related concepts</Link>}
+            <Link className="btn-ghost btn" to={'/dictionary?concept='+encodeURIComponent(c.id)}>Terminology &amp; symbols</Link>
             {sim && <a className="btn-tape btn" href="#sim" onClick={(e) => { e.preventDefault(); document.getElementById('sim')?.scrollIntoView({ behavior: 'smooth' }) }}>Simulate it</a>}
           </div>
           <details className="mt-4" open={mode.id==='full'} key={c.id+'-'+mode.id}>
