@@ -106,6 +106,22 @@ const defaultSettings: Settings = {
   planStart: today(),
   planEnd: today(new Date(Date.now() + 90 * 86400000)),
   focusMin: 25,
+  navPinned: false,
+}
+
+/**
+ * Upgrade a save written by an older version of the app. Never drops learner data.
+ * v0 → v1 changed no fields. v1 → v2 adds `attempts` (EDU-03 evidence); older saves start with none.
+ * v2 → v3 adds `settings.navPinned` (auto-hide menu); older saves start unpinned, so the menu hides by default.
+ */
+export function migrateSave(persisted: unknown, version: number): Record<string, unknown> {
+  let s: Record<string, unknown> = persisted && typeof persisted === 'object' ? { ...(persisted as Record<string, unknown>) } : {}
+  if (version < 2) s = { attempts: [], ...s }
+  if (version < 3) {
+    const settings = s.settings && typeof s.settings === 'object' && !Array.isArray(s.settings) ? (s.settings as Record<string, unknown>) : {}
+    s = { ...s, settings: { ...settings, navPinned: typeof settings.navPinned === 'boolean' ? settings.navPinned : false } }
+  }
+  return s
 }
 
 const bump = (a: Record<string, number>) => ({ ...a, [today()]: (a[today()] || 0) + 1 })
@@ -166,9 +182,8 @@ export const useStore = create<State>()(
     }),
     {
       name: 'ie-launchpads-v2',
-      version: 2,
-      // v0 → v1 changed no fields. v1 → v2 adds `attempts` (EDU-03 evidence); older saves start with none.
-      migrate: (persisted) => ({ attempts: [], ...(persisted as object) }) as unknown as State,
+      version: 3,
+      migrate: (persisted, version) => migrateSave(persisted, version) as unknown as State,
       // Saved data can be partial (older versions, manual edits, an interrupted write). Keep what is valid,
       // fall back to defaults for the rest, so a damaged save can't crash a page.
       merge: (persisted, current) => {

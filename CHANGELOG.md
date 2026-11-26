@@ -13,6 +13,8 @@
 - Phones and tablets keep the Menu button; there is no hover zone on touch screens.
 - While hidden, the menu's links can't be reached by Tab (inert), and opening it from the keyboard moves focus into it and back to Menu on close.
 - The page scrolls focused items clear of the sticky top bar.
+- While the menu is open over the page, the page behind it is inert, so Tab can't reach controls the menu covers; if focus leaves the menu anyway (hover-opened menu, skip link), the menu closes. The audit tabs through the whole open menu to check this.
+- Saved progress moves to version 3 with a migration (`migrateSave`, tested in `src/lib/store.test.ts`): older saves keep every field and start with the menu unpinned.
 - The browser audit checks that the menu starts hidden on desktop, that M and Escape work, that the open menu passes axe, and that the search bar is visible. The comparison-studio check now runs axe with the page scrolled to the top, so a button passing under the sticky bar mid-scroll isn't reported as obscured.
 
 ## Unreleased — branch `v3/live-first` (2026-11-26)

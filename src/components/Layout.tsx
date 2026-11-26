@@ -210,7 +210,17 @@ export default function Layout() {
       return !m
     })
   }
-  const close = () => { clear(); setMenu(false); if (!byHover) menuBtn.current?.focus() }
+  // The Menu button is inert while the drawer covers it, so move focus back after the re-render.
+  const close = () => { clear(); setMenu(false); if (!byHover) requestAnimationFrame(() => menuBtn.current?.focus()) }
+  const overlay = menu && !docked
+  // Keyboard focus must never sit on controls the drawer covers (WCAG 2.4.11). A drawer opened by click or
+  // `m` makes the page behind it inert; if focus still leaves the drawer (hover-opened, skip link), close it.
+  useEffect(() => {
+    if (!overlay) return
+    const h = (e: FocusEvent) => { if (!navRef.current?.contains(e.target as Node)) { clear(); setMenu(false) } }
+    document.addEventListener('focusin', h)
+    return () => document.removeEventListener('focusin', h)
+  }, [overlay])
   useEffect(() => {
     setMenu(false)
     window.scrollTo(0, 0)
@@ -290,8 +300,8 @@ export default function Layout() {
           </div>
         </div>
       </aside>
-      {menu && !docked && <div className={`no-print fixed inset-0 z-30 ${byHover ? '' : 'bg-ink/30'}`} onClick={close} aria-hidden />}
-      <div className="min-w-0 flex-1">
+      {overlay && <div className={`no-print fixed inset-0 z-30 ${byHover ? '' : 'bg-ink/30'}`} onClick={close} aria-hidden />}
+      <div className="min-w-0 flex-1" inert={overlay && !byHover} data-testid="page">
         <div className="no-print sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-sheet/95 px-3 py-2 backdrop-blur sm:px-6">
           {!docked && (
             <button ref={menuBtn} type="button" className="btn-ghost btn shrink-0 !px-3 !py-1.5" onClick={() => toggle()} aria-expanded={menu} aria-controls="site-nav"

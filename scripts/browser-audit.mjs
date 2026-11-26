@@ -112,8 +112,22 @@ for (const theme of ['light', 'dark']) {
     await page.addScriptTag({ content: axe })
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] })).violations.map((x) => x.id))
     if (v.length) throw new Error('open menu accessibility: ' + v.join(', '))
+    // Tab through the whole drawer and past its last control: focus may never land on the covered page.
+    const links = await page.locator('#site-nav a, #site-nav button').count()
+    for (let i = 0; i < links + 3; i++) {
+      await page.keyboard.press('Tab')
+      const where = await page.evaluate(() => {
+        const a = document.activeElement
+        const nav = document.getElementById('site-nav')
+        const open = nav.getBoundingClientRect().x === 0
+        return !open || !a || a === document.body || nav.contains(a) ? 'ok' : (a.textContent || a.tagName).trim().slice(0, 40)
+      })
+      if (where !== 'ok') throw new Error('Tab reached a control covered by the open menu: ' + where)
+    }
+    if (await navX() !== 0) { await page.keyboard.press('m'); await page.waitForTimeout(350) }
     await page.keyboard.press('Escape'); await page.waitForTimeout(350)
     if (await navX() >= 0) throw new Error('Escape did not close the menu')
+    if (!(await page.evaluate(() => document.activeElement?.getAttribute('aria-controls') === 'site-nav'))) throw new Error('focus did not return to the Menu button')
   } catch (e) { failures++; console.log(`✗ [${theme}] auto-hide menu: ${e.message}`) }
   // Owner decisions (2026-11-26): live sources load without any click, and “Live from the web” is the second section
   // (the former “Quick preview” is gone).
