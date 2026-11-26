@@ -57,6 +57,27 @@ for (const theme of ['light', 'dark']) {
     const problems = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] })).violations.map(v=>v.id))
     if (problems.length) throw new Error('Opened mobile studio accessibility: ' + problems.join(', '))
   } catch (e) { failures++; console.log('✗ ['+theme+'] topic studio interaction: '+e.message) }
+  // Compare cards, full-term search, and mobile layout (both themes).
+  try {
+    await page.goto(BASE + '?comparison=1#/pairs')
+    const search = page.getByRole('textbox', { name: 'Find a comparison' })
+    await search.fill('Cpk')
+    const card = page.locator('article').filter({ has: page.getByRole('heading', { name: 'Cp vs. Cpk', exact: true }) })
+    await card.waitFor()
+    await card.getByText('Definition, analogy & formula', { exact: true }).first().click()
+    await card.getByText('When to use each · interview practice', { exact: true }).click()
+    await card.getByText('You need one number that drops when the mean drifts toward a spec limit.', { exact: true }).click()
+    if (!(await card.getByText('Process capability index adjusted for centering', { exact: true }).isVisible())) throw new Error('Cpk meaning missing')
+    await search.fill('unmatched-comparison-xyz')
+    await page.getByText('No matching comparisons.', { exact: false }).waitFor()
+    await page.getByRole('button', { name: 'Clear filters' }).click()
+    await page.goto(BASE + '?comparison=2#/pairs?concept=quality.cpk')
+    await page.getByRole('heading', { name: 'Cp vs. Cpk', exact: true }).waitFor()
+    await page.addScriptTag({ content: axe })
+    const problems = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] })).violations.map(v=>v.id))
+    if (problems.length) throw new Error('Mobile comparisons accessibility: '+problems.join(', '))
+    if (await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+2)) throw new Error('Mobile comparison horizontal overflow')
+  } catch (e) { failures++; console.log('✗ ['+theme+'] comparison interaction: '+e.message) }
   if (errors.length) { failures += errors.length; console.log(`✗ [${theme}] script errors:\n  ${errors.join('\n  ')}`) }
   await page.close()
 }

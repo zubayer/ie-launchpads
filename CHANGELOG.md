@@ -1,5 +1,11 @@
 # Changelog
 
+## Proposed — Comparison Studio
+
+- Expand Confused Pairs from 17 to 51; add 68 original practice scenarios, search and domain filters, accessible distinct concept cards, expandable definitions, formulas, analogies and lesson links.
+- Explain 35 additional or specialized terms and mathematical symbols; reuse existing full names on other topics and link to topic-specific comparisons.
+- Add original Cp/Cpk and takt/cycle diagrams, targeted reference links, regression and mobile interaction tests. CI and visual review pending.
+
 ## Proposed — Topic Intelligence Studio integration
 
 - Reconcile draft PR #9 with batch 4; preserve OR depth, interview rubrics, teach-back, SQL/PLC/CAD and existing learning modes.
