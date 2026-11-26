@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { Concept } from '../types'
-import { DOMAIN_HINT, SE_SITE, aiSummary, askLinks, papers, searchName, stackQA, wikiSearch, type Paper, type QA, type WikiHit, type WikiSummary } from '../lib/web'
+import { DOMAIN_HINT, SE_SITE, askLinks, papers, searchName, stackQA, wikiSearch, type Paper, type QA, type WikiHit, type WikiSummary } from '../lib/web'
 import { WikiCard } from './Glossary'
+import { AiCards, AskElsewhere } from './AiCards'
 
 type Tab = 'articles' | 'qa' | 'papers' | 'new'
 const TABS: [Tab, string][] = [['articles', 'Related articles'], ['qa', 'Practitioner Q&A'], ['papers', 'Key research'], ['new', 'Recent research']]
@@ -19,40 +20,6 @@ function useLoad<T>(fn: () => Promise<T | null>, deps: unknown[]) {
 
 const ago = (s: number) => { const m = Math.round((Date.now() - s) / 60000); return m < 1 ? 'just now' : `${m} min ago` }
 
-function AiCard({ c }: { c: Concept }) {
-  const [attempt, setAttempt] = useState(0)
-  const ai = useLoad(() => aiSummary(c.term, `${c.full ? c.full + ', ' : ''}${DOMAIN_HINT[c.domain]}`, attempt), [c.id, attempt])
-  const ask = askLinks(c.term)
-  const failed = !ai.loading && !ai.data
-  // The free AI tier allows about one request per 15 s, so retry once by itself before asking the learner.
-  useEffect(() => { if (failed && attempt === 0) { const t = setTimeout(() => setAttempt(1), 16000); return () => clearTimeout(t) } }, [failed, attempt])
-  return (
-    <div className="flex h-full flex-col rounded-lg border border-line p-4">
-      <p className="label mb-2 flex items-center gap-2">Free AI explains <span className="chip !py-0 text-[11px]">AI-generated</span></p>
-      {ai.loading && (
-        <div className="space-y-2" aria-live="polite">
-          <p className="text-sm text-ink-2">Asking a free AI model… this can take 10–20 seconds.</p>
-          <div className="h-3 w-11/12 animate-pulse rounded bg-line" /><div className="h-3 w-4/5 animate-pulse rounded bg-line" /><div className="h-3 w-3/4 animate-pulse rounded bg-line" />
-        </div>
-      )}
-      {!ai.loading && ai.data && (
-        <>
-          <div className="space-y-1.5 text-[0.95rem] leading-snug">
-            {ai.data.split(/\n+/).filter((l) => l.trim()).map((l, i) => <p key={i}>{l.replace(/^\s*[-*•]\s*/, '• ')}</p>)}
-          </div>
-          <p className="mt-3 text-xs text-ink-2">Written by a free AI model (Pollinations). It can be wrong — check it against Wikipedia and this card before you quote it.</p>
-        </>
-      )}
-      {!ai.loading && !ai.data && (
-        <p className="text-sm text-ink-2">The free AI service didn’t answer (it allows about one request every 15 seconds).{attempt === 0 ? ' Retrying by itself in 15 seconds, or' : ' Try again, or'} ask one of these with your question already filled in:</p>
-      )}
-      <div className="no-print mt-auto flex flex-wrap gap-1.5 pt-3">
-        {!ai.loading && <button className="pop-btn" onClick={() => setAttempt((a) => a + 1)}>{ai.data ? 'Ask again' : 'Try again'}</button>}
-        {ask.slice(2, 5).map((l) => <a key={l.label} className="pop-btn" href={l.href} target="_blank" rel="noopener noreferrer">{l.label} ↗</a>)}
-      </div>
-    </div>
-  )
-}
 
 function Empty({ what, href }: { what: string; href: string }) {
   return <p className="text-sm text-ink-2">No {what} came back right now. <a className="underline" href={href} target="_blank" rel="noopener noreferrer">Search it directly ↗</a></p>
@@ -133,12 +100,12 @@ export function LiveWeb({ c, wiki }: { c: Concept; wiki: { data: WikiSummary | n
   return (
     <div>
       <p className="mb-4 text-sm text-ink-2">Fetched live when you opened this page ({ago(at)}). Only the topic name is sent to these services. Every link opens in a new tab.</p>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-lg border border-line p-4">
           <p className="label mb-2">What Wikipedia says</p>
           <WikiCard data={wiki.data} loading={wiki.loading} query={c.full || c.term} compact />
         </div>
-        <AiCard c={c} />
+        <AiCards c={c} />
       </div>
 
       <div className="mt-4 rounded-lg border border-line p-4">
@@ -175,16 +142,17 @@ export function prefetchLive(c: Concept) {
   void stackQA(c); void papers(name, 'relevance'); void papers(name, 'recent')
 }
 
-/** Wikipedia's summary and a free AI explanation, side by side, loaded as soon as the lesson opens. */
+/** Wikipedia's summary and every free AI explanation, side by side, loaded as soon as the lesson opens. */
 export function QuickPreview({ c, wiki, hasLive }: { c: Concept; wiki: { data: WikiSummary | null; loading: boolean }; hasLive: boolean }) {
   return <div>
-    <div className="grid items-start gap-3 md:grid-cols-2">
+    <div className="grid items-start gap-3 md:grid-cols-2 xl:grid-cols-3">
       <div className="rounded-lg border border-line p-4">
         <p className="label mb-2">Wikipedia · supplementary orientation</p>
         <WikiCard data={wiki.data} loading={wiki.loading} query={c.full || c.term} compact />
       </div>
-      <AiCard c={c}/>
+      <AiCards c={c}/>
     </div>
+    <AskElsewhere c={c} />
     {hasLive && <p className="mt-2 text-sm"><a href="#live" className="font-semibold text-sblue hover:underline" onClick={e=>{e.preventDefault();document.getElementById('live')?.scrollIntoView({behavior:'smooth'})}}>More live sources ↓</a></p>}
   </div>
 }

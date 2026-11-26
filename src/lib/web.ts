@@ -222,15 +222,3 @@ export const stackQA = (c: ConceptIndex) => store<QA[] | null>(`se:${c.id}`, asy
   return out.length ? out.slice(0, 6) : null
 })
 
-/** Free AI summary (Pollinations text API, no key). Third-party output — always labeled as AI. */
-export const aiSummary = (topic: string, context: string, attempt = 0) => store<string | null>(`ai:${topic}:${attempt}`, async () => {
-  const prompt = `In 5 short bullet points, explain "${topic}" (${context}) for an industrial engineering student preparing for job interviews: 1) plain definition, 2) how it works, 3) a real-world example with a number, 4) tools or software used, 5) one likely interview question. Plain text, no markdown headings, under 170 words.`
-  const ctl = new AbortController()
-  const t = setTimeout(() => ctl.abort(), 25000)
-  try {
-    const r = await fetch(`https://text.pollinations.ai/${q(prompt)}`, { signal: ctl.signal })
-    if (!r.ok) return null
-    const text = (await r.text()).trim()
-    return text.length > 40 ? text.replace(/\*\*/g, '').replace(/^#+\s*/gm, '') : null
-  } finally { clearTimeout(t) }
-})
