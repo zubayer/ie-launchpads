@@ -13,7 +13,7 @@ const sims = [...registry.matchAll(/id: '([a-z0-9-]+)'/g)].map((m) => `lab/${m[1
 const routes = [
   '', 'directory', 'domains', 'd/lean', 'd/lean/cheatsheet', 'c/quality.cpk', 'c/quality.cp', 'c/or.newton-raphson', 'c/engecon.npv', 'c/lean.takt-time', 'c/lean.takt-time?mode=quick', 'c/or.lp', 'c/or.branch-bound', 'c/or.mmc?mode=interview', 'formulas/mmc', 'formulas/newsvendor', 'c/safety.fmea',
   'review', 'practice', 'lab', 'roles', 'roles/quality-engineer', 'interview', 'plan', 'graph', 'progress', 'academy',
-  'curriculum', 'formulas', 'notebook', 'table', 'table?el=engecon.npv', 'chains', 'chains?chain=safety-case&step=2', 'sheets/engecon', 'method', 'formulas/oee', 'formulas/mm1', 'formulas/irr-newton', 'formulas/calibration?x=2', 'formulas/nope', 'paths', 'paths/lean-throughput', 'studio/sql', 'studio/sql/select', 'studio/sql/joins', 'studio/sql/windows', 'studio/sql/design', 'c/datasci.sql-joins', 'studio/plc', 'studio/plc/scan', 'studio/plc/nonc', 'studio/plc/sealin', 'studio/plc/timers', 'studio/plc/sequence', 'studio/plc/debug', 'studio/plc/safety', 'studio/plc/nope', 'studio/cad', 'studio/cad/sketch', 'studio/cad/intent', 'studio/cad/features', 'studio/cad/mates', 'studio/cad/drawings', 'studio/cad/analysis', 'studio/cad/dfx', 'c/automation.ladder-logic', 'c/automation.solidworks', 'guide', 'guide?path=root,flow,l-capacity', 'pairs', 'mysteries', 'mysteries?case=beats-takt', 'subway', 'tools', 'spot-waste', 'no-such-page', ...sims,
+  'curriculum', 'formulas', 'notebook', 'table', 'table?el=engecon.npv', 'chains', 'chains?chain=safety-case&step=2', 'sheets/engecon', 'method', 'formulas/oee', 'formulas/mm1', 'formulas/irr-newton', 'formulas/calibration?x=2', 'formulas/nope', 'paths', 'paths/lean-throughput', 'studio/sql', 'studio/sql/select', 'studio/sql/joins', 'studio/sql/windows', 'studio/sql/design', 'c/datasci.sql-joins', 'studio/plc', 'studio/plc/scan', 'studio/plc/nonc', 'studio/plc/sealin', 'studio/plc/timers', 'studio/plc/sequence', 'studio/plc/debug', 'studio/plc/safety', 'studio/plc/nope', 'studio/cad', 'studio/cad/sketch', 'studio/cad/intent', 'studio/cad/features', 'studio/cad/mates', 'studio/cad/drawings', 'studio/cad/analysis', 'studio/cad/dfx', 'c/automation.ladder-logic', 'c/automation.solidworks', 'guide', 'guide?path=root,flow,l-capacity', 'pairs', 'dictionary', 'dictionary?concept=quality.cpk', 'mysteries', 'mysteries?case=beats-takt', 'subway', 'tools', 'spot-waste', 'no-such-page', ...sims,
 ]
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] })
@@ -78,6 +78,27 @@ for (const theme of ['light', 'dark']) {
     if (problems.length) throw new Error('Mobile comparisons accessibility: '+problems.join(', '))
     if (await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+2)) throw new Error('Mobile comparison horizontal overflow')
   } catch (e) { failures++; console.log('✗ ['+theme+'] comparison interaction: '+e.message) }
+  // Dictionary is offline and uses context-specific meanings.
+  try {
+    await page.setViewportSize({width:390,height:844})
+    await page.goto(BASE+'?dictionary=1#/dictionary?q=PV&kind=acronym')
+    await page.getByRole('heading',{name:'Engineering abbreviation dictionary',exact:true}).waitFor()
+    await page.getByText('Planned value',{exact:true}).first().waitFor()
+    await page.getByText('Present value',{exact:true}).first().waitFor()
+    await page.getByRole('textbox',{name:'Search abbreviation, symbol or meaning'}).fill('xyz-no-such-entry')
+    await page.getByText('No matching entries.',{exact:false}).waitFor()
+    await page.getByRole('button',{name:'Clear filters'}).click()
+    await page.goto(BASE+'?dictionary=2#/dictionary?concept=quality.cpk')
+    await page.getByText('Process capability index adjusted for centering',{exact:true}).first().waitFor()
+    await page.addScriptTag({content:axe})
+    const violations=await page.evaluate(async()=>(await window.axe.run(document,{runOnly:['wcag2a','wcag2aa','wcag21aa','wcag22aa']})).violations.map(v=>v.id))
+    if(violations.length)throw new Error('Dictionary accessibility: '+violations.join(', '))
+    if(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+2))throw new Error('Dictionary horizontal overflow')
+    await page.getByRole('link',{name:'Lesson: Cpk',exact:true}).first().click()
+    await page.getByRole('heading',{name:'Cpk',exact:true}).first().waitFor()
+    await page.getByRole('link',{name:'Terminology & symbols',exact:true}).click()
+    await page.getByRole('heading',{name:'Engineering abbreviation dictionary',exact:true}).waitFor()
+  } catch(e) { failures++; console.log('✗ ['+theme+'] dictionary: '+e.message) }
   if (errors.length) { failures += errors.length; console.log(`✗ [${theme}] script errors:\n  ${errors.join('\n  ')}`) }
   await page.close()
 }

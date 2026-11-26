@@ -116,6 +116,9 @@ const list: SourceRecord[] = [
     url: 'https://openstax.org/books/principles-finance/pages/16-2-net-present-value-npv-method',
     tier: 2, kind: 'academic', access: 'open', checkedOn: '2026-11-25',
   },
+  { id: 'nasa-ppc-glossary', title: 'PP&C Glossary', publisher: 'NASA', url: 'https://www.nasa.gov/ocfo/ppc-corner/ppc-glossary/', tier: 1, kind: 'government', access: 'open', checkedOn: '2026-11-26' },
+  { id: 'cdc-niosh-rnle', title: 'Revised NIOSH Lifting Equation', publisher: 'CDC / NIOSH', url: 'https://www.cdc.gov/niosh/ergonomics/about/rnle.html', tier: 1, kind: 'government', access: 'open', checkedOn: '2026-11-26' },
+  { id: 'ntu-apc', title: 'Advanced Process Control (APC)', publisher: 'National Taiwan University, Industrial Engineering', url: 'https://ie.ntu.edu.tw/english/News_Content_n_48043_s_57260.html', tier: 2, kind: 'academic', access: 'open', checkedOn: '2026-11-26' },
 ]
 
 export const SOURCES: Record<string, SourceRecord> = Object.fromEntries(list.map((s) => [s.id, s]))

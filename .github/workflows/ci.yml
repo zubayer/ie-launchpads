@@ -27,6 +27,7 @@ jobs:
           path: |
             docs/TOPIC-INVENTORY.md
             docs/CAREER-DEPTH-INVENTORY.md
+            docs/DICTIONARY-INVENTORY.md
       - name: Initial JavaScript size
         run: npm run size
       - name: Browser and accessibility audit (offline, light and dark)

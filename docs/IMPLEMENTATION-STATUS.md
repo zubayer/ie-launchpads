@@ -88,3 +88,11 @@ Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXE
 | Confused Pairs expansion and accessible comparison cards | In development | 51 authored pairs, 102 practice scenarios; search, domain and concept filters, formula/analogy disclosures and two visual comparisons. |
 | Topic terminology explanations | In development | 35 specialized records plus existing full-name fields; Cp/Cpk explicitly mathematical notation. |
 | Release validation | In development | Data tests, numeric reference checks and mobile/browser interactions added; CI and rendered review pending. |
+
+## Proposed Engineering Abbreviation Dictionary (November 26)
+
+| Feature | Status | Evidence |
+|---|---|---|
+| Curriculum-wide dictionary index | In development | All topic IDs indexed; explicit existing full names, 216 authored terminology/notation rows, lesson and Equation Explorer symbols. |
+| Offline search, filters and topic links | In development | Dedicated lazy route, shareable filters, links from lessons and comparisons. |
+| Terminology QA | In development | Selected references, contextual ambiguity, inventory and data/browser tests; CI and visual review pending. |

@@ -1,5 +1,11 @@
 # Changelog
 
+## Proposed — Engineering Abbreviation Dictionary
+
+- Add a lazy-loaded, offline dictionary indexing every existing lesson, explicit full-name metadata, 216 curated terminology and notation records, and existing lesson/Equation Explorer symbols and units.
+- Search by abbreviation, meaning, context or Greek notation; filter by type/domain/topic; share URL filters, navigate between lessons and dictionary, and distinguish overloaded terms.
+- Add focused NIST, NASA, CDC and NTU references, inventory generator, data integrity tests and mobile browser interaction checks. Full CI and visual review pending.
+
 ## Proposed — Comparison Studio
 
 - Expand Confused Pairs from 17 to 51; add 68 original practice scenarios, search and domain filters, accessible distinct concept cards, expandable definitions, formulas, analogies and lesson links.
