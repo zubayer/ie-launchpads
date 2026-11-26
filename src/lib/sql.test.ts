@@ -150,7 +150,8 @@ describe('deep-dive links', () => {
     SQL_LESSONS.forEach((l) => expect(DEEP_DIVE[l.concept]?.some((d) => d.to === `/studio/sql/${l.id}`), l.id).toBe(true))
     Object.entries(DEEP_DIVE).forEach(([cid, links]) => {
       expect(CONCEPT_MAP[cid], cid).toBeTruthy()
-      links.forEach((d) => expect(SQL_LESSONS.some((l) => `/studio/sql/${l.id}` === d.to), d.to).toBe(true))
+      links.filter((d) => d.to.startsWith('/studio/sql')).forEach((d) => expect(SQL_LESSONS.some((l) => `/studio/sql/${l.id}` === d.to), d.to).toBe(true))
+      links.forEach((d) => expect(d.to, cid).toMatch(/^\/studio\/(sql|plc|cad)\//))
     })
   })
 })
