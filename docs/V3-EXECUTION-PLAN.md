@@ -27,7 +27,7 @@ Not measured: field performance (LCP/INP/CLS), real touch devices, screen reader
 |---|---|---|---|---|
 | P0 | Baseline audit and register | Tested | This file; `docs/CONTENT-COVERAGE.md`; `npm run size` | Re-run each batch |
 | EDU-01 | Canonical lesson schema | In progress | `Concept` in `src/types.ts` (optional fields render only when present); `example.check.shown` added for rounded or converted answers | Units on formula symbols; nonnumeric-topic flag; mode explanations and time estimates |
-| EDU-02 | Coverage and depth | In progress | Coverage dashboard by domain; ratchet test keeps the core-minimum count from falling | Batch of 10–20 lessons: PLC/automation first, then stats, OR, economics |
+| EDU-02 | Coverage and depth | In progress (SQL deepened: 1 → 9 lessons) | Coverage dashboard by domain; ratchet test keeps the core-minimum count from falling | Batch of 10–20 lessons: PLC/automation first, then stats, OR, economics |
 | EDU-03 | Assessment, retention, mastery | In progress (slice Tested) | `Attempt` evidence in the store (persist v2 with migration); dimensions recall → communicate; unit-aware grading with tolerances and misconception feedback (`src/lib/answers.ts`); seeded variants; confidence; one try per day for fixed questions; delayed check; evidence table | Show evidence on lesson pages and in Progress; numeric items in the practice quiz; multi-select, matching, ordering; mastery levels |
 | EDU-04 | Equation Explorer | Tested | `/formulas/:id`, 9 experiments (`src/content/equations.ts`): takt, Little’s Law, OEE, Cpk, EOQ, NPV, Newton–Raphson IRR, M/M/1, sensor scaling. Symbols, units, units check, bounds, invalid/caution states, sensitivity chart with table, predict-first, spreadsheet and Python. 13 tests with independent reference cases and properties | Linear regression (data points), formula builder, units on formula-library symbols |
 | KNOW-01 | Source registry and verification | Implemented (V2) | `src/content/sources.ts`, 12 sources, 54 lessons cited | Claim-level review queue, source filter, report-an-issue |
@@ -44,7 +44,7 @@ Not measured: field performance (LCP/INP/CLS), real touch devices, screen reader
 | LAB-01 | Shared lab framework | Planned | `src/sims/kit.tsx` primitives | Standard lab shell: assumptions, presets, export |
 | LAB-02 | Factory Sandbox (discrete-event) | Planned | Visual factory is steady-state and labelled so | Event-queue kernel for a serial line in a Web Worker, validated against Little’s Law |
 | LAB-03 | Additional labs | Planned | — | Split into tracked features before coding |
-| TOOL-01/02 | Software studios, browser SQL/Python | Planned | Tool cards (20) | Excel and Python studios first |
+| TOOL-01/02 | Software studios, browser SQL/Python | In progress (SQL Tested) | **SQL studio** `/studio/sql` (10 lessons) and SQL playground `/lab/sql`: SQLite (sql.js, WebAssembly) in a Web Worker, loaded on first run, 4 s time limit with automatic restart, synthetic Riverbend Plant database, practice graded by result-set comparison, attempts saved as `implement` evidence. Every course query re-run by `src/lib/sql.test.ts`, key tables cross-checked in plain JavaScript | Cite the official SQLite/PostgreSQL docs once the pages can be opened and checked; Excel and Python studios |
 | CAR-01–04 | Industry, portfolio, job pipeline, capstones | Planned | Role paths, interview center, job decoder (V1/V2) | Portfolio studio with Markdown export |
 | AI-01 | Deterministic adaptive planner | In progress | Do next rules and scenario tests | Diagnostics; weekly plan |
 | AI-02 | Source-grounded tutor | Blocked | Needs an approved server and key held server-side | Owner decision |
@@ -59,8 +59,17 @@ Shipped: P0, KNOW-03, EDU-04 first tranche, EDU-03 slice, the Lean throughput go
 
 Acceptance evidence: `npm test` 96 passed; `npm run build` passed; `npm run audit` 74 routes × 2 themes clean; scripted browser runs of the pathway (unit-aware answers, misconception feedback, reload persistence, v1 → v2 save migration keeping progress and mistakes) and of Do next; no horizontal overflow at 360, 768, 1024 and 1800 px on the new pages.
 
+## Batch 2 (2026-11-25, branch `v3/sql-studio`)
+
+Owner feedback: SQL topics lacked depth. Shipped the SQL studio (10 lessons: SELECT, WHERE, calculated columns, GROUP BY/HAVING, joins, NULL, subqueries/CTEs, window functions, data-quality checks, indexes and design) with 25 worked examples, 15 common mistakes shown wrong-vs-fixed, 21 graded practice tasks and interview questions; 8 new lesson pages; the existing SQL lesson rewritten; a live playground; “Deep dive” links on the SQL lesson pages.
+
+Evidence: `npm test` 108 passed (every course query re-run; three draft claims were found wrong by the tests and corrected); build passed; `npm run audit` 82 routes × 2 themes clean; browser run of queries, error hints, the 4 s runaway-query stop and restart, graded tasks and reload persistence; no overflow at 360 and 768 px. Initial JS +16.7 KB raw (+5.8 KB gzip) from the new lesson text; the engine (341 KB gzip) loads only when a query runs.
+
+Not done: citations. The official SQLite and PostgreSQL documentation pages could not be opened in this session (approval timed out), so the new lessons carry no citations and stay at review status “none”; their behaviour claims are instead demonstrated by queries the tests run.
+
 ## Next batch
 
+0. **Cite the SQL lessons** from the official SQLite and PostgreSQL docs after opening and matching each section (KNOW-01); that lifts 9 lessons to the core minimum.
 1. **PLC gold-standard pathway** (EDU-01/02): enrich scan cycle, ladder logic, NO/NC (instructions test a bit, not the wiring), seal-in, timers, sensors with verified sources; logic items (truth tables, rung outcomes) in the pathway engine; reuse the ladder simulator.
 2. **EDU-03 everywhere**: evidence on lesson pages and Progress; numeric items in the practice quiz; matching and ordering items.
 3. **LAB-02 kernel**: discrete-event serial line in a Web Worker with seeded runs, validated against Little’s Law and hand cases.
