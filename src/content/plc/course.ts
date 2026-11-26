@@ -684,9 +684,13 @@ export const PLC_LESSONS: PlcLesson[] = [
         ],
       },
       {
-        id: 'counters-t2', task: 'Each time Reject_PE turns on, add 1 to the number tag Reject_Count, however long the part stays in view.', hint: 'ONS in front of ADD.',
+        id: 'counters-t2', task: 'Each time Reject_PE turns on, add 1 to the number tag Reject_Count at that moment (not when the part leaves), however long the part stays in view.', hint: 'ONS in front of ADD.',
         solution: 'XIC(Reject_PE) ONS(Reject_ONS) ADD(Reject_Count, 1, Reject_Count)', devices: [toggle('Reject_PE', 'Reject at photo-eye')], show: ['Reject_Count'],
-        script: [...pulses('Reject_PE', 3, 150, 100), ...pulses('Reject_PE', 1, 600, 100), { expect: { Reject_Count: 4 }, say: '3 short rejects and one that stays 0.6 s' }],
+        // Checked while each reject is in view and after it leaves: the count must rise on the way in, once.
+        script: [150, 150, 150, 600].flatMap((on, k): Step[] => [
+          { set: { Reject_PE: 1 }, hold: on, expect: { Reject_Count: k + 1 }, say: `Reject ${k + 1} in view for ${on / 1000} s` },
+          { set: { Reject_PE: 0 }, hold: 100, expect: { Reject_Count: k + 1 }, say: `Reject ${k + 1} gone` },
+        ]),
       },
       {
         id: 'counters-t3', task: 'Batch of 5: Conveyor runs while Run_Cmd is on and fewer than 5 parts have passed Part_PE. Batch_Reset starts a new batch.', hint: 'Count with CTU; run while its done bit is off.',

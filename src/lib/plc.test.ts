@@ -84,6 +84,15 @@ describe('PLC studio course', () => {
     expect(r.rows.filter((x) => x.wrong.length).length).toBe(1)
   })
 
+  it('edge tasks reject programs that count on the wrong edge', () => {
+    // Review finding on PR #11: counting falling edges must not pass a "count when it turns on" task.
+    const t = PLC_LESSON_MAP.counters.tasks.find((x) => x.id === 'counters-t2')!
+    const falling = load('XIO(Reject_PE) CTU(C, 100)\nMOV(C.ACC, Reject_Count)', 'falling edge')
+    expect(runScript(falling, t.devices, t.script).pass).toBe(false)
+    const everyScan = load('XIC(Reject_PE) ADD(Reject_Count, 1, Reject_Count)', 'every scan')
+    expect(runScript(everyScan, t.devices, t.script).pass).toBe(false)
+  })
+
   it('debug puzzles have exactly one blocking instruction, as the story says', () => {
     const want: Record<string, string> = { 'puz-jam': 'XIO(Jam_Alarm)', 'puz-pump': 'XIC(Overload_OK)', 'puz-press': 'XIC(Door_T.DN)' }
     for (const l of PLC_LESSONS) for (const z of l.puzzles ?? []) {
