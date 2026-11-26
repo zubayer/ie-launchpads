@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — branch `v3/wider-lesson-layout` (2026-11-26)
+
+### Changed
+- **Pages use the full screen width** (owner request). The 1,600 px cap left an empty strip on wider screens; pages now grow up to 2,560 px and centre beyond that.
+- **The lesson's section list is wider** (13rem → 15.5rem, 17rem on extra-wide screens) with slightly larger, roomier links.
+- The slide-in site menu is wider too (16rem → 18rem).
+
 ## Unreleased — branch `v3/auto-hide-nav` (2026-11-26)
 
 ### Changed

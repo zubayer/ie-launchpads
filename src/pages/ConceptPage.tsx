@@ -463,7 +463,7 @@ function ConceptView({ c }: { c: Concept }) {
   }
 
   return (
-    <div className="lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-8">
+    <div className="lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[17rem_minmax(0,1fr)] xl:gap-10">
       <nav aria-label="Concept layers" className="no-print mb-6 lg:mb-0">
         <div className="lg:sticky lg:top-8">
           <Link to={`/d/${d.id}`} className="text-sm text-ink-2 hover:text-ink">{d.name}</Link>
@@ -478,7 +478,7 @@ function ConceptView({ c }: { c: Concept }) {
             {layers.map((l, i) => (
               <li key={l.id} className="shrink-0">
                 <a href={`#${l.id}`} onClick={(e) => { e.preventDefault(); document.getElementById(l.id)?.scrollIntoView({ behavior: 'smooth' }) }}
-                  className={`flex items-center gap-2 rounded px-2 py-1 text-sm ${i === active ? 'bg-sheet font-semibold' : 'text-ink-2 hover:text-ink'}`}>
+                  className={`flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm lg:text-[0.95rem] ${i === active ? 'bg-sheet font-semibold' : 'text-ink-2 hover:text-ink'}`}>
                   <span className="h-4 w-1.5 rounded-sm" style={{ background: i <= Math.max(deepest, active) ? d.tape : 'var(--color-line)' }} />
                   {l.name}
                 </a>

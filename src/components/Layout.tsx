@@ -252,7 +252,7 @@ export default function Layout() {
         aria-label="Site menu"
         onMouseEnter={clear}
         onMouseLeave={closeByHover}
-        className={`no-print z-40 w-64 shrink-0 border-r border-line bg-sheet transition-transform duration-200 ease-out motion-reduce:transition-none ${docked ? 'sticky top-0 h-screen' : `fixed inset-y-0 left-0 ${menu ? 'translate-x-0 shadow-xl' : '-translate-x-full'}`}`}
+        className={`no-print z-40 w-72 shrink-0 border-r border-line bg-sheet transition-transform duration-200 ease-out motion-reduce:transition-none ${docked ? 'sticky top-0 h-screen' : `fixed inset-y-0 left-0 ${menu ? 'translate-x-0 shadow-xl' : '-translate-x-full'}`}`}
       >
         <div className="flex h-full flex-col">
           <div className="flex items-start justify-between gap-2 px-5 pb-4 pt-5">
@@ -317,10 +317,10 @@ export default function Layout() {
           </button>
           {!docked && <span className="hidden shrink-0 sm:block"><VersionSwitch compact /></span>}
         </div>
-        <main id="main" className="max-w-[100rem] px-4 py-6 sm:px-8 sm:py-10">
+        <main id="main" className="mx-auto max-w-[160rem] px-4 py-6 sm:px-8 sm:py-10">
           <Outlet />
         </main>
-        <footer className="no-print max-w-[100rem] px-4 pb-10 text-sm text-ink-2 sm:px-8">
+        <footer className="no-print mx-auto max-w-[160rem] px-4 pb-10 text-sm text-ink-2 sm:px-8">
           Progress is saved in this browser. Export it from <NavLink className="underline" to="/progress">Progress</NavLink> to move devices.
         </footer>
       </div>
