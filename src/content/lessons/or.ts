@@ -39,6 +39,7 @@ export const OR_V3: Record<string, Partial<Concept>> = {
         followUps: ['How would you handle an ingredient that can only be bought in 50 lb bags?', 'The model says use zero corn. How do you check whether that is real or a data error?'],
         rubric: ['Defines variables with units (pounds of each ingredient)', 'Writes a cost objective', 'Writes nutrient constraints as ratios of the batch, not fixed pounds', 'Includes availability and non-negativity', 'Mentions validating the result or reading shadow prices'] },
       { q: 'What are the assumptions of linear programming, and which one breaks most often in practice?', a: 'Proportionality, additivity, divisibility and certainty. Certainty breaks most often: demand, yields and run rates are estimates. I handle it with sensitivity analysis on the coefficients that matter and, if needed, scenarios or stochastic programming. Divisibility breaks when decisions are trucks or machines, which calls for integer variables.', type: 'conceptual',
+        hint: 'Four words: proportional, additive, divisible, certain. Which one does real plant data violate first?',
         followUps: ['Give an example where additivity fails.', 'How would you show a manager that the plan is robust to a 10% error in demand?'],
         rubric: ['Names all four assumptions', 'Picks one and gives a concrete plant example', 'Offers a remedy (sensitivity, scenarios, integer variables)'] },
     ],
@@ -80,6 +81,7 @@ export const OR_V3: Record<string, Partial<Concept>> = {
     mistakes: ['Picking the leaving variable by the largest ratio instead of the smallest', 'Stopping while a variable still has a positive coefficient in the profit row', 'Thinking the simplex method searches every corner'],
     iq: [
       { q: 'What does the ratio test in the simplex method protect against?', a: 'It picks the constraint that runs out first as the entering variable grows, so every other basic variable stays non-negative and the solution stays feasible. Using any larger ratio would push some variable below zero.', type: 'conceptual',
+        hint: 'Imagine increasing the entering variable until the first other variable hits zero.',
         followUps: ['What does it mean if no ratio is positive?', 'What is degeneracy, and why can it cause cycling?'],
         rubric: ['Says it keeps the solution feasible', 'Explains smallest ratio = first resource to run out', 'Links no positive ratio to an unbounded LP'] },
     ],
@@ -125,6 +127,7 @@ export const OR_V3: Record<string, Partial<Concept>> = {
     real: ill('Overtime decision', 'A supervisor is offered weekend overtime on the test bench at $40 an hour. The plan’s shadow price for test hours is $65 and the allowable increase is 16 h, so he books 16 hours, not the 40 the vendor suggested.'),
     iq: [
       { q: 'A constraint has slack. What is its shadow price, and what does that mean?', a: 'Zero. The resource isn’t fully used at the optimum, so more of it wouldn’t change the best plan — spending money to expand it is wasted.', type: 'technical',
+        hint: 'Would one more unit of something you already have spare change the plan?',
         followUps: ['Can a binding constraint also have a zero shadow price?', 'How would the answer change for a ≥ demand constraint?'],
         rubric: ['Says zero', 'Explains unused capacity', 'Draws the business consequence (don’t buy more)'] },
       { q: 'Overtime in a bottleneck costs $12 an hour and its shadow price is $18 with an allowable increase of 20 h. How much overtime would you buy, and what would you check first?', a: 'Up to 20 h, gaining about $6 an hour, roughly $120. Beyond 20 h the shadow price is no longer guaranteed, so I would re-solve before buying more. First I would confirm the model’s hour data, that demand exists for the extra output and that overtime doesn’t create a new bottleneck downstream.', type: 'decision',
@@ -150,9 +153,12 @@ export const OR_V3: Record<string, Partial<Concept>> = {
     mistakes: ['Changing two coefficients at once and trusting one-at-a-time ranges', 'Reading reduced cost as a cost rather than the improvement a variable needs', 'Skipping sensitivity analysis because the solver said “optimal”'],
     iq: [
       { q: 'What is the reduced cost of a product that the optimal plan does not make?', a: 'How much its objective coefficient must improve before making it becomes worthwhile, equal to the value of the resources it would use minus its profit. A product with a reduced cost of $4 needs $4 more profit per unit (or less resource use) to enter the plan.', type: 'conceptual',
+        hint: 'Compare what the product earns with what its resources are worth at the shadow prices.',
         followUps: ['What is the reduced cost of a product that is made?', 'Why does a MIP solver not report reduced costs in the same way?'],
         rubric: ['Defines it as the needed improvement', 'Relates it to resource prices', 'Says a product in the plan has zero reduced cost'] },
       { q: 'The plan is optimal, but the demand forecast could be 15% off. How do you show the planner whether to worry?', a: 'Check whether a 15% change stays inside the allowable ranges for the demand right-hand sides and the coefficients it affects. If it does, the same constraints stay binding and the shadow prices still hold. If not, re-solve the high and low scenarios and compare the plans and profits. Present the two or three numbers that would change the decision.', type: 'scenario',
+        hint: 'Start with the ranges the solver already reports, then decide when you must re-solve.',
+        followUps: ['What would you show if one scenario changes which product line runs?', 'How would you choose the high and low demand values?'],
         rubric: ['Uses allowable ranges first', 'Re-solves scenarios outside the range', 'Summarizes what would change the decision'] },
     ],
     cites: [RC],
@@ -174,6 +180,7 @@ export const OR_V3: Record<string, Partial<Concept>> = {
     real: ill('Forklift fleet', 'A warehouse models forklift purchases as continuous and gets 3.6 trucks. Rounding up breaks the budget; the integer model chooses 3 trucks plus a rental option for peaks.'),
     iq: [
       { q: 'Why can’t you just round the LP solution of an integer problem?', a: 'Rounding can violate constraints, and even a feasible rounded point can be far from the integer optimum. In a two-press example the LP says 2.25 and 3.75; rounding gives an infeasible (2, 4) or a weak (2, 3), while the true best is (0, 5). Integer methods such as branch and bound search the whole-number plans while using the LP as a bound.', type: 'conceptual',
+        hint: 'Try rounding a fractional corner and check every constraint again.',
         followUps: ['When is rounding acceptable?', 'Which network problems give integer LP solutions automatically?'],
         rubric: ['Infeasibility after rounding', 'Suboptimality after rounding', 'Mentions the LP relaxation as a bound', 'Names branch and bound or a solver'] },
     ],
@@ -194,6 +201,8 @@ export const OR_V3: Record<string, Partial<Concept>> = {
         followUps: ['What does the gap actually measure?', 'How would you give the solver a starting solution?'],
         rubric: ['Relates the gap to the business tolerance', 'Names formulation tightening (big-M, symmetry, cuts)', 'Names warm start or heuristics', 'Names parameter tuning or decomposition'] },
       { q: 'Explain the MIP gap to a manager in one sentence.', a: 'The plan we have is proven to be within 4% of the best plan that could exist; finding and proving anything better would take more time.', type: 'screen',
+        hint: 'Two numbers: the best plan found and the best plan that could possibly exist.',
+        followUps: ['Is a 0% gap always worth waiting for?', 'Why can the gap shrink without the plan changing?'],
         rubric: ['Plain language', 'Says it is a proven bound, not an estimate'] },
     ],
     cites: [GAP, BB],
@@ -213,6 +222,7 @@ export const OR_V3: Record<string, Partial<Concept>> = {
     mistakes: ['Picking M = 10⁶ “to be safe”', 'Choosing M smaller than the true maximum, which cuts off valid plans', 'Using big-M when the solver offers indicator constraints that avoid numerical trouble'],
     iq: [
       { q: 'How do you choose M in x ≤ M·y?', a: 'As the smallest value that never cuts off a valid plan: the tightest upper bound on x implied by the data, such as the line capacity or the total demand it could serve. A smaller M gives a tighter relaxation and a faster solve; a too-small M makes the model wrong. Where available, an indicator constraint avoids the choice.', type: 'technical',
+        hint: 'M must never cut off a real plan, but every extra unit of M weakens the relaxation.',
         followUps: ['What numerical problems can a huge M cause?', 'How would you bound M for a warehouse that serves many customers?'],
         rubric: ['Smallest valid upper bound from data', 'Explains the relaxation strength trade-off', 'Warns that too small is wrong', 'Mentions indicator constraints or numerics'] },
     ],
@@ -232,6 +242,7 @@ export const OR_V3: Record<string, Partial<Concept>> = {
     mistakes: ['Pruning a node whose bound is above the incumbent', 'Forgetting that a maximization bound comes from the LP relaxation and only falls as you branch', 'Assuming the first integer solution found is optimal'],
     iq: [
       { q: 'In a solver log the incumbent is improving but the bound barely moves. What does that tell you, and what would you try?', a: 'The search finds good plans but cannot prove optimality: the LP relaxation is weak. I would tighten the formulation (smaller big-M values, symmetry breaking, valid inequalities), check for many equivalent solutions, and accept a stated gap if the plan is already good enough for the decision.', type: 'troubleshooting',
+        hint: 'The incumbent comes from feasible plans; the bound comes from the relaxation. Which one is stuck?',
         followUps: ['What would it mean if the bound improved but no incumbent was found?'],
         rubric: ['Diagnoses a weak relaxation', 'Names tightening tactics', 'Mentions symmetry', 'Connects to an acceptable gap'] },
     ],
@@ -254,6 +265,7 @@ export const OR_V3: Record<string, Partial<Concept>> = {
     real: ill('Regional bakeries', 'Two bakeries serve three café clusters. Re-solving after a fuel surcharge shows only the split market changes hands, so dispatch changes one route instead of redrawing all of them.'),
     iq: [
       { q: 'Supply exceeds demand by 50 units. How do you set up the transportation model?', a: 'Add a dummy market with demand 50 and zero shipping cost (or a holding cost if leftover stock costs money). Units “shipped” to it stay at the plant. Alternatively, write supply constraints as ≤ instead of =.', type: 'technical',
+        hint: 'The model needs somewhere for the extra 50 units to go.',
         followUps: ['What if demand exceeds supply instead?', 'How would you add a penalty for unmet demand?'],
         rubric: ['Dummy destination or ≤ supply constraints', 'Cost on the dummy is zero or a holding cost', 'Explains interpretation'] },
     ],
@@ -274,6 +286,7 @@ export const OR_V3: Record<string, Partial<Concept>> = {
     real: ill('Cross-dock doors', 'A cross-dock assigns arriving trailers to doors by hand, nearest free door first. A nightly assignment model that minimizes forklift travel cuts the average move by a few minutes per pallet.'),
     iq: [
       { q: 'Why does the assignment LP give whole-number answers without integer constraints?', a: 'Its constraint matrix is totally unimodular: each variable appears once in a worker row and once in a task row with coefficient 1. Every corner of the feasible region is then a 0–1 point, so the simplex method lands on a valid assignment.', type: 'analytical',
+        hint: 'Look at the structure of the constraint matrix: how many times does each variable appear, and with what coefficient?',
         followUps: ['Which other problems share this property?', 'What breaks it?'],
         rubric: ['Total unimodularity or network structure', 'Corners are integer', 'Names transportation or min-cost flow as similar'] },
     ],
@@ -294,6 +307,7 @@ export const OR_V3: Record<string, Partial<Concept>> = {
     mistakes: ['Adding capacity where it is easiest rather than on the minimum cut', 'Forgetting reverse (residual) arcs, so augmenting stalls early', 'Mixing per-hour and per-shift capacities'],
     iq: [
       { q: 'Explain the max-flow min-cut theorem and how you would use it in a plant.', a: 'The most flow from source to sink equals the smallest total capacity of arcs that, if removed, separate them. In a plant the cut is the set of operations or conveyors that bound throughput; it tells you which few links to expand, and expanding anything else does not raise throughput.', type: 'conceptual',
+        hint: 'Think of the narrowest set of pipes that, if removed, would cut the source off from the sink.',
         followUps: ['How does this relate to the theory of constraints?', 'What happens to the cut after you expand one of its arcs?'],
         rubric: ['States flow = cut capacity', 'Defines a cut', 'Applies it to choosing where to add capacity', 'Notes the cut may move after expansion'] },
     ],
@@ -314,6 +328,7 @@ export const OR_V3: Record<string, Partial<Concept>> = {
     mistakes: ['Finalizing a node before it is the closest unvisited one', 'Using Dijkstra with negative arc costs', 'Optimizing distance when the real cost is time with congestion'],
     iq: [
       { q: 'How can an equipment replacement decision be written as a shortest-path problem?', a: 'Make a node for each year. An arc from year i to year j means buy new in year i and keep the machine until year j; its cost is the purchase price plus operating costs minus salvage for that span. The shortest path from the first year to the end of the horizon is the cheapest replacement plan.', type: 'analytical',
+        hint: 'Let each node be a point in time and each arc a decision to keep one machine for a stretch of years.',
         followUps: ['How would you include inflation or a discount rate?'],
         rubric: ['Nodes are time points', 'Arcs are keep-until decisions', 'Arc cost combines purchase, operating and salvage', 'Shortest path = best plan'] },
     ],
@@ -333,6 +348,7 @@ export const OR_V3: Record<string, Partial<Concept>> = {
     mistakes: ['Assuming nearest neighbor is near-optimal', 'Using straight-line distance in a warehouse with aisles', 'Trying exact enumeration on more than about a dozen stops'],
     iq: [
       { q: 'You need routes for 300 stops by tomorrow morning. How do you approach it?', a: 'Not exact enumeration. Use a construction heuristic (nearest neighbor or savings) and improve it with local search (2-opt, relocate) or a metaheuristic, ideally in a routing solver such as OR-Tools with a time limit. Validate distances on real roads, report the gap to a lower bound if one is available, and check the routes with the drivers.', type: 'scenario',
+        hint: 'Exact search is out at this size. Build a good route, improve it, and show how good it is.',
         followUps: ['How would time windows change your approach?', 'How would you measure route quality?'],
         rubric: ['Rules out brute force with a reason', 'Construction plus improvement heuristic', 'Uses a solver with a time limit', 'Validates against real distances or a bound'] },
     ],
@@ -349,6 +365,7 @@ export const OR_V3: Record<string, Partial<Concept>> = {
     real: ill('Parts distributor', 'A distributor feeds its delivery stops, truck capacities and two-hour time windows into a routing solver. The first plan fails because loading-dock opening hours were missing; adding them produces routes the drivers accept.'),
     iq: [
       { q: 'What data do you need before running a vehicle routing study?', a: 'Stop locations and demand, service time per stop, time windows, vehicle capacities and costs, driver shift and break rules, depot opening hours and a road-network travel-time matrix by time of day. Then a baseline of current routes to compare against.', type: 'technical',
+        hint: 'Go through the inputs by stops, vehicles, drivers and the road network.',
         followUps: ['Which of these is most often wrong, and how do you check it?'],
         rubric: ['Demand and locations', 'Time windows and service times', 'Vehicle and driver constraints', 'Road-based travel times', 'A baseline for comparison'] },
     ],
@@ -391,6 +408,7 @@ export const OR_V3: Record<string, Partial<Concept>> = {
     mistakes: ['Rows of the matrix not summing to 1', 'Writing π = Pπ instead of π = πP (row vector times matrix)', 'Using a Markov model when wear depends on age, not just the current state'],
     iq: [
       { q: 'How would you test whether a preventive policy “replace when Worn” is worth it, using this model?', a: 'Change the Worn row to the policy’s transitions (for example Worn → Good after a planned replacement), re-solve the steady state, and compare long-run cost per week: state probabilities times the cost of being in each state plus the cost of each action. Adopt the policy if its long-run cost is lower, and check the result is robust to the estimated probabilities.', type: 'decision',
+        hint: 'Change one row of the transition matrix, then compare long-run cost per week.',
         followUps: ['How would you estimate the transition probabilities from maintenance records?', 'When would you switch to a semi-Markov or simulation model?'],
         rubric: ['Modifies the transition matrix for the policy', 'Re-solves the steady state', 'Compares expected cost per period', 'Checks sensitivity of the estimates'] },
     ],
@@ -409,6 +427,8 @@ export const OR_V3: Record<string, Partial<Concept>> = {
         followUps: ['Why does pooling help?', 'When might separate lines still be preferred?'],
         rubric: ['M/M/1 wait ≈ 50 min', 'M/M/2 wait ≈ 23 min', 'Keeps staff and utilization equal', 'Explains why pooling helps (no idle server while someone waits)'] },
       { q: 'The target is an average wait under 5 minutes. How do you pick the number of nurses?', a: 'Increase c from the smallest stable value (cμ > λ) and compute Wq each time; choose the first c that meets the target, then check it against peak-hour arrivals, breaks (shrinkage) and the cost of an extra nurse. In the clinic example (λ = 10, μ = 4) three nurses give about 21 min and four give under 4 min, so four.', type: 'decision',
+        hint: 'Start at the smallest stable number of servers and add one at a time.',
+        followUps: ['Why does a fourth nurse cut the wait by so much more than the third did?', 'How would breaks and lunch cover change the answer?'],
         rubric: ['Starts from stability', 'Iterates c against the target', 'Allows for peaks and shrinkage', 'Lands on a number with the check'] },
     ],
     teachBack: { prompt: 'Explain to a clinic manager why adding one nurse can cut the wait from 21 minutes to under 4.', points: ['Waits depend on how close servers are to fully busy', 'Near full utilization, small capacity changes have big effects', 'One shared line means no nurse is idle while someone waits', 'Check against peak hours, not the daily average'] },
@@ -427,6 +447,8 @@ export const OR_V3: Record<string, Partial<Concept>> = {
         followUps: ['What happens to Q* if the supplier offers buy-back at $3?', 'What service level does this order give?'],
         rubric: ['Cu = 16 and Co = 4', 'Critical ratio 0.80', 'z ≈ 0.84', 'Q* ≈ 1,168'] },
       { q: 'A manager says “just order the forecast.” How do you respond?', a: 'Ordering the mean is right only if being short and being over cost the same. Here a stockout loses $16 and a leftover costs $4, so we should be in stock about 80% of the time, which means ordering above the forecast. I would show the expected profit at both quantities so the decision rests on money, not habit.', type: 'behavioral',
+        hint: 'Ordering the mean is only right when two particular costs are equal.',
+        followUps: ['How would you show the cost of ordering the forecast in dollars?', 'What if leftovers can be returned to the supplier?'],
         rubric: ['Explains when the mean is right', 'Uses the cost asymmetry', 'Proposes showing expected profit'] },
     ],
     teachBack: { prompt: 'Explain the newsvendor idea to a store manager without using any formulas.', points: ['You get one chance to order', 'Running out and having leftovers cost different amounts', 'Lean toward the cheaper mistake', 'The bigger the uncertainty, the bigger that lean'] },
