@@ -96,3 +96,12 @@ Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXE
 | Curriculum-wide dictionary index | In development | All topic IDs indexed; explicit existing full names, 216 authored terminology/notation rows, lesson and Equation Explorer symbols. |
 | Offline search, filters and topic links | In development | Dedicated lazy route, shareable filters, links from lessons and comparisons. |
 | Terminology QA | In development | Selected references, contextual ambiguity, inventory and data/browser tests; CI and visual review pending. |
+
+## Proposed inline terminology and comparison studio (November 26)
+
+| Feature | Status | Evidence |
+|---|---|---|
+| Contextual terminology | In development | Existing Linked prose renderer uses curated exact terms and explicit acronym metadata; all distinct meanings retained. |
+| Equation X-Ray | In development | On-demand selection from declared notation and selected specification/control acronyms. |
+| Advanced comparison | In development | Lazy route /compare; custom 2–4 selections, seven families, four views, three shared experiments. |
+| Release verification | In development | Tests and mobile checks added, CI and actual visual review pending. |

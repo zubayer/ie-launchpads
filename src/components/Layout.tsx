@@ -26,6 +26,7 @@ const NAV: { group: string; items: { to: string; label: string; end?: boolean }[
     { to: '/review', label: 'Flashcard review' },
     { to: '/practice', label: 'Practice quiz' },
     { to: '/pairs', label: 'Confused pairs' },
+    { to: '/compare', label: 'Advanced comparison' },
     { to: '/mysteries', label: 'Factory mysteries' },
     { to: '/spot-waste', label: 'Spot the waste' },
     { to: '/notebook', label: 'Error notebook' },

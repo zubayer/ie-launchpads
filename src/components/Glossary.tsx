@@ -9,6 +9,8 @@ import { jobsFor } from '../content/jobs'
 import { askLinks, googleUrl, links, wiki, wikiFor, wikiSearchUrl, type WikiSummary } from '../lib/web'
 import { search } from '../lib/search'
 import { Tex } from './ui'
+import { inlineHits, resolveInline } from '../lib/inlineTerms'
+import { SOURCES } from '../content/sources'
 
 /* ---------- Term index: which words in prose link to a concept card or a Wikipedia article ---------- */
 const SKIP = new Set(['career.ethics', 'career.resume', 'pm.scope', 'manufacturing.routing'])
@@ -49,9 +51,9 @@ const RE_ACR = bound(alt(INDEX.acr.keys()), 'g')
 const RE_WIKI_CS = WIKI.cs.size ? bound(alt(WIKI.cs.keys()), 'g') : null
 const RE_WIKI_CI = WIKI.ci.size ? bound(alt(WIKI.ci.keys()), 'gi') : null
 
-type Hit = { start: number; end: number; id?: string; wiki?: string }
+type Hit = { start: number; end: number; id?: string; wiki?: string; term?: string }
 function findTerms(text: string) {
-  const hits: Hit[] = []
+  const hits: Hit[] = inlineHits(text).map(h=>({start:h.start,end:h.end,term:h.label}))
   for (const m of text.matchAll(RE_ACR)) hits.push({ start: m.index!, end: m.index! + m[0].length, id: INDEX.acr.get(m[0])! })
   for (const m of text.matchAll(RE_WORDS)) hits.push({ start: m.index!, end: m.index! + m[0].length, id: INDEX.map.get(m[0].toLowerCase())! })
   if (RE_WIKI_CS) for (const m of text.matchAll(RE_WIKI_CS)) hits.push({ start: m.index!, end: m.index! + m[0].length, wiki: WIKI.cs.get(m[0])! })
@@ -70,11 +72,12 @@ const OPEN_DELAY = 120
 const CLOSE_DELAY = 380
 let closeOthers: (() => void) | null = null
 
-function useHoverCard() {
+function useHoverCard<T extends HTMLElement = HTMLAnchorElement>(explicit = false) {
   const [open, setOpen] = useState(false)
   const [pinned, setPinned] = useState(false)
   const [pos, setPos] = useState<{ left: number; top: number; above: boolean; width: number } | null>(null)
-  const anchor = useRef<HTMLAnchorElement>(null)
+  const anchor = useRef<T>(null)
+  const suppressFocus = useRef(false)
   const pop = useRef<HTMLDivElement>(null)
   const timer = useRef<number | null>(null)
   const clear = () => { if (timer.current) { clearTimeout(timer.current); timer.current = null } }
@@ -93,17 +96,19 @@ function useHoverCard() {
   }, [])
   const show = () => {
     clear()
-    if (open) return
+    if (open || suppressFocus.current) return
     timer.current = window.setTimeout(() => { closeOthers?.(); closeOthers = close; place(); setOpen(true) }, OPEN_DELAY)
   }
   const hide = () => { if (pinned) return; clear(); timer.current = window.setTimeout(() => setOpen(false), CLOSE_DELAY) }
   const keep = () => clear()
+  const dismiss = () => { close(); if(explicit){suppressFocus.current=true;anchor.current?.focus();suppressFocus.current=false} }
+  useEffect(()=>{if(explicit&&open&&pinned)pop.current?.querySelector<HTMLButtonElement>('button')?.focus()},[explicit,open,pinned])
   useLayoutEffect(() => { if (open) place() }, [open, place])
   useEffect(() => {
     if (!open) return
     const onMove = () => place()
     const onDown = (e: Event) => { const t = e.target as Node; if (!pop.current?.contains(t) && !anchor.current?.contains(t)) close() }
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { close(); anchor.current?.focus() } }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { close(); suppressFocus.current=true; anchor.current?.focus(); suppressFocus.current=false } }
     window.addEventListener('scroll', onMove, true)
     window.addEventListener('resize', onMove)
     document.addEventListener('mousedown', onDown)
@@ -114,12 +119,12 @@ function useHoverCard() {
       document.removeEventListener('mousedown', onDown); document.removeEventListener('touchstart', onDown); document.removeEventListener('keydown', onKey)
     }
   }, [open, place, close])
-  useEffect(() => () => clear(), [])
+  useEffect(() => () => {clear();if(closeOthers===close)closeOthers=null}, [close])
   const touch = () => window.matchMedia('(hover: none)').matches
   const anchorProps = {
     ref: anchor,
     onMouseEnter: show, onMouseLeave: hide, onFocus: show, onBlur: hide,
-    onClick: (e: React.MouseEvent) => { if (touch() && !open) { e.preventDefault(); closeOthers?.(); closeOthers = close; place(); setOpen(true); setPinned(true) } },
+    onClick: (e: React.MouseEvent) => { if (explicit || (touch() && !open)) { e.preventDefault(); closeOthers?.(); closeOthers = close; place(); setOpen(true); setPinned(true) } },
     'aria-expanded': open,
   }
   // A render function (not a component) so the card isn't remounted on every state change.
@@ -128,7 +133,7 @@ function useHoverCard() {
       style={{ left: pos.left, top: pos.top, width: pos.width }}
       onMouseEnter={keep} onMouseLeave={hide} onFocus={keep} onBlur={hide} onMouseDown={() => setPinned(true)}>
       <div className="term-pop">
-        <button type="button" className="pop-x" aria-label="Close" onClick={close}>×</button>
+        <button type="button" className="pop-x" aria-label="Close" onClick={dismiss}>×</button>
         {children}
       </div>
     </div>, document.body) : null)
@@ -155,6 +160,25 @@ function WikiMini({ load }: { load: () => Promise<WikiSummary | null> }) {
   )
 }
 
+function DictionaryLink({ label, self }: { label:string; self?:string }) {
+  const choices=resolveInline(label,self)
+  const {anchorProps,card}=useHoverCard<HTMLButtonElement>(true)
+  return <>
+    <button type="button" className="term-link inline border-0 bg-transparent p-0 text-left" aria-haspopup="dialog" {...anchorProps}>{label}</button>
+    {card('Terminology: '+label,<div className="max-h-[55vh] overflow-y-auto pr-4">
+      <span className="block text-xs font-semibold text-ink-2">Engineering dictionary · contextual meaning</span>
+      <span className="block text-xl font-bold">{label}</span>
+      {choices.map((e,i)=><div key={e.conceptId+e.meaning} className="mt-2 border-t border-line pt-2">
+        <p className="text-xs text-ink-2">{DOMAIN_MAP[CONCEPT_MAP[e.conceptId].domain].name}{i===0&&e.conceptId===self?' · This lesson':''}</p>
+        <p className="font-semibold">{e.meaning}</p>
+        {e.note&&<p className="mt-1 text-sm">{e.note}</p>}
+        {e.source&&SOURCES[e.source]&&<a className="mt-1 block text-xs underline" href={e.source==='nist-handbook'?'https://www.itl.nist.gov/div898/handbook/pmc/section1/pmc16.htm':SOURCES[e.source].url} target="_blank" rel="noopener noreferrer">Reference: {SOURCES[e.source].publisher}</a>}
+        <Link to={'/c/'+e.conceptId} className="mt-1 inline-block text-sm underline">Open lesson: {CONCEPT_MAP[e.conceptId].term}</Link>
+      </div>)}
+      <Link className="pop-btn mt-3" to={'/dictionary?q='+encodeURIComponent(label)}>All dictionary meanings</Link>
+    </div>)}
+  </>
+}
 function TermLink({ id, children }: { id: string; children: ReactNode }) {
   const c = CONCEPT_MAP[id]
   const { open, anchorProps, card } = useHoverCard()
@@ -212,13 +236,13 @@ export function Linked({ text, self, max = 8 }: { text: string; self?: string; m
         const nodes: ReactNode[] = []
         let pos = 0
         for (const h of findTerms(p)) {
-          const key = h.id || `w:${h.wiki}`
-          if (h.id === self || seen.has(key) || used >= max) continue
+          const key = h.term ? 'd:'+h.term : h.id || `w:${h.wiki}`
+          if ((!h.term && h.id && h.id === self) || seen.has(key) || used >= max) continue
           seen.add(key)
           used++
           nodes.push(p.slice(pos, h.start))
           const label = p.slice(h.start, h.end)
-          nodes.push(h.id ? <TermLink key={`${i}-${h.start}`} id={h.id}>{label}</TermLink> : <WikiLink key={`${i}-${h.start}`} title={h.wiki!}>{label}</WikiLink>)
+          nodes.push(h.term ? <DictionaryLink key={`${i}-${h.start}`} label={h.term} self={self}/> : h.id ? <TermLink key={`${i}-${h.start}`} id={h.id}>{label}</TermLink> : <WikiLink key={`${i}-${h.start}`} title={h.wiki!}>{label}</WikiLink>)
           pos = h.end
         }
         nodes.push(p.slice(pos))
