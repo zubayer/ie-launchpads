@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { EQUATION_FOR_CONCEPT } from '../content/equationIndex'
 import { DEEP_DIVE, deepDiveNote } from '../content/deepDives'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
@@ -27,6 +27,15 @@ import { InterviewCard, TeachBackCard } from '../components/Interview'
 import type { ConceptIndex } from '../content/assemble'
 import { useConcept } from '../content/load'
 import { LoadGate } from '../components/LoadGate'
+
+const EquationSymbols = lazy(()=>import('../components/EquationSymbols'))
+function SymbolDisclosure({id}:{id:string}) {
+  const [opened,setOpened]=useState(false)
+  return <details className="mt-3 rounded-md border border-line p-3" onToggle={e=>setOpened(e.currentTarget.open)}>
+    <summary className="cursor-pointer font-semibold">Equation X-Ray — explore the symbols</summary>
+    {opened&&<Suspense fallback={<p role="status">Loading symbol explanations…</p>}><EquationSymbols key={id} id={id}/></Suspense>}
+  </details>
+}
 
 interface Layer { id: string; name: string }
 
@@ -258,6 +267,7 @@ function ConceptView({ c }: { c: Concept }) {
             <button className="btn-ghost btn" onClick={() => toggleBookmark(c.id)}>{bookmarked ? 'Bookmarked' : 'Bookmark'}</button>
             {PAIRS.some(p=>p.a===c.id||p.b===c.id)&&<Link className="btn-ghost btn" to={'/pairs?concept='+encodeURIComponent(c.id)}>Compare related concepts</Link>}
             <Link className="btn-ghost btn" to={'/dictionary?concept='+encodeURIComponent(c.id)}>Terminology &amp; symbols</Link>
+            <Link className="btn-ghost btn" to={'/compare?concepts='+encodeURIComponent(c.id)}>Build comparison</Link>
             {sim && <a className="btn-tape btn" href="#sim" onClick={(e) => { e.preventDefault(); document.getElementById('sim')?.scrollIntoView({ behavior: 'smooth' }) }}>Simulate it</a>}
           </div>
           <details className="mt-4" open={mode.id==='full'} key={c.id+'-'+mode.id}>
@@ -341,6 +351,7 @@ function ConceptView({ c }: { c: Concept }) {
     math: () => (
       <>
             <div className="rounded-md border border-line bg-paper/50 px-4 py-2"><Tex tex={c.formula!.tex} block /></div>
+            <SymbolDisclosure key={c.id} id={c.id}/>
             {c.formula!.vars && (
               <dl className="mt-3 grid gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr]">
                 {c.formula!.vars.map(([s, m]) => (
