@@ -15,6 +15,12 @@
 - `src/content/split.test.ts`: the generated index matches the content exactly; every domain loads the same lessons, in the same order, with identical content to the eager build; every overlay file is wired to its domain.
 - Browser run: the home page loads no lesson or KaTeX chunk; an OR lesson loads only the OR chunks and KaTeX; a statistics lesson loads only statistics; interview bank, practice quiz, formula library, flashcard backs and the periodic-table detail all show full content; a blocked chunk shows the error and the reload recovers it.
 
+## Proposed — Engineering Abbreviation Dictionary
+
+- Add a lazy-loaded, offline dictionary indexing every existing lesson, explicit full-name metadata, 216 curated terminology and notation records, and existing lesson/Equation Explorer symbols and units.
+- Search by abbreviation, meaning, context or Greek notation; filter by type/domain/topic; share URL filters, navigate between lessons and dictionary, and distinguish overloaded terms.
+- Add focused NIST, NASA, CDC and NTU references, inventory generator, data integrity tests and mobile browser interaction checks. Full CI and visual review pending.
+
 ## Proposed — Comparison Studio
 
 - Expand Confused Pairs from 17 to 51; add 68 original practice scenarios, search and domain filters, accessible distinct concept cards, expandable definitions, formulas, analogies and lesson links.

@@ -131,6 +131,7 @@ export function Pairs() {
   return (
     <div>
       <PageHead title="Confused pairs" sub={`${PAIRS.length} comparisons of engineering ideas. Study the differences, formulas and applications, then practice choosing the right method.`} />
+      <p className="mb-3 text-sm"><Link to="/dictionary" className="underline font-semibold">Look up abbreviations and formula symbols</Link></p>
       <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Mode">
         <button className={`pop-btn !py-2 !text-sm ${mode === 'study' ? '!border-sblue !text-sblue' : ''}`} aria-pressed={mode === 'study'} onClick={() => setMode('study')}>Study side by side</button>
         <button className={`pop-btn !py-2 !text-sm ${mode === 'drill' ? '!border-sblue !text-sblue' : ''}`} aria-pressed={mode === 'drill'} onClick={() => setMode('drill')}>Drill: which one? (all pairs)</button>
