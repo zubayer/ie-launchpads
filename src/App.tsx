@@ -25,6 +25,8 @@ const Curriculum = page(() => import('./pages/Curriculum'), 'Curriculum')
 const Formulas = page(() => import('./pages/Formulas'), 'Formulas')
 const EquationPage = page(() => import('./pages/Equations'), 'EquationPage')
 const Pathways = page(() => import('./pages/Pathways'), 'Pathways')
+const SqlStudio = page(() => import('./pages/SqlStudio'), 'SqlStudio')
+const SqlLessonPage = page(() => import('./pages/SqlStudio'), 'SqlLessonPage')
 const PathwayPage = page(() => import('./pages/Pathways'), 'PathwayPage')
 const Notebook = page(() => import('./pages/Notebook'), 'Notebook')
 const Periodic = page(() => import('./pages/Periodic'), 'Periodic')
@@ -74,6 +76,8 @@ export default function App() {
           <Route path="formulas" element={<Formulas />} />
           <Route path="formulas/:id" element={<EquationPage />} />
           <Route path="paths" element={<Pathways />} />
+          <Route path="studio/sql" element={<SqlStudio />} />
+          <Route path="studio/sql/:lesson" element={<SqlLessonPage />} />
           <Route path="paths/:id" element={<PathwayPage />} />
           <Route path="notebook" element={<Notebook />} />
           <Route path="table" element={<Periodic />} />

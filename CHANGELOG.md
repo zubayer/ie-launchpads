@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased — branch `v3/sql-studio` (2026-11-25)
+
+### Added
+- **SQL studio** (`/studio/sql`): ten lessons from your first SELECT to window functions, data-quality checks and indexes. Each has the idea in plain words, an analogy, how it works, the syntax, worked queries with their real result tables, common mistakes shown wrong-vs-fixed with both results, graded practice, interview questions and notes on other databases.
+- **SQL playground** (`/lab/sql`, and on every SQL lesson page): SQLite running in the browser on a synthetic plant database (machines, work orders, production runs, defects, downtime) with a schema panel, error hints, a 4-second stop for runaway queries, and a reset.
+- Eight new lesson pages: GROUP BY and HAVING, joins, NULL, subqueries and CTEs, window functions, data-quality checks, indexes and query plans, relational data modeling. The SQL lesson itself is rewritten with objectives, mistakes, an application and three interview questions.
+- Practice answers are graded by comparing result sets (column names and, unless asked, row order don’t matter) and saved as evidence.
+
+### Verified
+- The test suite runs every query in the course on the practice database and compares it with the result shown on the page; key tables are recomputed in plain JavaScript as an independent check.
+
 ## Proposed — V3 learning quality contribution
 
 - Preserve engineering rate units in numeric grading; add scientific notation and dimensional regression checks.

@@ -26,6 +26,7 @@ A change is done only when `npm test`, `npm run build` and `npm run audit` pass 
 - Concepts are typed data in `src/content/concepts/<domain>.ts`. Keep existing ids and routes stable; tests fail on broken references.
 - Every numeric worked example needs `example.check.compute()` so the test suite recomputes the answer, and the checked value must appear in the displayed answer; when the answer shows a rounded or converted number, declare it with `check.shown`.
 - Equation Explorer experiments (`src/content/equations.ts`) and pathway questions (`src/content/pathways.ts`) need independent reference cases or recomputation tests, not a re-run of their own function.
+- SQL course queries (`src/content/sql/course.ts`) must run on the practice database; after changing a query or the data, run `npm run docs` to regenerate `src/content/sql/results.ts`, and check that every number in the prose still matches (the tests enforce takeaways).
 - Learner evidence goes through `recordAttempt` with a dimension; opening a page is not evidence. Bump the persist version and add a migration when the saved shape changes.
 - Sources live once in `src/content/sources.ts` and are referenced by id from lessons, with the section that supports the claim.
 - Review status (`review.status`) must reflect what actually happened. Use `source-checked` only after the cited section was opened and matched the claim, `math-validated` only when a test recomputes the numbers, and `expert-reviewed` only with a named human reviewer. Never upgrade a status without that evidence.

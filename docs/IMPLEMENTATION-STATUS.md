@@ -48,6 +48,7 @@ Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXE
 | V3: Equation Explorer `/formulas/:id` (9 experiments) | Tested | `src/lib/equations.test.ts`: independent reference cases and properties; route audit; 360–1800 px overflow check |
 | V3: Guided pathway `/paths/lean-throughput` with evidence by skill | Tested | `src/lib/pathways.test.ts` (300 seeds per generated question); scripted browser run incl. reload and save migration |
 | V3: Do next on Today | Tested | `src/lib/recommend.test.ts` scenario tests; browser run |
+| V3: SQL studio `/studio/sql` + playground `/lab/sql` + 8 new SQL lesson pages | Tested | `src/lib/sql.test.ts` re-runs every course query; browser run incl. timeout/restart and graded tasks; 82-route audit. No citations yet (sources not opened) |
 | V3: PR check workflow | Implemented | `.github/workflows/ci.yml`; first run happens on the batch-1 pull request |
 | Wide-screen layout (content beside the sidebar) | Tested | Route audit at 1366 and 1800 px |
 | V2 ↔ V1 switch (same page where V1 has it) | Tested | Link-mapping test. V1 address defaults to the URL in the master prompt; set `VITE_V1_URL` if V1 lives elsewhere |
