@@ -162,43 +162,115 @@ export function SearchPalette({ open, onClose }: { open: boolean; onClose: () =>
   )
 }
 
+/** True while a CSS media query matches (re-evaluated when it changes). */
+function useMedia(query: string) {
+  const get = () => typeof window !== 'undefined' && !!window.matchMedia?.(query).matches
+  const [on, setOn] = useState(get)
+  useEffect(() => {
+    const m = window.matchMedia?.(query)
+    if (!m) return
+    const h = () => setOn(m.matches)
+    h()
+    m.addEventListener('change', h)
+    return () => m.removeEventListener('change', h)
+  }, [query])
+  return on
+}
+
+const HOVER_OPEN_MS = 250 // dwell at the left edge before the menu slides in, so passing the edge doesn't open it
+const HOVER_CLOSE_MS = 350
+
 export default function Layout() {
   useTheme()
-  const [menu, setMenu] = useState(false)
+  // Owner decision (2026-11-26): on desktop the menu is hidden by default so lessons get the full width. It slides in
+  // when the pointer rests at the left edge, from the Menu button, or with the M key, and Pin keeps it docked open.
+  // Search stays in the top bar on every page and screen size.
+  const [menu, setMenu] = useState(false) // drawer open (when not docked)
+  const [byHover, setByHover] = useState(false)
   const [palette, setPalette] = useState(false)
   const loc = useLocation()
   const theme = useStore((s) => s.settings.theme)
+  const pinned = useStore((s) => !!s.settings.navPinned)
   const setSettings = useStore((s) => s.setSettings)
+  const wide = useMedia('(min-width: 1024px)')
+  const canHover = useMedia('(hover: hover) and (pointer: fine)')
+  const docked = wide && pinned
+  const shown = docked || menu
+  const timer = useRef<number | undefined>(undefined)
+  const navRef = useRef<HTMLElement>(null)
+  const menuBtn = useRef<HTMLButtonElement>(null)
+  const clear = () => window.clearTimeout(timer.current)
+  const openByHover = () => { clear(); timer.current = window.setTimeout(() => { setByHover(true); setMenu(true) }, HOVER_OPEN_MS) }
+  const closeByHover = () => { clear(); if (byHover) timer.current = window.setTimeout(() => setMenu(false), HOVER_CLOSE_MS) }
+  const toggle = (focus = true) => {
+    clear()
+    setByHover(false)
+    setMenu((m) => {
+      if (!m && focus) requestAnimationFrame(() => navRef.current?.querySelector<HTMLElement>('a,button')?.focus())
+      return !m
+    })
+  }
+  // The Menu button is inert while the drawer covers it, so move focus back after the re-render.
+  const close = () => { clear(); setMenu(false); if (!byHover) requestAnimationFrame(() => menuBtn.current?.focus()) }
+  const overlay = menu && !docked
+  // Keyboard focus must never sit on controls the drawer covers (WCAG 2.4.11). A drawer opened by click or
+  // `m` makes the page behind it inert; if focus still leaves the drawer (hover-opened, skip link), close it.
+  useEffect(() => {
+    if (!overlay) return
+    const h = (e: FocusEvent) => { if (!navRef.current?.contains(e.target as Node)) { clear(); setMenu(false) } }
+    document.addEventListener('focusin', h)
+    return () => document.removeEventListener('focusin', h)
+  }, [overlay])
   useEffect(() => {
     setMenu(false)
     window.scrollTo(0, 0)
   }, [loc.pathname])
+  useEffect(() => () => clear(), [])
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
+      const typing = !!(e.target as HTMLElement).closest('input,textarea,select,[contenteditable="true"]')
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setPalette(true) }
-      if (e.key === '/' && !(e.target as HTMLElement).closest('input,textarea,select')) { e.preventDefault(); setPalette(true) }
+      else if (e.key === '/' && !typing) { e.preventDefault(); setPalette(true) }
+      else if (e.key.toLowerCase() === 'm' && !typing && !e.metaKey && !e.ctrlKey && !e.altKey && !docked) { e.preventDefault(); toggle() }
+      else if (e.key === 'Escape' && menu && !docked) close()
     }
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
-  }, [])
+  })
   const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light'
 
   return (
     <div className="min-h-screen lg:flex">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 btn">Skip to content</a>
+      {!docked && !menu && wide && canHover && (
+        <div aria-hidden className="no-print fixed inset-y-0 left-0 z-40 w-2" data-testid="nav-edge" onMouseEnter={openByHover} onMouseLeave={clear} />
+      )}
       <aside
-        className={`no-print fixed inset-y-0 left-0 z-40 w-64 transform border-r border-line bg-sheet transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${menu ? 'translate-x-0' : '-translate-x-full'}`}
+        id="site-nav"
+        ref={navRef}
+        inert={!shown}
+        aria-label="Site menu"
+        onMouseEnter={clear}
+        onMouseLeave={closeByHover}
+        className={`no-print z-40 w-64 shrink-0 border-r border-line bg-sheet transition-transform duration-200 ease-out motion-reduce:transition-none ${docked ? 'sticky top-0 h-screen' : `fixed inset-y-0 left-0 ${menu ? 'translate-x-0 shadow-xl' : '-translate-x-full'}`}`}
       >
         <div className="flex h-full flex-col">
-          <NavLink to="/" className="block px-5 pb-4 pt-5">
-            <span className="display block text-[1.42rem] leading-none">IE Launchpad V2</span>
-            <span className="mt-1 block text-sm text-ink-2">Coursework to job offer</span>
-          </NavLink>
+          <div className="flex items-start justify-between gap-2 px-5 pb-4 pt-5">
+            <NavLink to="/" className="block">
+              <span className="display block text-[1.42rem] leading-none">IE Launchpad V2</span>
+              <span className="mt-1 block text-sm text-ink-2">Coursework to job offer</span>
+            </NavLink>
+            {wide ? (
+              <button type="button" className="pop-btn shrink-0" aria-pressed={pinned} onClick={() => { setSettings({ navPinned: !pinned }); setMenu(false) }}
+                title={pinned ? 'Hide the menu; it slides in from the left edge' : 'Keep the menu open on every page'}>
+                {pinned ? 'Unpin' : 'Pin'}
+              </button>
+            ) : (
+              <button type="button" className="pop-btn shrink-0" onClick={close} aria-label="Close menu">Close</button>
+            )}
+          </div>
           <div className="hazard mx-5 mb-3 h-1.5 rounded-sm" aria-hidden />
           <VersionSwitch className="mx-4 mb-3" />
-          <button onClick={() => setPalette(true)} className="mx-4 mb-3 flex items-center justify-between rounded-md border border-line px-3 py-2 text-left text-sm text-ink-2 hover:border-ink">
-            Search terms <kbd className="rounded border border-line px-1.5 text-xs">/</kbd>
-          </button>
           <nav className="flex-1 overflow-y-auto px-2 pb-4" aria-label="Main">
             {NAV.map((g) => (
               <div key={g.group || 'top'} className={g.group ? 'mt-4' : ''}>
@@ -228,12 +300,22 @@ export default function Layout() {
           </div>
         </div>
       </aside>
-      {menu && <div className="fixed inset-0 z-30 bg-ink/30 lg:hidden" onClick={() => setMenu(false)} />}
-      <div className="min-w-0 flex-1">
-        <div className="no-print sticky top-0 z-20 flex items-center justify-between border-b border-line bg-sheet/95 px-4 py-2 backdrop-blur lg:hidden">
-          <button className="btn-ghost btn !px-3 !py-1.5" onClick={() => setMenu(true)} aria-label="Open menu">Menu</button>
-          <span className="flex items-center gap-2"><span className="display text-lg">IE Launchpad</span><VersionSwitch compact /></span>
-          <button className="btn-ghost btn !px-3 !py-1.5" onClick={() => setPalette(true)} aria-label="Search">Search</button>
+      {overlay && <div className={`no-print fixed inset-0 z-30 ${byHover ? '' : 'bg-ink/30'}`} onClick={close} aria-hidden />}
+      <div className="min-w-0 flex-1" inert={overlay && !byHover} data-testid="page">
+        <div className="no-print sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-sheet/95 px-3 py-2 backdrop-blur sm:px-6">
+          {!docked && (
+            <button ref={menuBtn} type="button" className="btn-ghost btn shrink-0 !px-3 !py-1.5" onClick={() => toggle()} aria-expanded={menu} aria-controls="site-nav"
+              title="Show the menu (M). On a computer it also slides in when the pointer rests at the left edge of the screen.">
+              Menu
+            </button>
+          )}
+          {!docked && <NavLink to="/" className="display hidden shrink-0 text-lg sm:block">IE Launchpad</NavLink>}
+          <button type="button" onClick={() => setPalette(true)} aria-label={`Search ${CONCEPTS.length} terms`}
+            className="flex min-w-0 max-w-3xl flex-1 items-center justify-between gap-3 rounded-md border border-line bg-sheet px-3 py-1.5 text-left text-sm text-ink-2 hover:border-ink">
+            <span className="truncate">Search {CONCEPTS.length} terms: FMEA, takt time, Cpk…</span>
+            <kbd className="hidden rounded border border-line px-1.5 text-xs sm:inline">/</kbd>
+          </button>
+          {!docked && <span className="hidden shrink-0 sm:block"><VersionSwitch compact /></span>}
         </div>
         <main id="main" className="max-w-[100rem] px-4 py-6 sm:px-8 sm:py-10">
           <Outlet />
