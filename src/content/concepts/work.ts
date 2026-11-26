@@ -71,7 +71,7 @@ export default mk('work', [
     id: 'standard-time', term: 'Standard time', sub: 'Work measurement', level: 2, aka: ['ST', 'labor standard', 'standard hours', 'engineered standard'],
     one: 'The time allowed for a qualified worker to do a task at normal pace, including allowances.',
     def: 'Standard time = normal time adjusted for PF&D allowances. Used for capacity planning, line balancing, costing, staffing and incentive pay. Standard output per hour = 60 ÷ standard minutes.',
-    analogy: 'The official cooking time printed on the package — including the time to preheat and stir.',
+    analogy: "A bus timetable allows not only the normal driving time but also reasonable stops and recovery time. A labor standard likewise includes specified allowances; it is not the fastest observed cycle.",
     formula: { tex: 'ST=NT\\times(1+A)\\quad\\text{or}\\quad ST=\\frac{NT}{1-A}' },
     example: {
       q: 'Normal time = 2.64 min; allowance 15% of normal time. Standard time and standard output per 8-hour shift?',
@@ -81,8 +81,13 @@ export default mk('work', [
     },
     sim: 'standard-time',
     used: { ind: ['Manufacturing', 'Warehousing', 'Healthcare', 'Food processing'], roles: ['Industrial Engineer', 'Methods Engineer', 'Labor Standards Analyst'], freq: 'common' },
-    iq: [{ q: 'How would you set a labor standard for a new packing station?', a: 'Define and stabilize the method first (standard work), then use time study on trained operators across several cycles — or a predetermined time system like MOST if the station isn’t built yet. Apply performance rating and the plant’s PF&D allowance convention, check the number of cycles needed for the desired accuracy, validate with a pilot, and document it.', type: 'case' }],
+    iq: [{"q":"Normal time is 4 minutes and allowances are 20% of standard time. Find standard time.","a":"4/(1−0.20) = 5 minutes. If allowances were 20% of normal time the answer would instead be 4.8 minutes.","type":"technical"}, {"q":"Operators report the new standard is unsafe. What do you do?","a":"Review the method with workers and safety specialists, investigate representative observations and allowances, redesign the task if needed, and validate a safe standard.","type":"case"}, { q: 'How would you set a labor standard for a new packing station?', a: 'Define and stabilize the method first (standard work), then use time study on trained operators across several cycles — or a predetermined time system like MOST if the station isn’t built yet. Apply performance rating and the plant’s PF&D allowance convention, check the number of cycles needed for the desired accuracy, validate with a pilot, and document it.', type: 'case' }],
     rel: ['normal-time', 'allowances', 'lean.takt-time', 'lean.line-balancing'],
+    why: "Supports fair labor and capacity planning when the method, rating and allowance convention are documented.",
+    objectives: ["Distinguish observed, normal and standard time","Apply the correct allowance base","Convert standard minutes to ideal capacity"],
+    assumptions: ["Allowance expressed as a fraction of normal time uses NT(1+A); a fraction of standard time uses NT/(1−A).","Observe representative trained workers using a safe, defined method; do not treat the standard as a mandate to skip breaks."],
+    real: {"where":"Warehouse packing","story":"Illustrative: document a safe packing method, collect representative cycle observations, apply a transparent performance rating and agreed allowances, then validate the standard with operators.","kind":"illustrative"},
+    mistakes: ["Mixing allowance conventions","Double-counting breaks in capacity","Using the fastest observed worker as the standard"],
   },
   {
     id: 'work-sampling', term: 'Work sampling', sub: 'Work measurement', level: 2, aka: ['activity sampling', 'ratio delay study', 'random observations'],

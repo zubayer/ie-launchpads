@@ -6,6 +6,9 @@ const SI = '#7a828f', OX = '#5b9bd5', PR = '#e8a33d', MET = '#c9a227'
 
 /** Diagram shown in the “Picture it” layer. Concepts not listed get a related-concept map. */
 export const VIZ: Record<string, VizSpec> = {
+  // Additional original learning diagrams; values are illustrative, not field data.
+  'engecon.replacement': { t: 'steps', items: ['Current resale value', 'Forecast next-year resale and operating cost', 'Compute equivalent keep cost', 'Compare challenger on consistent basis', 'Test uncertainty and risk'] },
+  'service.capacity-utilization': { t: 'curve', x: [0.1, 0.95], lines: [{ f: (r) => r/(1-r), label: 'M/M/1 mean number in system' }], xLabel: 'Utilization ρ', yLabel: 'Mean number in system', marks: [{ x: 0.9, label: '90% utilization' }] },
   // Statistics
   'stats.normal': { t: 'bell', note: 'About 68% within ±1σ, 95% within ±2σ, 99.7% within ±3σ' },
   'stats.std-dev': { t: 'curve', x: [-6, 6], lines: [{ f: (x) => Math.exp(-x * x / 2) / 1, label: 'small σ — tight process' }, { f: (x) => Math.exp(-x * x / 18) / 3, label: 'large σ — loose process', color: C.orange }], xLabel: 'measurement' },

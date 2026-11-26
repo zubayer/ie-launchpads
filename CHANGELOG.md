@@ -6,6 +6,11 @@
 - Topic-specific numerical and Boolean models, concept-check evidence, and a new Newton–Raphson lesson.
 - Crossref metadata search with timeout, cancellation and bounded cache; independent reference tests and browser-audit routes added. Full CI verification pending.
 
+## Proposed — Deep learning and career content batch
+
+- Enrich 16 existing topics with mental models, learning objectives, scenarios, assumptions and 32 original interview practice questions; improve selected equations and add two visual models.
+- Add authoritative reference links and per-topic career-depth audit generator. Full CI and visual review pending.
+
 ## Unreleased — branch `v3/automation-studio` (2026-11-25)
 
 ### Added

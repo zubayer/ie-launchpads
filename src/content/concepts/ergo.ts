@@ -81,6 +81,13 @@ export default mk('ergo', [
       check: { value: 5, compute: () => Math.log2((2 * 32) / 2), tol: 1e-9 },
     },
     rel: ['hick', 'display-control'],
+    why: "Improves target acquisition in interfaces and workstations through deliberate size, distance and layout choices.",
+    objectives: ["Explain the speed-accuracy tradeoff","Calculate index of difficulty using the stated formulation","Design and validate an accessible control layout"],
+    assumptions: ["Use matching distance and width units and specify the chosen Fitts formulation.","Movement-time coefficients must be empirically fitted for the task and population; the model does not determine safety compliance."],
+    real: {"where":"Industrial HMI redesign","story":"Illustrative: enlarge frequent non-safety controls, place them closer to the operator's normal cursor path and compare task time and errors in a representative usability study.","kind":"illustrative"},
+    mistakes: ["Confusing the index of difficulty with time","Comparing coefficients estimated from different formulations","Using predicted speed as a substitute for accessibility or safety testing"],
+    iq: [{"q":"If distance stays fixed and width doubles, what happens to the original Fitts index?","a":"The index log2(2D/W) decreases by one bit. Actual movement-time reduction depends on the fitted slope.","type":"technical"},{"q":"How would you test an HMI redesign?","a":"Use representative users, counterbalanced tasks, movement time and errors, accessible input methods, and separate safety-critical validation.","type":"case"}],
+    cites: [{"src":"psu-fitts","section":"Target distance and width","supports":"Interactive learning resource illustrating target size and distance; not a claim about the exact coefficient formulation."}],
   },
   {
     id: 'hick', term: 'Hick’s law', sub: 'Cognitive ergonomics', level: 3, aka: ['Hick-Hyman law', 'choice reaction time'],
