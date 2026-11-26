@@ -55,6 +55,20 @@ describe('SQL course', () => {
     expect(bad).toEqual([])
   })
 
+  it('examples give the same result when run one after another on one database, twice (as in the browser playground)', () => {
+    const db = new SQL.Database(); db.run(plantSql())
+    const bad: string[] = []
+    for (let pass = 0; pass < 2; pass++) SQL_LESSONS.forEach((l) => l.examples.forEach((e) => {
+      try {
+        const r = db.exec(e.sql); const last = r[r.length - 1]
+        const want = RESULTS[e.id]
+        if ('error' in want || JSON.stringify({ columns: last.columns, rows: last.values }) !== JSON.stringify(want)) bad.push(`${e.id} (pass ${pass + 1}): result depends on what ran before`)
+      } catch (err) { bad.push(`${e.id} (pass ${pass + 1}): ${(err as Error).message}`) }
+    }))
+    db.close()
+    expect(bad).toEqual([])
+  })
+
   it('examples and task solutions run and return rows; each mistake fails or differs from its fix as described', () => {
     const bad: string[] = []
     SQL_LESSONS.forEach((l) => {

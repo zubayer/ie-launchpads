@@ -93,7 +93,7 @@ export function SqlPlayground({ initial }: { initial: string }) {
       <aside aria-label="Tables in the practice database">
         <p className="label mb-1">Tables</p>
         <SchemaPanel />
-        <button className="btn-ghost btn mt-2 !py-1.5 !text-sm" onClick={async () => { await resetDb(); setMsg('The practice database is back to its original data.') }}>Reset the database</button>
+        <button className="btn-ghost btn mt-2 !py-1.5 !text-sm" onClick={async () => { const r = await resetDb(); setMsg(r.ok ? 'The practice database is back to its original data.' : `${r.error} The restarted engine starts from the original data.`) }}>Reset the database</button>
         <p className="mt-1 text-xs text-ink-2" aria-live="polite">{msg || 'Your changes (inserts, indexes) live only in this tab.'}</p>
       </aside>
     </div>

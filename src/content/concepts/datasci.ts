@@ -289,6 +289,7 @@ export default mk('datasci', [
   },
   {
     id: 'sql', term: 'SQL', full: 'Structured Query Language', sub: 'Data tools', level: 1, aka: ['SELECT', 'WHERE', 'query', 'database', 'relational database'],
+    verify: true, // no source checked yet: the official SQLite/PostgreSQL docs could not be opened when this was written
     one: 'The language for pulling, filtering and summarizing data from databases.',
     def: 'A query names the columns you want (SELECT), the table (FROM), which rows to keep (WHERE), and how to sort and limit them (ORDER BY, LIMIT). Results are themselves tables, so queries build on queries. Grouping (GROUP BY), combining tables (JOIN), handling missing values (NULL), step-by-step queries (CTEs) and window functions extend the same core. MES, ERP, quality and historian systems all keep their data in SQL databases.',
     analogy: 'Ordering at a counter instead of cooking: you describe the dish (“machines installed before 2016, oldest first, names only”) and the kitchen decides how to make it.',
@@ -307,6 +308,7 @@ export default mk('datasci', [
   },
   {
     id: 'sql-aggregation', term: 'SQL GROUP BY and HAVING', sub: 'Data tools', level: 2, aka: ['GROUP BY', 'HAVING', 'aggregate functions', 'SUM', 'COUNT', 'AVG'], pre: ['sql'],
+    verify: true, // no source checked yet: the official SQLite/PostgreSQL docs could not be opened when this was written
     one: 'Turning many rows into one summary row per machine, shift or day.',
     def: 'GROUP BY puts rows that share a value into groups; aggregate functions (SUM, COUNT, AVG, MIN, MAX) reduce each group to one value. WHERE filters rows before grouping; HAVING filters the groups after. Logical order: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT.',
     analogy: 'Sorting inspection tickets into one tray per machine and writing each tray’s total on a sticky note.',
@@ -322,6 +324,7 @@ export default mk('datasci', [
   },
   {
     id: 'sql-joins', term: 'SQL joins', sub: 'Data tools', level: 2, aka: ['JOIN', 'INNER JOIN', 'LEFT JOIN', 'outer join', 'foreign key'], pre: ['sql'],
+    verify: true, // no source checked yet: the official SQLite/PostgreSQL docs could not be opened when this was written
     one: 'Combining rows from related tables by matching their keys.',
     def: 'INNER JOIN keeps only rows that match on both sides. LEFT JOIN keeps every row of the left table and fills the right side with NULL where nothing matches, so it finds things with no match (machines with no runs, orders not started). Joining one row to many repeats the one side, which inflates sums unless you aggregate the many side first.',
     analogy: 'Matching packing slips to purchase orders by order number; a slip with no order is a question to answer, not a row to drop.',
@@ -337,6 +340,7 @@ export default mk('datasci', [
   },
   {
     id: 'sql-nulls', term: 'NULL in SQL', sub: 'Data tools', level: 2, aka: ['NULL', 'IS NULL', 'COALESCE', 'missing values', 'three-valued logic'], pre: ['sql'],
+    verify: true, // no source checked yet: the official SQLite/PostgreSQL docs could not be opened when this was written
     one: 'How SQL represents an unknown value, and the traps it sets.',
     def: 'NULL means unknown, not zero or blank. Any comparison with NULL is unknown, so use IS NULL / IS NOT NULL. COUNT(*) counts rows but COUNT(column) skips NULLs; SUM and AVG ignore them. A NULL fails both IN and NOT IN, and x NOT IN (… NULL …) is never true. COALESCE(x, fallback) substitutes a value for display or grouping.',
     analogy: 'A checksheet box nobody filled in: you can’t say the machine had zero downtime, only that nobody recorded it.',
@@ -351,6 +355,7 @@ export default mk('datasci', [
   },
   {
     id: 'sql-subqueries', term: 'SQL subqueries and CTEs', sub: 'Data tools', level: 2, aka: ['CTE', 'WITH clause', 'common table expression', 'subquery', 'nested query'], pre: ['sql-aggregation'],
+    verify: true, // no source checked yet: the official SQLite/PostgreSQL docs could not be opened when this was written
     one: 'Building a hard query from named steps.',
     def: 'Because every query returns a table, a query can use another query’s result: as a value (a scalar subquery), as a list (IN (SELECT …)), or as a table. A common table expression (WITH name AS (SELECT …)) names each step so the logic reads top to bottom; later steps can use earlier ones.',
     analogy: 'Showing your working in an exam: first the daily totals, then the average, then the days above it.',
@@ -364,6 +369,7 @@ export default mk('datasci', [
   },
   {
     id: 'sql-window-functions', term: 'SQL window functions', sub: 'Data tools', level: 3, aka: ['window function', 'OVER', 'PARTITION BY', 'ROW_NUMBER', 'RANK', 'LAG', 'running total', 'moving average'], pre: ['sql-subqueries'],
+    verify: true, // no source checked yet: the official SQLite/PostgreSQL docs could not be opened when this was written
     one: 'Rankings, running totals and previous values computed without collapsing rows.',
     def: 'f() OVER (PARTITION BY … ORDER BY … [frame]) computes a value for each row from a window of related rows. PARTITION BY restarts the calculation per group; ORDER BY orders rows inside it. ROW_NUMBER numbers rows (ties broken arbitrarily), RANK gives ties the same rank and skips, DENSE_RANK doesn’t skip. LAG and LEAD read the previous and next rows. SUM() OVER (ORDER BY …) is a running total; a ROWS BETWEEN frame gives moving averages. Window functions run after WHERE and GROUP BY, so filter on them from a CTE.',
     analogy: 'A league table: every team keeps its row, and each row also shows its position and the gap to the team above.',
@@ -378,6 +384,7 @@ export default mk('datasci', [
   },
   {
     id: 'sql-data-quality', term: 'Data-quality checks in SQL', sub: 'Data tools', level: 3, aka: ['duplicates', 'orphan records', 'reconciliation', 'data validation', 'data profiling'], pre: ['sql-joins', 'sql-nulls'],
+    verify: true, // no source checked yet: the official SQLite/PostgreSQL docs could not be opened when this was written
     one: 'A short set of queries that tell you whether a number deserves trust.',
     def: 'Check duplicates on the natural key (GROUP BY … HAVING COUNT(*) > 1), orphans across relationships (LEFT JOIN … WHERE parent IS NULL), completeness of key columns (COUNT(*) − COUNT(column)), value ranges, and reconciliation of totals between two sources. Then fix the source or document the cleaning rule rather than silently dropping rows.',
     analogy: 'Checking the gauge before the capability study: verify the measurement system before you believe the measurements.',
@@ -391,6 +398,7 @@ export default mk('datasci', [
   },
   {
     id: 'sql-indexes', term: 'Indexes and query plans', sub: 'Data tools', level: 3, aka: ['index', 'query plan', 'EXPLAIN', 'table scan', 'query performance'], pre: ['sql'],
+    verify: true, // no source checked yet: the official SQLite/PostgreSQL docs could not be opened when this was written
     one: 'Why some queries are fast and others crawl, and what to ask for.',
     def: 'Without a suitable index the database reads every row (a scan). An index is a sorted structure on one or more columns that lets it jump to matching rows (a search). EXPLAIN (EXPLAIN QUERY PLAN in SQLite) shows which it will do. Index columns used often in filters, joins and sorts; each index costs space and slows inserts and updates. Wrapping an indexed column in a function usually prevents its use.',
     analogy: 'A book’s index versus reading every page: fast lookups, but every new page means updating the index.',
@@ -404,6 +412,7 @@ export default mk('datasci', [
   },
   {
     id: 'data-modeling', term: 'Relational data modeling', sub: 'Data tools', level: 3, aka: ['normalization', 'primary key', 'foreign key', 'star schema', 'fact table', 'dimension table', 'ER diagram'], pre: ['sql-joins'],
+    verify: true, // no source checked yet: the official SQLite/PostgreSQL docs could not be opened when this was written
     one: 'Deciding which tables to have, what each row means, and how they link.',
     def: 'Each table holds one kind of thing, each row is identified by a primary key, and foreign keys link related rows. Normalization stores each fact once (a machine’s name lives in machines, not in every production row), so updates can’t leave contradictory copies. Reporting databases often use a star schema: a fact table of events or measurements (production runs) surrounded by dimension tables that describe them (machines, products, dates, shifts).',
     analogy: 'A well-run stockroom: every part has one bin and one label, and the pick list refers to bins instead of describing parts again.',
