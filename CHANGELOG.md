@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — branch `v3/auto-preview` (2026-11-26)
+
+### Changed
+- **Quick preview and live sources load by themselves again.** Opening a lesson now shows Wikipedia’s summary and the free AI explanation straight away, and the “Live from the web” section fills in without a click (owner request; this reverses the click-to-load step added in PR #9). Only the public topic name is sent to Wikipedia and the AI service, and each panel still says where its text came from. The AI card retries once by itself after 15 seconds when the free service is busy.
+- The Wikipedia card no longer stretches to the AI card’s height.
+- The browser audit fails if a lesson’s preview asks for a click again.
+
 ## Unreleased — branch `v3/content-split` (2026-11-26)
 
 ### Changed
