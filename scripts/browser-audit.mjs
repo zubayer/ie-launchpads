@@ -11,7 +11,7 @@ const registry = readFileSync(new URL('../src/sims/registry.ts', import.meta.url
 const sims = [...registry.matchAll(/id: '([a-z0-9-]+)'/g)].map((m) => `lab/${m[1]}`)
 
 const routes = [
-  '', 'directory', 'domains', 'd/lean', 'd/lean/cheatsheet', 'c/quality.cpk', 'c/quality.cp', 'c/automation.ladder-logic', 'c/or.newton-raphson', 'c/engecon.npv', 'c/lean.takt-time', 'c/lean.takt-time?mode=quick', 'c/or.lp', 'c/safety.fmea',
+  '', 'directory', 'domains', 'd/lean', 'd/lean/cheatsheet', 'c/quality.cpk', 'c/quality.cp', 'c/or.newton-raphson', 'c/engecon.npv', 'c/lean.takt-time', 'c/lean.takt-time?mode=quick', 'c/or.lp', 'c/or.branch-bound', 'c/or.mmc?mode=interview', 'formulas/mmc', 'formulas/newsvendor', 'c/safety.fmea',
   'review', 'practice', 'lab', 'roles', 'roles/quality-engineer', 'interview', 'plan', 'graph', 'progress', 'academy',
   'curriculum', 'formulas', 'notebook', 'table', 'table?el=engecon.npv', 'chains', 'chains?chain=safety-case&step=2', 'sheets/engecon', 'method', 'formulas/oee', 'formulas/mm1', 'formulas/irr-newton', 'formulas/calibration?x=2', 'formulas/nope', 'paths', 'paths/lean-throughput', 'studio/sql', 'studio/sql/select', 'studio/sql/joins', 'studio/sql/windows', 'studio/sql/design', 'c/datasci.sql-joins', 'studio/plc', 'studio/plc/scan', 'studio/plc/nonc', 'studio/plc/sealin', 'studio/plc/timers', 'studio/plc/sequence', 'studio/plc/debug', 'studio/plc/safety', 'studio/plc/nope', 'studio/cad', 'studio/cad/sketch', 'studio/cad/intent', 'studio/cad/features', 'studio/cad/mates', 'studio/cad/drawings', 'studio/cad/analysis', 'studio/cad/dfx', 'c/automation.ladder-logic', 'c/automation.solidworks', 'guide', 'guide?path=root,flow,l-capacity', 'pairs', 'mysteries', 'mysteries?case=beats-takt', 'subway', 'tools', 'spot-waste', 'no-such-page', ...sims,
 ]
@@ -38,6 +38,25 @@ for (const theme of ['light', 'dark']) {
     const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] })).violations.map((x) => `${x.id} (${x.nodes.length}) ${x.nodes[0]?.target?.join(' ')}`))
     if (!h1 || v.length) { failures++; console.log(`✗ [${theme}] /${r}${h1 ? '' : ' — no <h1>'}${v.length ? '\n    ' + v.join('\n    ') : ''}`) }
   }
+  // Exercise the new studio, not merely the default route. External requests remain blocked.
+  try {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto(BASE + '?studio=1#/c/lean.takt-time?mode=full')
+    const studio = page.getByRole('region', { name: 'Topic Intelligence Studio' })
+    await studio.getByRole('button', { name: 'Experiment', exact: true }).click()
+    await studio.getByRole('button', { name: 'Reset experiment' }).click()
+    if (!(await studio.getByText('60.0 s/unit', { exact: true }).isVisible())) throw new Error('Takt reference result not visible')
+    await studio.getByRole('button', { name: 'Master', exact: true }).click()
+    await studio.getByRole('radio', { name: 'It halves' }).check()
+    await studio.getByRole('button', { name: 'Check my answer' }).click()
+    if (!(await studio.getByText('Correct.', { exact: false }).first().isVisible())) throw new Error('Pilot feedback missing')
+    await studio.getByRole('button', { name: 'Explore sources', exact: true }).click()
+    await studio.getByRole('button', { name: 'Find relevant research' }).click()
+    await studio.getByText('Research service unavailable.', { exact: false }).waitFor({ timeout: 12000 })
+    await page.addScriptTag({ content: axe })
+    const problems = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] })).violations.map(v=>v.id))
+    if (problems.length) throw new Error('Opened mobile studio accessibility: ' + problems.join(', '))
+  } catch (e) { failures++; console.log('✗ ['+theme+'] topic studio interaction: '+e.message) }
   if (errors.length) { failures += errors.length; console.log(`✗ [${theme}] script errors:\n  ${errors.join('\n  ')}`) }
   await page.close()
 }

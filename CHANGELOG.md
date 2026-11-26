@@ -1,10 +1,26 @@
 # Changelog
 
-## Proposed — Topic Intelligence Studio foundation
+## Proposed — Topic Intelligence Studio integration
 
-- Shared seven-stage topic studio, five explanation lenses, curated citations, opt-in web discovery and five interactive pilot families (six topic IDs).
-- Topic-specific numerical and Boolean models, concept-check evidence, and a new Newton–Raphson lesson.
-- Crossref metadata search with timeout, cancellation and bounded cache; independent reference tests and browser-audit routes added. Full CI verification pending.
+- Reconcile draft PR #9 with batch 4; preserve OR depth, interview rubrics, teach-back, SQL/PLC/CAD and existing learning modes.
+- Add shared studio, five pilot families, on-demand external discovery and topic inventory. Correct IIS explanation. CI and visual review pending.
+
+## Unreleased — branch `v3/topic-depth` (2026-11-26)
+
+### Added
+- **Richer interview questions everywhere.** A question can now carry a type (conceptual, numerical, analytical, scenario, troubleshooting, decision-making, as well as screening, technical, case and behavioral), a hint shown on request, the professional model answer behind a button, likely follow-up questions, and a rubric of what a strong answer covers. Ticking the rubric records `communicate` evidence for the lesson. Every question says where it comes from: an original practice question written for this site, or a reported question with its source (the schema refuses a “reported” question without a registered source). The interview bank filters by every type.
+- **Teach it back** on every lesson page: explain the idea in your own words (saved on this device; optional dictation where the browser supports it, with a notice that audio may go to the browser maker’s servers), then compare with the points a good explanation covers, or with the lesson’s own definition where no checklist exists yet.
+- **Read the question aloud** in interview practice, using the device’s speech voice where available.
+- **Operations Research depth batch**: 21 OR lessons enriched individually (LP, feasible region, simplex, duality, shadow price, sensitivity, integer programming, MILP, big-M, branch and bound, transportation, assignment, network flow, shortest path, TSP, VRP, knapsack, Markov chains, M/M/c, newsvendor, decision trees) with objectives, why it matters, assumptions, illustrative scenarios, common mistakes, nine teach-back checklists and 27 interview questions (24 new, 3 existing ones upgraded), every one with a type, hint, follow-ups and rubric. 15 new worked examples, each with numbers a learner can check by hand.
+- **Equation Explorer**: M/M/c (Erlang C) and newsvendor experiments, each with three independent reference cases.
+- Sources: the Gurobi Optimizer Reference Manual, Gurobi’s MIP primer and the Google OR-Tools guides.
+
+### Fixed
+- Dollar amounts in lesson text were rendered as math when a sentence held two of them (“$600 at (20, 0); $800 …”). Inline math now needs an opening `$` that is not followed by a digit or a space, so prices stay text.
+
+### Verified
+- `src/lib/or.test.ts` recomputes every new OR number independently: LP vertex enumeration (including the dual and the shadow-price range), whole-number enumeration for the integer and transportation examples, all 24 assignments, augmenting paths plus every cut for max flow, Dijkstra, every TSP tour, every knapsack subset, the Markov chain iterated to convergence, and a separate Erlang C formula.
+- Solver documentation (Gurobi, OR-Tools) was matched against the search engine’s copy of each page; the pages could not be opened in this session, so those lessons are marked source-identified or math-validated, never source-checked.
 
 ## Proposed — Deep learning and career content batch
 

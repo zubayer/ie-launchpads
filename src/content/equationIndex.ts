@@ -9,5 +9,7 @@ export const EQUATION_FOR_CONCEPT: Record<string, string> = {
   'engecon.npv': 'npv',
   'engecon.irr': 'irr-newton',
   'or.mm1': 'mm1',
+  'or.mmc': 'mmc',
+  'or.newsvendor': 'newsvendor',
   'automation.sensors': 'calibration',
 }

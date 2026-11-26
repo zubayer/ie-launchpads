@@ -107,8 +107,8 @@ export default function TopicStudio({ c, layers, hasVisual, onFull }: { c: Conce
           <label className="block text-sm">Confidence<select className="input mt-1" disabled={submitted} value={confidence} onChange={e=>setConfidence(Number(e.target.value) as 1|2|3)}><option value={1}>Guessing</option><option value={2}>Unsure</option><option value={3}>Sure</option></select></label>
           {!submitted?<button className="btn" disabled={choice===null} onClick={submit}>Check my answer</button>:<div aria-live="polite"><p className="font-semibold">{choice===check.answer?'Correct.':'Not quite.'} {check.why}</p><p className="mt-1 text-xs text-ink-2">Answer recorded as explanation evidence, not proof of mastery.</p><button className="btn-ghost btn mt-2" onClick={()=>{setChoice(null);setSubmitted(false)}}>Try again</button></div>}
         </div>:<p className="text-sm">Use the existing check-yourself section to demonstrate knowledge. Opening a topic does not establish mastery.</p>}
-        <div className="flex flex-wrap gap-2">{go('try','More practice')}{go('interview','Interview check')}</div>
-        <p className="text-sm"><strong>Teach back:</strong> Explain what this concept solves, its inputs, how you would use it, and one limitation without looking at the lesson.</p>
+        <div className="flex flex-wrap gap-2">{go('try','More practice')}{go('interview','Interview check')}{go('teach','Teach it back')}</div>
+        <p className="text-sm"><strong>Teach back:</strong> Explain what this concept solves, its inputs, how you would use it, and one limitation without looking at the lesson. Use the existing Teach it back section to save your explanation.</p>
       </>}
       {stage==='Explore sources' && <>
         <p className="text-sm text-ink-2">Original reference previews. A source link is not a named human expert review.</p>

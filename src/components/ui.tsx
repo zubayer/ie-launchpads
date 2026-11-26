@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import type { Concept } from '../types'
 import { DOMAIN_MAP } from '../content/domains'
 import { useStore, statusOf, type Status } from '../lib/store'
+import { isMath, splitMath } from '../lib/inlineMath'
 
 export function Tex({ tex, block = false }: { tex: string; block?: boolean }) {
   const ref = useRef<HTMLSpanElement>(null)
@@ -17,11 +18,11 @@ export function Tex({ tex, block = false }: { tex: string; block?: boolean }) {
 
 /** Render text with inline $math$ segments. */
 export function Rich({ text }: { text: string }) {
-  const parts = text.split(/(\$[^$]+\$)/g)
+  const parts = splitMath(text)
   return (
     <>
       {parts.map((p, i) =>
-        p.startsWith('$') && p.endsWith('$') && p.length > 2 ? <Tex key={i} tex={p.slice(1, -1)} /> : <span key={i}>{p}</span>,
+        isMath(p) ? <Tex key={i} tex={p.slice(1, -1)} /> : <span key={i}>{p}</span>,
       )}
     </>
   )

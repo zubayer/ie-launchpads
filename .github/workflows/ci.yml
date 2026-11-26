@@ -24,7 +24,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: topic-intelligence-inventory
-          path: docs/TOPIC-INVENTORY.md
+          path: |
+            docs/TOPIC-INVENTORY.md
+            docs/CAREER-DEPTH-INVENTORY.md
       - name: Initial JavaScript size
         run: npm run size
       - name: Browser and accessibility audit (offline, light and dark)

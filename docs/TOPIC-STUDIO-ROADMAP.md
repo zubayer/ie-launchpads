@@ -25,3 +25,6 @@
 
 ## Commands / handoff
 Run npm test, npm run build, npm run docs, npm run size, npm run audit (with preview server) and manually exercise all seven stages and five labs in both themes and on mobile. Inspect the topic-intelligence-inventory CI artifact. Verify external provider behavior separately because the existing browser audit blocks outbound requests. Do not merge if checks fail. This branch is based on the passing hotfix #8; merge that hotfix first, reconcile other changes, then revalidate this PR. No production changes or paid services authorized.
+
+## Integration checkpoint — November 26
+Reconciled against main d30d077 (PR #13). Preserve OR_V3, existing source records and audit routes, InterviewCard, TeachBackCard, nine modes and saved progress. Studio is expanded by default in full mode and collapsed in other modes. Its Master section links to the existing teach-back and interview activities when present. CI generates both topic and career inventories. Corrected IIS terminology. Generated coverage and gap reports from the old branch are deliberately not carried over; regenerate from current combined content. Full tests and rendered visual review remain release gates.

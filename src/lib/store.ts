@@ -54,6 +54,7 @@ export interface Attempt {
   dim: Dimension
   correct: boolean
   at: number
+  provenance?: 'self-assessed' | 'objective' | 'external-review' // absent on legacy evidence; do not infer verification
   variant?: number // seed of a generated question
   given?: string
   confidence?: 1 | 2 | 3 // guessing, unsure, sure

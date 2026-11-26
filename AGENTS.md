@@ -31,7 +31,8 @@ A change is done only when `npm test`, `npm run build` and `npm run audit` pass 
 - Learner evidence goes through `recordAttempt` with a dimension; opening a page is not evidence. Bump the persist version and add a migration when the saved shape changes.
 - Sources live once in `src/content/sources.ts` and are referenced by id from lessons, with the section that supports the claim.
 - Review status (`review.status`) must reflect what actually happened. Use `source-checked` only after the cited section was opened and matched the claim, `math-validated` only when a test recomputes the numbers, and `expert-reviewed` only with a named human reviewer. Never upgrade a status without that evidence.
-- Scenarios that are not documented real events are labeled illustrative. Datasets are labeled synthetic.
+- Scenarios that are not documented real events are labeled illustrative (`real.kind: 'illustrative'`; the page shows the label, so don’t repeat it in the story). Datasets are labeled synthetic.
+- Interview questions are original practice questions unless a source reports that an employer asked them. Mark those `origin: 'reported'` with a `reported` citation to a registered source; never attribute a question to a company without one. New questions should carry a type, a hint, follow-ups and a rubric. A lesson overlay’s `iq` replaces the base list, so carry the existing questions over.
 - Do not invent citations, standards, authors, dates or statistics. If a fact can't be sourced, leave it out or mark the lesson `verify`.
 
 ## Product rules
