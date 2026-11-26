@@ -33,7 +33,8 @@
   --color-sorange: #fb9a5b;
 }
 
-html { -webkit-text-size-adjust: 100%; }
+/* The top bar (menu, search) is sticky: keep focused and scrolled-to elements clear of it (WCAG 2.4.11). */
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 4.5rem; }
 body {
   background-color: var(--color-paper);
   color: var(--color-ink);

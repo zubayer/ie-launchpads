@@ -31,6 +31,7 @@ export interface Settings {
   learnMode?: string // learning mode id (src/lib/modes.ts)
   jobLocation?: string // optional city/state for job-board links
   sessionMin?: number // preferred study session length for Do next (5, 15, 30 or 60)
+  navPinned?: boolean // desktop: keep the menu docked open (default: hidden, slides in from the left edge)
 }
 
 /** A wrong answer kept for later review (error notebook). */

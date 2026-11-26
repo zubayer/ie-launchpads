@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased — branch `v3/auto-hide-nav` (2026-11-26)
+
+### Changed
+- **The menu hides on computers, so lessons get the full width** (owner request). It slides in from the left when:
+  - the pointer rests at the left edge for a quarter second (passing over the edge doesn't open it)
+  - you press the **Menu** button
+  - you press the **M** key
+  It slides away when the pointer leaves, or on Escape, a click outside, or opening a page.
+- **Pin** in the menu keeps it docked open on every page; **Unpin** hides it again. The choice is saved with your settings.
+- **Search is always in the top bar**, on every page and screen size, wider than before; `/` and Ctrl/Cmd+K still open it.
+- Phones and tablets keep the Menu button; there is no hover zone on touch screens.
+- While hidden, the menu's links can't be reached by Tab (inert), and opening it from the keyboard moves focus into it and back to Menu on close.
+- The page scrolls focused items clear of the sticky top bar.
+- The browser audit checks that the menu starts hidden on desktop, that M and Escape work, that the open menu passes axe, and that the search bar is visible. The comparison-studio check now runs axe with the page scrolled to the top, so a button passing under the sticky bar mid-scroll isn't reported as obscured.
+
 ## Unreleased — branch `v3/live-first` (2026-11-26)
 
 ### Changed

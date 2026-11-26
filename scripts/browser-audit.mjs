@@ -99,6 +99,22 @@ for (const theme of ['light', 'dark']) {
     await page.getByRole('link',{name:'Terminology & symbols',exact:true}).click()
     await page.getByRole('heading',{name:'Engineering abbreviation dictionary',exact:true}).waitFor()
   } catch(e) { failures++; console.log('✗ ['+theme+'] dictionary: '+e.message) }
+  // Owner decision (2026-11-26): on desktop the menu is hidden until asked for, search stays in the top bar.
+  try {
+    await page.setViewportSize({ width: 1366, height: 900 })
+    await page.goto(`${BASE}?nav=1#/c/lean.takt-time`)
+    await page.waitForSelector('#main h1')
+    const navX = async () => (await page.locator('#site-nav').boundingBox()).x
+    if (await navX() >= 0) throw new Error('menu is showing by default')
+    if (!(await page.getByRole('button', { name: /^Search \d+ terms/ }).isVisible())) throw new Error('top search is not visible')
+    await page.keyboard.press('m'); await page.waitForTimeout(350)
+    if (await navX() !== 0) throw new Error('M did not open the menu')
+    await page.addScriptTag({ content: axe })
+    const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] })).violations.map((x) => x.id))
+    if (v.length) throw new Error('open menu accessibility: ' + v.join(', '))
+    await page.keyboard.press('Escape'); await page.waitForTimeout(350)
+    if (await navX() >= 0) throw new Error('Escape did not close the menu')
+  } catch (e) { failures++; console.log(`✗ [${theme}] auto-hide menu: ${e.message}`) }
   // Owner decisions (2026-11-26): live sources load without any click, and “Live from the web” is the second section
   // (the former “Quick preview” is gone).
   await page.goto(`${BASE}?autopreview=1#/c/lean.takt-time`)
@@ -139,6 +155,8 @@ for (const theme of ['light', 'dark']) {
     await page.getByRole('button',{name:'Add concept',exact:true}).click()
     await page.getByRole('heading',{name:'Takt time',exact:true}).waitFor()
     await page.getByRole('button',{name:'Equations',exact:true}).click()
+    // Check the page at rest: mid-scroll, any target sliding under the sticky top bar counts as obscured.
+    await page.evaluate(()=>window.scrollTo(0,0))
     await page.addScriptTag({content:axe})
     const violations=await page.evaluate(async()=>(await window.axe.run(document,{runOnly:['wcag2a','wcag2aa','wcag21aa','wcag22aa']})).violations.map(v=>v.id))
     if(violations.length)throw new Error('Advanced comparison accessibility: '+violations.join(', '))
