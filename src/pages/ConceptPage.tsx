@@ -1,5 +1,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { EQUATION_FOR_CONCEPT } from '../content/equationIndex'
+import { DEEP_DIVE, deepDiveNote } from '../content/deepDives'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { CONCEPTS, CONCEPT_MAP, byDomain, learningOrder, neighbors } from '../content'
 import { DOMAIN_MAP } from '../content/domains'
@@ -250,6 +251,13 @@ export default function ConceptPage() {
               <ul className="list-disc space-y-0.5 pl-5 text-[0.95rem]">{c.objectives.map((o) => <li key={o}>{o}</li>)}</ul>
             </div>
           ) : null}
+          {DEEP_DIVE[c.id] && (
+            <div className="measure mb-4 rounded-lg border-l-4 border-sblue bg-sblue/5 px-4 py-3">
+              <p className="label mb-1">Deep dive, hands-on</p>
+              <ul className="space-y-0.5">{DEEP_DIVE[c.id].map((d) => <li key={d.to}><Link className="font-semibold underline" to={d.to}>{d.label}</Link></li>)}</ul>
+              <p className="mt-1 text-sm text-ink-2">{deepDiveNote(DEEP_DIVE[c.id][0].to)}</p>
+            </div>
+          )}
           <p className="measure text-xl leading-snug"><Linked text={c.one} self={c.id} max={3} /></p>
           {mode.depth === 'full' && <p className="measure mt-3"><Linked text={c.def} self={c.id} /></p>}
           {mode.depth === 'gentle' && (

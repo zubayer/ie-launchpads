@@ -72,6 +72,32 @@ const list: SourceRecord[] = [
     url: 'https://openstax.org/books/principles-finance/pages/16-2-net-present-value-npv-method',
     tier: 2, kind: 'academic', access: 'open', checkedOn: '2026-11-25',
   },
+  {
+    id: 'plcopen-61131-3', title: 'IEC 61131-3: Programming Languages (edition 3.0, 2013)', publisher: 'PLCopen',
+    url: 'https://plcopen.org/node/211', tier: 1, kind: 'professional', year: 2013, access: 'open', checkedOn: '2026-11-25',
+    note: 'PLCopen’s summary of the standard. The standard itself is sold by IEC.',
+  },
+  {
+    id: 'rockwell-logix-instructions', title: 'Studio 5000 Logix Designer online help: instruction set', publisher: 'Rockwell Automation',
+    url: 'https://www.rockwellautomation.com/en-us/docs/studio-5000-logix-designer/38-01/contents-ditamap/instruction-set/timer-and-counter-instructions/timer-on-delay--ton-.html',
+    tier: 1, kind: 'industry', access: 'open', checkedOn: '2026-11-25',
+    note: 'Each instruction (XIC, XIO, OTE, OTL, ONS, TON, TOF, RTO, CTU) has its own page; citations link the page they rely on. Versions 37–38 read the same for these instructions.',
+  },
+  {
+    id: 'rockwell-clx-um900', title: 'ControlLogix 5590 Controllers User Manual (1756-UM900): Determine When I/O Data Is Updated', publisher: 'Rockwell Automation',
+    url: 'https://www.rockwellautomation.com/en-au/docs/technical/logix5000/_online/1756-um900/controllogix-5590-controller-user-manual-ditamap/manage-controller-i-o-connections/determine-when-i-o-data-is-updated.html',
+    tier: 1, kind: 'industry', access: 'open', checkedOn: '2026-11-25',
+  },
+  {
+    id: 'iso-13849-1', title: 'ISO 13849-1:2023 — Safety of machinery — Safety-related parts of control systems — Part 1: General principles for design', publisher: 'International Organization for Standardization (ISO)',
+    url: 'https://www.iso.org/standard/73481.html', tier: 1, kind: 'standard', year: 2023, access: 'paywalled', checkedOn: '2026-11-25',
+    note: 'Abstract checked; the standard itself is paywalled.',
+  },
+  {
+    id: 'solidworks-help', title: 'SOLIDWORKS Help', publisher: 'Dassault Systèmes SolidWorks Corporation',
+    url: 'https://help.solidworks.com/', tier: 1, kind: 'industry', access: 'open', checkedOn: '2026-11-25',
+    note: 'The help pages build their text with JavaScript, so they could not be opened directly here. Claims were matched against the search engine’s copy of each page, which is why lessons citing them are marked source-identified, not source-checked.',
+  },
 ]
 
 export const SOURCES: Record<string, SourceRecord> = Object.fromEntries(list.map((s) => [s.id, s]))

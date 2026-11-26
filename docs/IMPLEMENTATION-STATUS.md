@@ -48,6 +48,9 @@ Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXE
 | V3: Equation Explorer `/formulas/:id` (9 experiments) | Tested | `src/lib/equations.test.ts`: independent reference cases and properties; route audit; 360–1800 px overflow check |
 | V3: Guided pathway `/paths/lean-throughput` with evidence by skill | Tested | `src/lib/pathways.test.ts` (300 seeds per generated question); scripted browser run incl. reload and save migration |
 | V3: Do next on Today | Tested | `src/lib/recommend.test.ts` scenario tests; browser run |
+| V3: SQL studio `/studio/sql` + playground `/lab/sql` + 8 new SQL lesson pages | Tested | `src/lib/sql.test.ts` re-runs every course query; browser run incl. timeout/restart and graded tasks; 82-route audit. No citations yet (sources not opened) |
+| V3: PLC studio `/studio/plc` (9 lessons) on a ladder engine; PLC ladder lab rebuilt | Tested | `src/lib/ladder.test.ts` (engine vs hand-worked values), `src/lib/plc.test.ts` (every example, mistake, fix, solution and starter run); browser runs of grading and the live runner; 106-route audit. Sources: Rockwell instruction pages, ControlLogix manual, PLCopen, ISO 13849-1 abstract (opened and matched) |
+| V3: CAD studio `/studio/cad` (7 lessons) and five CAD labs on lesson pages | Tested | `src/lib/cad.test.ts` (kernels vs hand-worked values; presets, model answers and wrong answers). SOLIDWORKS help matched only via the search engine’s copy (source-identified); drawings, FEA, DFM and DFA lessons unsourced and labelled |
 | V3: PR check workflow | Implemented | `.github/workflows/ci.yml`; first run happens on the batch-1 pull request |
 | Wide-screen layout (content beside the sidebar) | Tested | Route audit at 1366 and 1800 px |
 | V2 ↔ V1 switch (same page where V1 has it) | Tested | Link-mapping test. V1 address defaults to the URL in the master prompt; set `VITE_V1_URL` if V1 lives elsewhere |
@@ -61,7 +64,8 @@ Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXE
 
 ## Known limitations
 
-- Review statuses on Lean/Quality lessons are AI-assisted; treat `source-checked` as "a source was matched", not expert review.
+- Review statuses on Lean, Quality and automation lessons are AI-assisted; treat `source-checked` as "a source was matched", not expert review.
+- The ladder engine is a teaching model of Rockwell Logix instruction behaviour (synchronous scan, listed prescan rules), not a controller emulator; the CAD labs model the ideas under SOLIDWORKS, not the software.
 - Units are not yet a structured field on formulas; the library shows only what the lessons state.
 - Progress is saved per browser and separately for V1 and V2.
 - The main bundle is ~1.2 MB (417 kB gzipped) because all concept content loads up front; see backlog item P1-4.
