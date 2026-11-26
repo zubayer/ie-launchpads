@@ -8,7 +8,10 @@ import { CASES } from '../content/cases'
 import { statusOf, useStore, type StarStory } from '../lib/store'
 import { shuffle } from '../lib/quiz'
 import { Bar, ConceptRow, PageHead, Rich, Section } from '../components/ui'
-import type { DomainId, InterviewQ } from '../types'
+import type { DomainId, InterviewQ, InterviewType } from '../types'
+import { InterviewCard, TYPE_LABEL } from '../components/Interview'
+
+const TYPES = Object.keys(TYPE_LABEL) as InterviewType[]
 
 export function Roles() {
   const path = useStore((s) => s.settings.path)
@@ -98,12 +101,7 @@ export function RolePage() {
 function QList({ qs }: { qs: InterviewQ[] }) {
   return (
     <div className="space-y-2">
-      {qs.map((q) => (
-        <details key={q.q} className="rounded-md border border-line bg-sheet px-4 py-3">
-          <summary className="cursor-pointer font-medium">{q.q} {q.type && <span className="chip ml-2 align-middle">{q.type}</span>}</summary>
-          <p className="measure mt-2 text-[0.97rem]"><Rich text={q.a} /></p>
-        </details>
-      ))}
+      {qs.map((q) => <InterviewCard key={q.q} q={q} />)}
     </div>
   )
 }
@@ -113,10 +111,10 @@ function QList({ qs }: { qs: InterviewQ[] }) {
 type Tab = 'bank' | 'mock' | 'star' | 'cases' | 'decoder' | 'bullets'
 const TABS: [Tab, string][] = [['bank', 'Question bank'], ['mock', 'Mock interview'], ['star', 'STAR story builder'], ['cases', 'Case interviews'], ['decoder', 'Job posting decoder'], ['bullets', 'Resume bullet builder']]
 
-interface BankQ extends InterviewQ { src: string; domain?: DomainId; link?: string }
+interface BankQ extends InterviewQ { src: string; domain?: DomainId; link?: string; concept?: string }
 
 function allQuestions(): BankQ[] {
-  const fromConcepts: BankQ[] = CONCEPTS.flatMap((c) => (c.iq || []).map((q) => ({ ...q, type: q.type || 'technical', src: c.term, domain: c.domain, link: `/c/${c.id}` })))
+  const fromConcepts: BankQ[] = CONCEPTS.flatMap((c) => (c.iq || []).map((q) => ({ ...q, type: q.type || 'technical', src: c.term, domain: c.domain, link: `/c/${c.id}`, concept: c.id })))
   const fromRoles: BankQ[] = ROLES.flatMap((r) => r.questions.map((q) => ({ ...q, src: r.title, link: `/roles/${r.id}` })))
   const beh: BankQ[] = BEHAVIORAL.map((q) => ({ ...q, type: 'behavioral', src: 'Behavioral' }))
   const seen = new Set<string>()
@@ -128,26 +126,24 @@ function Bank() {
   const [type, setType] = useState('')
   const [dom, setDom] = useState('')
   const [q, setQ] = useState('')
+  const counts = useMemo(() => qs.reduce<Record<string, number>>((m, x) => { if (x.type) m[x.type] = (m[x.type] || 0) + 1; return m }, {}), [qs])
   const list = qs.filter((x) => (!type || x.type === type) && (!dom || x.domain === dom) && (!q || (x.q + x.a).toLowerCase().includes(q.toLowerCase())))
+  const reported = qs.filter((x) => x.origin === 'reported').length
   return (
     <div>
       <div className="mb-4 grid gap-3 sm:grid-cols-3">
         <input className="input" placeholder="Search questions" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search questions" />
         <select className="input" value={type} onChange={(e) => setType(e.target.value)} aria-label="Type">
-          <option value="">All types</option><option value="screen">Screening</option><option value="technical">Technical</option><option value="case">Case</option><option value="behavioral">Behavioral</option>
+          <option value="">All types</option>{TYPES.filter((t) => counts[t]).map((t) => <option key={t} value={t}>{TYPE_LABEL[t]} ({counts[t]})</option>)}
         </select>
         <select className="input" value={dom} onChange={(e) => setDom(e.target.value)} aria-label="Domain">
           <option value="">All domains</option>{DOMAINS.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
       </div>
-      <p className="mb-2 text-sm text-ink-2">{list.length} questions. Answer out loud first; then open the model answer.</p>
+      <p className="mb-2 text-sm text-ink-2">{list.length} questions. Answer out loud first; then open the model answer. {reported ? `${reported} questions in the bank are reported from a cited source; every other one` : 'Every question in the bank'} is an original practice question written for this site, not a question reported from any employer.</p>
       <div className="space-y-2">
         {list.slice(0, 150).map((x) => (
-          <details key={x.q} className="rounded-md border border-line bg-sheet px-4 py-3">
-            <summary className="cursor-pointer font-medium">{x.q} <span className="chip ml-2 align-middle">{x.type}</span></summary>
-            <p className="measure mt-2 text-[0.97rem]"><Rich text={x.a} /></p>
-            {x.link && <Link to={x.link} className="mt-2 inline-block text-sm underline">From: {x.src}</Link>}
-          </details>
+          <InterviewCard key={x.q} q={x} concept={x.concept} footer={x.link ? <Link to={x.link} className="inline-block text-sm underline">From: {x.src}</Link> : null} />
         ))}
       </div>
     </div>

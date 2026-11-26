@@ -56,6 +56,17 @@ Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXE
 | V2 ↔ V1 switch (same page where V1 has it) | Tested | Link-mapping test. V1 address defaults to the URL in the master prompt; set `VITE_V1_URL` if V1 lives elsewhere |
 | Independent deployment of this repository | Implemented | GitHub Pages workflow (`.github/workflows/deploy.yml`) runs tests + build on every push to `main` → https://zubayer.github.io/ie-launchpads/. Goes live once this branch is merged. A Vercel project remains optional |
 
+## V3 batch 4 (branch `v3/topic-depth`)
+
+| Feature | Status | Evidence |
+|---|---|---|
+| Interview questions with type, origin, hint, follow-ups and rubric | Tested | `src/components/Interview.tsx`; schema tests in `src/content/content.test.ts`; browser run of hint, answer and rubric scoring |
+| Teach it back on every lesson (typed or dictated) | Tested | `TeachBackCard`; text saved in progress (`teach`), self-check saved as `communicate` evidence |
+| Read-aloud and dictation | Implemented | `src/lib/speech.ts`; shown only when the browser supports them |
+| Operations Research depth (21 lessons) | Tested | `src/content/lessons/or.ts`; numbers recomputed in `src/lib/or.test.ts` |
+| Equation Explorer: M/M/c and newsvendor | Tested | `src/content/equations.ts` reference cases |
+| Dollar amounts no longer rendered as math | Tested | `src/lib/inlineMath.ts`; test in `src/content/content.test.ts` |
+
 ## Proposed V3 learning-quality contribution
 
 | Feature | Status | Evidence / notes |
@@ -64,7 +75,7 @@ Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXE
 
 ## Known limitations
 
-- Review statuses on Lean, Quality and automation lessons are AI-assisted; treat `source-checked` as "a source was matched", not expert review.
+- Review statuses on Lean, Quality, automation and OR lessons are AI-assisted; treat `source-checked` as "a source was matched", not expert review.
 - The ladder engine is a teaching model of Rockwell Logix instruction behaviour (synchronous scan, listed prescan rules), not a controller emulator; the CAD labs model the ideas under SOLIDWORKS, not the software.
 - Units are not yet a structured field on formulas; the library shows only what the lessons state.
 - Progress is saved per browser and separately for V1 and V2.

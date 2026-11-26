@@ -36,6 +36,16 @@ describe('Equation Explorer content', () => {
 })
 
 describe('equation properties', () => {
+  it('newsvendor never recommends a negative order anywhere on the sliders', () => {
+    const e = E('newsvendor')
+    for (const p of [0.5, 5.1, 12, 200]) for (const c of [0.5, 5, 150]) for (const s of [0, 0.4, 1]) for (const mu of [10, 500, 5000]) for (const sigma of [1, 120, 1000]) {
+      const r = evaluate(e, { p, c, s, mu, sigma })
+      if (r.ok) expect(r.y, JSON.stringify({ p, c, s, mu, sigma })).toBeGreaterThanOrEqual(0)
+    }
+    const thin = evaluate(e, { p: 5.1, c: 5, s: 1, mu: 10, sigma: 120 })
+    expect(thin.ok && thin.y === 0 && !!thin.warn).toBe(true)
+  })
+
   it("Little's law: W × λ = L", () => {
     for (const [L, lam] of [[240, 60], [7, 3], [0, 5]]) expect(y('littles-law', { L, lam }) * lam).toBeCloseTo(L, 9)
   })

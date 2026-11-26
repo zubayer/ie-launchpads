@@ -32,11 +32,22 @@ export interface WorkedExample {
   }
 }
 
+export type InterviewType = 'screen' | 'technical' | 'case' | 'behavioral' | 'conceptual' | 'numerical' | 'analytical' | 'scenario' | 'troubleshooting' | 'decision'
 export interface InterviewQ {
   q: string
-  a: string
-  type?: 'screen' | 'technical' | 'case' | 'behavioral'
+  a: string // professional model answer
+  type?: InterviewType
+  /** Where the question comes from. 'practice' (the default): an original practice question written for this site.
+   *  'reported': a question a named source says an employer asked; it must carry `reported` with that source. */
+  origin?: 'practice' | 'reported'
+  reported?: Citation
+  hint?: string // a nudge shown on request, before the model answer
+  followUps?: string[] // what an interviewer is likely to ask next
+  rubric?: string[] // what a strong answer covers (evaluation criteria)
 }
+
+/** Teach-back: explain the idea in your own words, then compare with the points a good explanation covers. */
+export interface TeachBack { prompt: string; points: string[] }
 
 // ---------- Knowledge sources and review (V2) ----------
 /** Tier 1: government, standards bodies, professional societies, originators. Tier 2: peer-reviewed, university, textbooks.
@@ -91,6 +102,7 @@ export interface Concept {
   assumptions?: string[] // assumptions and limits of validity
   cites?: Citation[]
   review?: Review
+  teachBack?: TeachBack
 }
 
 export interface RolePath {

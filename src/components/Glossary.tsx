@@ -2,6 +2,7 @@ import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, use
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { CONCEPTS, CONCEPT_MAP } from '../content'
+import { isMath, splitMath } from '../lib/inlineMath'
 import { DOMAIN_MAP } from '../content/domains'
 import { CONCEPT_ALIAS, WIKI_TERMS, wikiUrl } from '../content/wikiTerms'
 import { jobsFor } from '../content/jobs'
@@ -201,13 +202,13 @@ function WikiLink({ title, children }: { title: string; children: ReactNode }) {
 
 /** Prose renderer: $inline math$, core terms linked to cards, key names linked to Wikipedia — all with hover cards. */
 export function Linked({ text, self, max = 8 }: { text: string; self?: string; max?: number }) {
-  const parts = useMemo(() => text.split(/(\$[^$]+\$)/g), [text])
+  const parts = useMemo(() => splitMath(text), [text])
   let used = 0
   const seen = new Set<string>()
   return (
     <>
       {parts.map((p, i) => {
-        if (p.startsWith('$') && p.endsWith('$') && p.length > 2) return <Tex key={i} tex={p.slice(1, -1)} />
+        if (isMath(p)) return <Tex key={i} tex={p.slice(1, -1)} />
         const nodes: ReactNode[] = []
         let pos = 0
         for (const h of findTerms(p)) {
