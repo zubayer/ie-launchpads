@@ -45,9 +45,9 @@ describe('numeric QA', () => {
 })
 
 describe('coverage ratchet', () => {
-  it('coverage of the V3 core minimum and of machine-checked examples never falls (baseline 2026-11-25: 27 and 119)', async () => {
+  it('coverage of the V3 core minimum and of machine-checked examples never falls (baseline 2026-11-25: 27 and 119; raised to 37 by the automation studios)', async () => {
     const { meetsMinimum } = await import('./contentStats')
-    expect(CONCEPTS.filter(meetsMinimum).length).toBeGreaterThanOrEqual(27)
+    expect(CONCEPTS.filter(meetsMinimum).length).toBeGreaterThanOrEqual(37)
     expect(CONCEPTS.filter((c) => c.example?.check).length).toBeGreaterThanOrEqual(119)
   })
 })

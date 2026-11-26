@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased — branch `v3/automation-studio` (2026-11-25)
+
+### Added
+- **PLC studio** (`/studio/plc`): nine lessons from the scan cycle to sequences, troubleshooting and safety: how a PLC runs, contacts and Boolean logic, NO/NC wiring versus XIC/XIO, seal-in circuits and latches, TON/TOF/RTO timers, counters and one-shots, step sequences with watchdogs, troubleshooting online, and what standard logic must not be trusted with. Each lesson has the idea, an analogy, how it works, worked examples drawn as ladder diagrams with a step-by-step scenario table, “check your model” questions, common mistakes shown wrong-vs-fixed with both scenarios, graded practice, interview questions, a playground and sources.
+- **A ladder-logic engine** (`src/lib/ladder.ts`): rungs written in Allen-Bradley’s text form (`XIC(Start) [XIC(Motor), …] XIO(Stop) OTE(Motor)`, BST/NXB/BND also accepted), run scan by scan with XIC, XIO, ONS, OTE, OTL, OTU, TON, TOF, RTO, CTU, CTD, RES, MOV, ADD, SUB and six comparisons; NO/NC field wiring and cut wires; restart with prescan rules; review warnings (double coils, OTE mixed with latches, shared timers, writes to inputs, bits nothing sets).
+- **Practice graded by behaviour**: a learner’s rungs run through the task’s scenario and every expected value must match, so any correct program counts. “Find where the power stops” puzzles read the online view of a stopped machine.
+- **CAD studio** (`/studio/cad`): seven lessons on sketches and degrees of freedom, design intent and equations, the feature tree, assemblies and mates, drawings and projection, simulation sanity checks, and DFM/DFA. The labs compute real answers: sketch degrees of freedom from the rank of the constraint equations (under, fully or over defined, with redundant relations flagged), assembly motion from the mates’ small-motion kinematics (hinges, slides, redundant mates), SOLIDWORKS-style equations with dependency and cycle checks, feature-tree rebuild order and dependents, orthographic views projected from a 3D part in first or third angle, cantilever stress, deflection and factor of safety, and a DFA theoretical minimum part count.
+- Five new labs on lesson pages (`/lab/sketch-dof`, `/lab/mate-dof`, `/lab/ortho-views`, `/lab/beam-check`, `/lab/dfa-count`), and the PLC ladder lab rebuilt on the new engine with editable programs.
+- Sixteen automation lesson pages enriched (PLC, scan cycle, ladder logic, NO/NC, seal-in, timers, counters, safety circuits, SolidWorks, parametric modelling, mates, drawings, FEA, DFM, DFA) with objectives, mistakes, applications, interview questions, sources and a review status, plus “Deep dive, hands-on” links to the studios.
+- Five sources: PLCopen’s IEC 61131-3 page, Rockwell’s Logix instruction pages and ControlLogix user manual, ISO 13849-1:2023, and SOLIDWORKS Help.
+
+### Verified
+- Every example, mistake, fix, practice solution and starter in both studios is run by the tests (`src/lib/plc.test.ts`, `src/lib/cad.test.ts`); engine and kernel behaviour is tested against values worked out by hand (`src/lib/ladder.test.ts`, `src/lib/cad.test.ts`).
+- Rockwell, PLCopen and ISO pages were opened and matched; SOLIDWORKS help pages render with JavaScript, so their claims were matched against the search engine’s copy and those lessons are marked source-identified.
+
 ## Unreleased — branch `v3/sql-studio` (2026-11-25)
 
 ### Added

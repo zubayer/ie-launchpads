@@ -34,6 +34,8 @@ const NAV: { group: string; items: { to: string; label: string; end?: boolean }[
     { to: '/lab/factory', label: 'Visual factory' },
     { to: '/academy', label: 'Engineering academy' },
     { to: '/studio/sql', label: 'SQL studio' },
+    { to: '/studio/plc', label: 'PLC studio' },
+    { to: '/studio/cad', label: 'CAD studio' },
     { to: '/tools', label: 'Tool cards' },
   ] },
   { group: 'Career', items: [
