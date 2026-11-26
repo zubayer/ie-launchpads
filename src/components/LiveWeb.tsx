@@ -24,7 +24,8 @@ function AiCard({ c }: { c: Concept }) {
   const ai = useLoad(() => aiSummary(c.term, `${c.full ? c.full + ', ' : ''}${DOMAIN_HINT[c.domain]}`, attempt), [c.id, attempt])
   const ask = askLinks(c.term)
   const failed = !ai.loading && !ai.data
-
+  // The free AI tier allows about one request per 15 s, so retry once by itself before asking the learner.
+  useEffect(() => { if (failed && attempt === 0) { const t = setTimeout(() => setAttempt(1), 16000); return () => clearTimeout(t) } }, [failed, attempt])
   return (
     <div className="flex h-full flex-col rounded-lg border border-line p-4">
       <p className="label mb-2 flex items-center gap-2">Free AI explains <span className="chip !py-0 text-[11px]">AI-generated</span></p>
@@ -43,7 +44,7 @@ function AiCard({ c }: { c: Concept }) {
         </>
       )}
       {!ai.loading && !ai.data && (
-        <p className="text-sm text-ink-2">The free AI service didn’t answer. Try again manually or use one of these external services:</p>
+        <p className="text-sm text-ink-2">The free AI service didn’t answer (it allows about one request every 15 seconds).{attempt === 0 ? ' Retrying by itself in 15 seconds, or' : ' Try again, or'} ask one of these with your question already filled in:</p>
       )}
       <div className="no-print mt-auto flex flex-wrap gap-1.5 pt-3">
         {!ai.loading && <button className="pop-btn" onClick={() => setAttempt((a) => a + 1)}>{ai.data ? 'Ask again' : 'Try again'}</button>}
@@ -53,11 +54,6 @@ function AiCard({ c }: { c: Concept }) {
   )
 }
 
-function OptionalAi({ c }: { c: Concept }) {
-  const [enabled,setEnabled]=useState(false)
-  if(enabled)return <AiCard c={c}/>
-  return <div className="rounded-lg border border-line p-4"><p className="label">Optional AI explanation</p><p className="mt-2 text-sm text-ink-2">A request sends the public topic title to an external AI service. Its output is not a verified source and may contain errors.</p><button className="btn-ghost btn mt-3" onClick={()=>setEnabled(true)}>Request AI explanation</button></div>
-}
 function Empty({ what, href }: { what: string; href: string }) {
   return <p className="text-sm text-ink-2">No {what} came back right now. <a className="underline" href={href} target="_blank" rel="noopener noreferrer">Search it directly ↗</a></p>
 }
@@ -136,13 +132,13 @@ export function LiveWeb({ c, wiki }: { c: Concept; wiki: { data: WikiSummary | n
   const ask = askLinks(name)
   return (
     <div>
-      <p className="mb-4 text-sm text-ink-2">External discovery enabled ({ago(at)}). Results load when their panels open. Every link opens in a new tab.</p>
+      <p className="mb-4 text-sm text-ink-2">Fetched live when you opened this page ({ago(at)}). Only the topic name is sent to these services. Every link opens in a new tab.</p>
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-lg border border-line p-4">
           <p className="label mb-2">What Wikipedia says</p>
           <WikiCard data={wiki.data} loading={wiki.loading} query={c.full || c.term} compact />
         </div>
-        <OptionalAi c={c} />
+        <AiCard c={c} />
       </div>
 
       <div className="mt-4 rounded-lg border border-line p-4">
@@ -179,15 +175,15 @@ export function prefetchLive(c: Concept) {
   void stackQA(c); void papers(name, 'relevance'); void papers(name, 'recent')
 }
 
-/** Quick preview is mounted only after the learner explicitly enables external discovery. */
+/** Wikipedia's summary and a free AI explanation, side by side, loaded as soon as the lesson opens. */
 export function QuickPreview({ c, wiki, hasLive }: { c: Concept; wiki: { data: WikiSummary | null; loading: boolean }; hasLive: boolean }) {
   return <div>
-    <div className="grid gap-3 md:grid-cols-2">
+    <div className="grid items-start gap-3 md:grid-cols-2">
       <div className="rounded-lg border border-line p-4">
         <p className="label mb-2">Wikipedia · supplementary orientation</p>
         <WikiCard data={wiki.data} loading={wiki.loading} query={c.full || c.term} compact />
       </div>
-      <OptionalAi c={c}/>
+      <AiCard c={c}/>
     </div>
     {hasLive && <p className="mt-2 text-sm"><a href="#live" className="font-semibold text-sblue hover:underline" onClick={e=>{e.preventDefault();document.getElementById('live')?.scrollIntoView({behavior:'smooth'})}}>More live sources ↓</a></p>}
   </div>

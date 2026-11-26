@@ -180,20 +180,16 @@ function ConceptView({ c }: { c: Concept }) {
   const deepest = useStore((s) => s.progress[id]?.layers ?? -1)
   const [active, setActive] = useState(0)
   const [qSeed, setQSeed] = useState(1)
-  const [consent,setConsent] = useState<{ id: string; preview?: boolean; sources?: boolean }>({ id: '' })
-  const previewEnabled = consent.id === id && !!consent.preview
-  const sourcesEnabled = consent.id === id && !!consent.sources
-  const liveEnabled = previewEnabled || sourcesEnabled
-  const enable = (panel: 'preview' | 'sources') => setConsent(old => ({ ...(old.id===id?old:{ id }), [panel]: true }))
+  // Wikipedia and the AI explanation load as soon as the lesson opens (owner decision, 2026-11-26): only the
+  // public topic name is sent; the lesson itself never depends on them, and failures fall back quietly.
   const [wikiState,setWikiState] = useState<{ id: string; data: WikiSummary | null; loading: boolean }>({ id: '', data: null, loading: false })
-  const web = liveEnabled && wikiState.id===id ? wikiState : { data: null, loading: liveEnabled }
+  const web = wikiState.id===id ? wikiState : { data: null, loading: true }
   useEffect(() => {
-    if (!c || !liveEnabled) return
     let current = true
     setWikiState({id:c.id,data:null,loading:true})
     wikiFor(c).then(data => {if(current)setWikiState({id:c.id,data,loading:false})}).catch(()=>{if(current)setWikiState({id:c.id,data:null,loading:false})})
     return () => {current=false}
-  }, [c,liveEnabled])
+  }, [c])
 
   useEffect(() => { if (c) open(c.id) }, [c, open])
   const [params, setParams] = useSearchParams()
@@ -234,12 +230,7 @@ function ConceptView({ c }: { c: Concept }) {
 
   // Each section's content, keyed by layer id. The learning mode decides which appear and in what order.
   const sections: Record<string, () => React.ReactNode> = {
-    preview: () => previewEnabled ? <QuickPreview key={c.id} c={c} wiki={web} hasLive={layers.some((l) => l.id === 'live')} /> : (
-      <div className="rounded-md border border-line p-4">
-        <p className="measure">{c.one}</p><p className="mt-2 text-sm text-ink-2">The studio and built-in lesson work without external services. Load Wikipedia and optional AI resources only if you want to explore further.</p>
-        <button className="btn-ghost btn mt-3" onClick={()=>enable('preview')}>Load external quick preview</button>
-      </div>
-    ),
+    preview: () => <QuickPreview key={c.id} c={c} wiki={web} hasLive={layers.some((l) => l.id === 'live')} />,
     keyword: () => (
       <>
           <div className="grid gap-5 md:grid-cols-[1fr_auto]">
@@ -442,7 +433,7 @@ function ConceptView({ c }: { c: Concept }) {
     ),
     live: () => (
       <>
-          {sourcesEnabled ? <LiveWeb key={c.id} c={c} wiki={web} /> : <div className="rounded-md border border-line p-4"><p className="text-sm">External article, practitioner and research discovery is optional. Requests may send the public topic title to third-party providers.</p><button className="btn-ghost btn mt-3" onClick={()=>enable('sources')}>Load live web sources</button></div>}
+          <LiveWeb key={c.id} c={c} wiki={web} />
       </>
     ),
     sources: () => (
