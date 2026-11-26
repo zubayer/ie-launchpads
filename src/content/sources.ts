@@ -83,6 +83,9 @@ const list: SourceRecord[] = [
     url: 'https://help.solidworks.com/', tier: 1, kind: 'industry', access: 'open', checkedOn: '2026-11-25',
     note: 'The help pages build their text with JavaScript, so they could not be opened directly here. Claims were matched against the search engine’s copy of each page, which is why lessons citing them are marked source-identified, not source-checked.',
   },
+  {"id":"openstax-break-even","title":"Principles of Accounting, Volume 2: Managerial Accounting — Calculate a Break-Even Point in Units and Dollars","publisher":"OpenStax, Rice University","url":"https://openstax.org/books/principles-managerial-accounting/pages/3-2-calculate-a-break-even-point-in-units-and-dollars","tier":2,"kind":"academic","access":"open","checkedOn":"2026-11-26"},
+  {"id":"doe-data-center-pue","title":"Cooling Water Efficiency Opportunities for Federal Data Centers","publisher":"U.S. Department of Energy","url":"https://www.energy.gov/cmei/femp/cooling-water-efficiency-opportunities-federal-data-centers","tier":1,"kind":"government","access":"open","checkedOn":"2026-11-26"},
+  {"id":"psu-fitts","title":"FittsLaw Applet — target acquisition","publisher":"Penn State University","url":"https://acs.ist.psu.edu/discrete-math/applets/fittslaw/FittsLawApplet.html","tier":2,"kind":"academic","access":"open","checkedOn":"2026-11-26"},
 ]
 
 export const SOURCES: Record<string, SourceRecord> = Object.fromEntries(list.map((s) => [s.id, s]))
