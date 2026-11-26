@@ -1,5 +1,10 @@
 # Changelog
 
+## Proposed — Deep learning and career content batch
+
+- Enrich 16 existing topics with mental models, learning objectives, scenarios, assumptions and 32 original interview practice questions; improve selected equations and add two visual models.
+- Add authoritative reference links and per-topic career-depth audit generator. Full CI and visual review pending.
+
 ## Unreleased — branch `v3/automation-studio` (2026-11-25)
 
 ### Added
