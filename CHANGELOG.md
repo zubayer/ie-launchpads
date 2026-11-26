@@ -1,5 +1,12 @@
 # Changelog
 
+## Proposed — Inline Terminology & Advanced Comparison Studio
+
+- Context-aware dictionary previews for known acronyms/index notation in linked lesson prose, keyboard/tap access, multiple meanings and lesson/source links. Existing glossary retained.
+- On-demand Equation X-Ray symbol selector using authored dictionary data, including available units and references.
+- Shareable custom 2–4 concept comparisons, seven curated families, four focus modes, three independently tested shared numerical labs and original family interview challenges.
+- Added integrity, numerical and mobile interaction checks. Full CI and visual review pending.
+
 ## Proposed — Engineering Abbreviation Dictionary
 
 - Add a lazy-loaded, offline dictionary indexing every existing lesson, explicit full-name metadata, 216 curated terminology and notation records, and existing lesson/Equation Explorer symbols and units.

@@ -13,7 +13,7 @@ const sims = [...registry.matchAll(/id: '([a-z0-9-]+)'/g)].map((m) => `lab/${m[1
 const routes = [
   '', 'directory', 'domains', 'd/lean', 'd/lean/cheatsheet', 'c/quality.cpk', 'c/quality.cp', 'c/or.newton-raphson', 'c/engecon.npv', 'c/lean.takt-time', 'c/lean.takt-time?mode=quick', 'c/or.lp', 'c/or.branch-bound', 'c/or.mmc?mode=interview', 'formulas/mmc', 'formulas/newsvendor', 'c/safety.fmea',
   'review', 'practice', 'lab', 'roles', 'roles/quality-engineer', 'interview', 'plan', 'graph', 'progress', 'academy',
-  'curriculum', 'formulas', 'notebook', 'table', 'table?el=engecon.npv', 'chains', 'chains?chain=safety-case&step=2', 'sheets/engecon', 'method', 'formulas/oee', 'formulas/mm1', 'formulas/irr-newton', 'formulas/calibration?x=2', 'formulas/nope', 'paths', 'paths/lean-throughput', 'studio/sql', 'studio/sql/select', 'studio/sql/joins', 'studio/sql/windows', 'studio/sql/design', 'c/datasci.sql-joins', 'studio/plc', 'studio/plc/scan', 'studio/plc/nonc', 'studio/plc/sealin', 'studio/plc/timers', 'studio/plc/sequence', 'studio/plc/debug', 'studio/plc/safety', 'studio/plc/nope', 'studio/cad', 'studio/cad/sketch', 'studio/cad/intent', 'studio/cad/features', 'studio/cad/mates', 'studio/cad/drawings', 'studio/cad/analysis', 'studio/cad/dfx', 'c/automation.ladder-logic', 'c/automation.solidworks', 'guide', 'guide?path=root,flow,l-capacity', 'pairs', 'dictionary', 'dictionary?concept=quality.cpk', 'mysteries', 'mysteries?case=beats-takt', 'subway', 'tools', 'spot-waste', 'no-such-page', ...sims,
+  'curriculum', 'formulas', 'notebook', 'table', 'table?el=engecon.npv', 'chains', 'chains?chain=safety-case&step=2', 'sheets/engecon', 'method', 'formulas/oee', 'formulas/mm1', 'formulas/irr-newton', 'formulas/calibration?x=2', 'formulas/nope', 'paths', 'paths/lean-throughput', 'studio/sql', 'studio/sql/select', 'studio/sql/joins', 'studio/sql/windows', 'studio/sql/design', 'c/datasci.sql-joins', 'studio/plc', 'studio/plc/scan', 'studio/plc/nonc', 'studio/plc/sealin', 'studio/plc/timers', 'studio/plc/sequence', 'studio/plc/debug', 'studio/plc/safety', 'studio/plc/nope', 'studio/cad', 'studio/cad/sketch', 'studio/cad/intent', 'studio/cad/features', 'studio/cad/mates', 'studio/cad/drawings', 'studio/cad/analysis', 'studio/cad/dfx', 'c/automation.ladder-logic', 'c/automation.solidworks', 'guide', 'guide?path=root,flow,l-capacity', 'pairs', 'compare', 'compare?concepts=lean.takt-time%2Clean.cycle-time%2Clean.lead-time', 'dictionary', 'dictionary?concept=quality.cpk', 'mysteries', 'mysteries?case=beats-takt', 'subway', 'tools', 'spot-waste', 'no-such-page', ...sims,
 ]
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] })
@@ -99,6 +99,42 @@ for (const theme of ['light', 'dark']) {
     await page.getByRole('link',{name:'Terminology & symbols',exact:true}).click()
     await page.getByRole('heading',{name:'Engineering abbreviation dictionary',exact:true}).waitFor()
   } catch(e) { failures++; console.log('✗ ['+theme+'] dictionary: '+e.message) }
+  // Contextual terminology, Equation X-Ray and comparison interactions.
+  try {
+    await page.setViewportSize({width:390,height:844})
+    await page.goto(BASE+'?terms=1#/c/quality.cpk?mode=full')
+    const usl=page.getByRole('button',{name:'USL',exact:true}).first()
+    await usl.click()
+    const pop=page.getByRole('dialog',{name:'Terminology: USL',exact:true})
+    await pop.getByText('Upper specification limit',{exact:true}).first().waitFor()
+    await pop.getByRole('button',{name:'Close',exact:true}).click()
+    await pop.waitFor({state:'hidden'})
+    await page.getByText('Equation X-Ray — explore the symbols',{exact:true}).click()
+    await page.getByRole('button',{name:'Explain μ: Process mean',exact:true}).click()
+    await page.getByText('μ — Process mean',{exact:true}).waitFor()
+    await page.goto(BASE+'?compare=1#/compare')
+    await page.getByRole('heading',{name:'Advanced comparison studio',exact:true}).waitFor()
+    await page.getByRole('heading',{name:'Shared interactive laboratory',exact:true}).waitFor()
+    await page.getByRole('slider',{name:/Mean/}).fill('54')
+    await page.getByText('1.00',{exact:true}).first().waitFor()
+    await page.getByRole('button',{name:'Takt, cycle and lead time',exact:true}).click()
+    await page.getByText('84 units short of demand.',{exact:false}).waitFor()
+    await page.getByRole('button',{name:'Investment decision methods',exact:true}).click()
+    await page.getByText('$1,372.36',{exact:true}).waitFor()
+    await page.getByRole('button',{name:'Clear comparison',exact:true}).click()
+    await page.getByRole('textbox',{name:'Find a topic',exact:true}).fill('takt')
+    await page.getByRole('combobox',{name:'Choose concept',exact:true}).selectOption('lean.takt-time')
+    await page.getByRole('button',{name:'Add concept',exact:true}).click()
+    await page.getByRole('textbox',{name:'Find a topic',exact:true}).fill('cycle time')
+    await page.getByRole('combobox',{name:'Choose concept',exact:true}).selectOption('lean.cycle-time')
+    await page.getByRole('button',{name:'Add concept',exact:true}).click()
+    await page.getByRole('heading',{name:'Takt time',exact:true}).waitFor()
+    await page.getByRole('button',{name:'Equations',exact:true}).click()
+    await page.addScriptTag({content:axe})
+    const violations=await page.evaluate(async()=>(await window.axe.run(document,{runOnly:['wcag2a','wcag2aa','wcag21aa','wcag22aa']})).violations.map(v=>v.id))
+    if(violations.length)throw new Error('Advanced comparison accessibility: '+violations.join(', '))
+    if(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+2))throw new Error('Advanced comparison horizontal overflow')
+  }catch(e){failures++;console.log('✗ ['+theme+'] contextual terminology and comparison: '+e.message)}
   if (errors.length) { failures += errors.length; console.log(`✗ [${theme}] script errors:\n  ${errors.join('\n  ')}`) }
   await page.close()
 }

@@ -39,6 +39,7 @@ const Sheet = page(() => import('./pages/Sheets'), 'Sheet')
 const Method = page(() => import('./pages/Misc'), 'Method')
 const FieldGuide = page(() => import('./pages/Discovery'), 'FieldGuide')
 const Pairs = page(() => import('./pages/Discovery'), 'Pairs')
+const AdvancedCompare = page(() => import('./pages/AdvancedCompare'), 'AdvancedCompare')
 const Dictionary = page(() => import('./pages/Dictionary'), 'Dictionary')
 const Mysteries = page(() => import('./pages/Discovery'), 'Mysteries')
 const Subway = page(() => import('./pages/Explore'), 'Subway')
@@ -95,6 +96,7 @@ export default function App() {
           <Route path="method" element={<Method />} />
           <Route path="guide" element={<FieldGuide />} />
           <Route path="pairs" element={<Pairs />} />
+          <Route path="compare" element={<AdvancedCompare />} />
           <Route path="dictionary" element={<Dictionary />} />
           <Route path="mysteries" element={<Mysteries />} />
           <Route path="subway" element={<Subway />} />
