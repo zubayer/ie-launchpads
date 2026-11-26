@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import type { ConceptIndex } from '../content/assemble'
-import { AI_SOURCES, aiKey, deviceAiStatus, deviceSummary, isCached, pollinationsSummary, type AiSource } from '../lib/ai'
+import { AI_SOURCES, aiKey, deviceAiStatus, deviceSummary, pollinationsSummary, want, type AiSource } from '../lib/ai'
 import { DOMAIN_HINT, askLinks } from '../lib/web'
 
 // Several free AI explanations of the same topic, side by side, each labelled with where it came from.
@@ -33,23 +33,23 @@ const Waiting = ({ children }: { children: ReactNode }) => (
   </div>
 )
 
-function PollinationsCard({ c, src, order }: { c: ConceptIndex; src: AiSource; order: number }) {
+function PollinationsCard({ c, src }: { c: ConceptIndex; src: AiSource }) {
   const [attempt, setAttempt] = useState(0)
   const [state, setState] = useState<{ key: string; text: string | null; done: boolean }>({ key: '', text: null, done: false })
   const key = aiKey(src.id, c.term, attempt)
   useEffect(() => {
     let live = true
+    const release = want(key) // a request this card no longer needs is skipped, so it can't delay the lesson on screen
     pollinationsSummary(src, c.term, context(c), attempt).then((text) => { if (live) setState({ key, text, done: true }) })
-    return () => { live = false }
+    return () => { live = false; release() }
   }, [src, c, attempt, key])
   const mine = state.key === key ? state : { text: null, done: false }
   const failed = mine.done && !mine.text
   // The anonymous tier is busy at times: retry once by itself before asking the learner.
   useEffect(() => { if (failed && attempt === 0) { const t = setTimeout(() => setAttempt(1), 16000); return () => clearTimeout(t) } }, [failed, attempt])
-  const fresh = !isCached(key)
   return (
     <Shell src={src} footer={mine.done && <button type="button" className="pop-btn" onClick={() => setAttempt((a) => a + 1)}>{mine.text ? 'Ask again' : 'Try again'}</button>}>
-      {!mine.done && <Waiting>{fresh && order > 0 ? `Waiting its turn: the free Pollinations service answers about one request every 15 seconds, so this card follows the one before it.` : 'Asking the free Pollinations service… this can take 10–20 seconds.'}</Waiting>}
+      {!mine.done && <Waiting>Asking the free Pollinations service… this can take 10–20 seconds.</Waiting>}
       {mine.text && <Answer text={mine.text} />}
       {failed && <p className="text-sm text-ink-2">The service didn’t answer (it allows about one request every 15 seconds).{attempt === 0 ? ' Retrying by itself in 15 seconds.' : ''}</p>}
     </Shell>
@@ -87,10 +87,9 @@ function DeviceCard({ c, src }: { c: ConceptIndex; src: AiSource }) {
   )
 }
 
-/** Every available free AI source as its own card. Pass `withLinks` to add the hand-off links to other assistants once. */
+/** Every available free AI source as its own card. */
 export function AiCards({ c }: { c: ConceptIndex }) {
-  let web = 0
-  return <>{AI_SOURCES.map((s) => (s.where === 'device' ? <DeviceCard key={s.id} c={c} src={s} /> : <PollinationsCard key={s.id} c={c} src={s} order={web++} />))}</>
+  return <>{AI_SOURCES.map((s) => (s.where === 'device' ? <DeviceCard key={s.id} c={c} src={s} /> : <PollinationsCard key={s.id} c={c} src={s} />))}</>
 }
 
 /** Links that open other assistants with the same question filled in. */

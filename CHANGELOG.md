@@ -3,12 +3,12 @@
 ## Unreleased — branch `v3/multi-ai` (2026-11-26)
 
 ### Added
-- **Several AI explanations side by side.** The quick preview and “Live from the web” now show one card per free AI source, next to Wikipedia, all loading without a click:
-  - Pollinations, GPT-class model (`model=openai`)
-  - Pollinations, Mistral-class model (`model=mistral`)
+- **AI explanations side by side.** The quick preview and “Live from the web” show one card per free AI source, next to Wikipedia, loading without a click:
+  - Pollinations, GPT-class model (`model=openai`).
   - Chrome’s built-in AI (Gemini Nano) on desktops whose Chrome supports it. It runs on the learner’s computer and sends nothing anywhere. Chrome allows its one-time model download only after a click, so that card shows one button the first time; after that it fills in by itself. Where Chrome’s model isn’t supported the card doesn’t appear.
+- One Pollinations card only: all its models share one limit of about one request every 15 seconds per visitor, so a second Pollinations card would always wait.
 - Every card asks the same question, names its source and model, and keeps the “AI-generated, can be wrong” note. Links to ask Perplexity, ChatGPT or Claude the same question sit under the cards.
-- Pollinations requests are queued one every 15 seconds (its anonymous limit), so the second card says it is waiting its turn instead of failing. Answers are cached for the browser tab, and the preview and live sections share them, so a lesson costs two requests, not four.
+- Pollinations requests are queued 15 seconds apart, and a queued request is skipped if its lesson has been left, so clicking through lessons quickly can’t delay the one on screen. Answers are cached for the browser tab and shared by the preview and live sections.
 
 ## Unreleased — branch `v3/auto-preview` (2026-11-26)
 

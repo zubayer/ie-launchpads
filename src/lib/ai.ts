@@ -1,6 +1,7 @@
 // Free AI explanations shown side by side on lesson pages. Every source is free and needs no key in the page:
-// - Pollinations (web): two anonymous models, GPT-class and Mistral-class. The anonymous tier allows about one
-//   request every 15 seconds per visitor, so requests to it are queued and spaced out.
+// - Pollinations (web): the anonymous GPT-class model. The anonymous tier allows about one request every 15 seconds
+//   per visitor (shared by all its models, which is why there is one Pollinations card), so requests are queued, and a
+//   queued request is skipped if the lesson that asked for it has been left.
 // - Chrome's built-in AI (on device): Gemini Nano through the Prompt API, where the browser and hardware support it.
 // All output is third-party and unverified; the UI labels it as AI-generated.
 
@@ -19,7 +20,6 @@ export interface AiSource {
 
 export const AI_SOURCES: AiSource[] = [
   { id: 'pollinations-openai', label: 'GPT-class model', provider: 'Pollinations', where: 'web', model: 'openai', note: 'Free Pollinations service; the topic name is sent to it.' },
-  { id: 'pollinations-mistral', label: 'Mistral-class model', provider: 'Pollinations', where: 'web', model: 'mistral', note: 'Free Pollinations service; the topic name is sent to it.' },
   { id: 'chrome-nano', label: 'Gemini Nano, on this device', provider: 'Chrome built-in AI', where: 'device', note: 'Runs inside Chrome on this computer; nothing is sent anywhere.' },
 ]
 
@@ -29,19 +29,25 @@ export function tidy(text: string): string | null {
   return t.length > 40 ? t : null
 }
 
+export const SKIPPED = Symbol('skipped')
+
 /**
- * Run tasks one at a time, each starting at least `gapMs` after the previous one started.
- * The clock and the wait are injectable so the spacing can be tested without real time passing.
+ * Run tasks one at a time, each starting at least `gapMs` after the previous one started. A task whose
+ * `wanted()` check fails when its turn comes is skipped without using a slot, so requests from pages the
+ * learner has already left can't delay the page they are reading. The clock and the wait are injectable so
+ * the spacing can be tested without real time passing.
  */
 export function createPacer(gapMs: number, now: () => number = Date.now, sleep: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms))) {
   let chain: Promise<unknown> = Promise.resolve()
   let lastStart = -Infinity
   let waiting = 0
-  const run = <T>(task: () => Promise<T>): Promise<T> => {
+  const run = <T>(task: () => Promise<T>, wanted: () => boolean = () => true): Promise<T | typeof SKIPPED> => {
     waiting++
     const p = chain.then(async () => {
+      if (!wanted()) { waiting--; return SKIPPED }
       const wait = lastStart + gapMs - now()
       if (wait > 0) await sleep(wait)
+      if (!wanted()) { waiting--; return SKIPPED }
       lastStart = now()
       waiting--
       return task()
@@ -64,16 +70,29 @@ function cached(key: string, fn: () => Promise<string | null>): Promise<string |
 export const isCached = (key: string) => { try { return !!sessionStorage.getItem(key) } catch { return false } }
 export const aiKey = (source: string, topic: string, attempt: number) => `ai:${source}:${topic}:${attempt}`
 
-/** An answer from one Pollinations model. Resolves to null when the service is busy or fails. */
+// Which answers a card on screen is still waiting for. A card registers its key while mounted.
+const wanted = new Map<string, number>()
+/** Mark an answer as wanted by a mounted card; call the returned function when the card goes away. */
+export function want(key: string) {
+  wanted.set(key, (wanted.get(key) ?? 0) + 1)
+  return () => { const n = (wanted.get(key) ?? 1) - 1; if (n > 0) wanted.set(key, n); else wanted.delete(key) }
+}
+
+/** An answer from one Pollinations model. Resolves to null when the service is busy or fails, or when no card wants it any more. */
 export function pollinationsSummary(source: AiSource, topic: string, context: string, attempt = 0): Promise<string | null> {
-  return cached(aiKey(source.id, topic, attempt), () => pollinationsPacer(async () => {
-    const ctl = new AbortController()
-    const t = setTimeout(() => ctl.abort(), 30000)
-    try {
-      const r = await fetch(`https://text.pollinations.ai/${encodeURIComponent(aiPrompt(topic, context))}?model=${source.model}`, { signal: ctl.signal })
-      return r.ok ? tidy(await r.text()) : null
-    } finally { clearTimeout(t) }
-  }))
+  const key = aiKey(source.id, topic, attempt)
+  return cached(key, async () => {
+    const out = await pollinationsPacer(async () => {
+      const ctl = new AbortController()
+      const t = setTimeout(() => ctl.abort(), 30000)
+      try {
+        const r = await fetch(`https://text.pollinations.ai/${encodeURIComponent(aiPrompt(topic, context))}?model=${source.model}`, { signal: ctl.signal })
+        return r.ok ? tidy(await r.text()) : null
+      } finally { clearTimeout(t) }
+    }, () => wanted.has(key))
+    if (out === SKIPPED) { memo.delete(key); return null } // nobody waited for it: ask afresh if the lesson is opened again
+    return out
+  })
 }
 /** How many Pollinations requests are waiting for their turn. */
 export const pollinationsQueued = () => pollinationsPacer.queued()
