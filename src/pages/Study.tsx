@@ -8,6 +8,8 @@ import { makeQuiz } from '../lib/quiz'
 import { PageHead, Rich, Tex } from '../components/ui'
 import { QuizRunner } from '../components/Quiz'
 import type { DomainId } from '../types'
+import { loadedConcept, useAllConcepts, useConcept } from '../content/load'
+import { LoadGate } from '../components/LoadGate'
 
 export function Review() {
   const [params] = useSearchParams()
@@ -29,6 +31,7 @@ export function Review() {
 
   const current = cram ? queue[cramIdx % Math.max(queue.length, 1)] : queue[0]
   const c = current ? CONCEPT_MAP[current] : undefined
+  const full = useConcept(current || '').data // the definition and analogy on the back of the card
 
   const answer = (r: Rating) => {
     if (!c) return
@@ -79,9 +82,9 @@ export function Review() {
               <div className="flip-in mt-4 space-y-3">
                 {c.full && c.full !== c.term && <p className="wide text-lg">{c.full}</p>}
                 <p className="text-lg"><Rich text={c.one} /></p>
-                <p className="text-[0.95rem] text-ink-2"><Rich text={c.def} /></p>
+                {full ? <p className="text-[0.95rem] text-ink-2"><Rich text={full.def} /></p> : <p className="text-sm text-ink-2" role="status">Loading the definition…</p>}
                 {c.formula && <Tex tex={c.formula.tex} block />}
-                {c.analogy && <p className="text-[0.95rem] italic"><Rich text={c.analogy} /></p>}
+                {full?.analogy && <p className="text-[0.95rem] italic"><Rich text={full.analogy} /></p>}
               </div>
             )}
           </button>
@@ -139,7 +142,9 @@ export function Practice() {
     return list
   }, [domains, source, progress])
 
-  const items = useMemo(() => (seed ? makeQuiz(targets, CONCEPTS, n, seed) : []), [seed]) // eslint-disable-line
+  const all = useAllConcepts() // questions are built from each lesson's definition and analogy
+  const ready = !!all.data
+  const items = useMemo(() => (seed && ready ? makeQuiz(targets.map((t) => loadedConcept(t.id)!), CONCEPTS, n, seed) : []), [seed, ready]) // eslint-disable-line
 
   if (seed) {
     return (
@@ -148,7 +153,7 @@ export function Practice() {
           <h1 className="display text-2xl">Practice quiz</h1>
           <button className="btn-ghost btn" onClick={() => setSeed(null)}>Change settings</button>
         </div>
-        <QuizRunner key={seed} items={items} onFinish={() => setSeed(Date.now())} />
+        {ready ? <QuizRunner key={seed} items={items} onFinish={() => setSeed(Date.now())} /> : <LoadGate state={all} what="questions">{() => null}</LoadGate>}
       </div>
     )
   }

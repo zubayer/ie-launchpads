@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import katex from 'katex'
-import { CONCEPTS } from '../content'
+import { CONCEPTS } from '../content/full'
 import { ALL_SECTIONS, MODES, applyMode, modeOf } from './modes'
 import { useStore } from './store'
 

@@ -1,15 +1,23 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import katex from 'katex'
 import { Link } from 'react-router-dom'
 import type { Concept } from '../types'
 import { DOMAIN_MAP } from '../content/domains'
 import { useStore, statusOf, type Status } from '../lib/store'
 import { isMath, splitMath } from '../lib/inlineMath'
+import type { ConceptIndex } from '../content/assemble'
+
+let katexP: Promise<typeof import('katex').default> | null = null
+const loadKatex = () => (katexP ??= import('katex').then((m) => m.default).catch((e) => { katexP = null; throw e }))
 
 export function Tex({ tex, block = false }: { tex: string; block?: boolean }) {
   const ref = useRef<HTMLSpanElement>(null)
   useEffect(() => {
-    if (ref.current) katex.render(tex, ref.current, { displayMode: block, throwOnError: false })
+    // KaTeX (~70 kB gzipped) loads with the first formula on a page rather than with the app; the TeX source shows until then.
+    let live = true
+    const el = ref.current
+    if (el && !el.firstChild) el.textContent = tex
+    loadKatex().then((k) => { if (live && el) k.render(tex, el, { displayMode: block, throwOnError: false }) }).catch(() => {})
+    return () => { live = false }
   }, [tex, block])
   // Display math can be wider than a phone screen: the scroll box must be reachable by keyboard (WCAG 2.1.1).
   if (block) return <span className="tex-block" tabIndex={0} role="group" aria-label="Formula, scroll sideways if it is cut off"><span ref={ref} /></span>
@@ -63,7 +71,7 @@ export function StatusDot({ id }: { id: string }) {
   )
 }
 
-export function ConceptRow({ c, showDomain = true }: { c: Concept; showDomain?: boolean }) {
+export function ConceptRow({ c, showDomain = true }: { c: ConceptIndex; showDomain?: boolean }) {
   const d = DOMAIN_MAP[c.domain]
   return (
     <Link

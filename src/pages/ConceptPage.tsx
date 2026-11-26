@@ -22,10 +22,13 @@ import { MODES, applyMode, modeOf, type ModeId } from '../lib/modes'
 import { JobsBlock, RoleChips } from '../components/Jobs'
 import { ReviewChip, SourcesBlock } from '../components/Sources'
 import { InterviewCard, TeachBackCard } from '../components/Interview'
+import type { ConceptIndex } from '../content/assemble'
+import { useConcept } from '../content/load'
+import { LoadGate } from '../components/LoadGate'
 
 interface Layer { id: string; name: string }
 
-export const simFor = (c: Concept) => SIM_META.find((s) => s.id === (c.sim || EXTRA_SIM[c.id])) || SIM_META.find((s) => s.concepts.includes(c.id))
+export const simFor = (c: ConceptIndex) => SIM_META.find((s) => s.id === (c.sim || EXTRA_SIM[c.id])) || SIM_META.find((s) => s.concepts.includes(c.id))
 
 function layersFor(c: Concept): Layer[] {
   const L: Layer[] = [{ id: 'keyword', name: 'Keyword' }, { id: 'preview', name: 'Quick preview' }, { id: 'plain', name: 'Plain meaning' }]
@@ -136,7 +139,27 @@ function InlineSim({ id }: { id: string }) {
 
 export default function ConceptPage() {
   const { id = '' } = useParams()
-  const c = CONCEPT_MAP[id]
+  const idx = CONCEPT_MAP[id]
+  const full = useConcept(idx ? id : '')
+  if (!idx) return (
+    <div>
+      <h1 className="display text-3xl">Concept not found</h1>
+      <p className="mt-2">This link points to a card that doesn't exist. <Link className="underline" to="/directory">Browse the directory</Link>.</p>
+    </div>
+  )
+  if (!full.data) return (
+    <div>
+      <div className="mb-3 h-1.5 w-20 rounded-sm" style={{ background: DOMAIN_MAP[idx.domain].tape }} />
+      <h1 className="display text-4xl sm:text-5xl">{idx.term}</h1>
+      <p className="measure mt-3 text-lg">{idx.one}</p>
+      <div className="mt-6"><LoadGate state={full} what="lesson">{() => null}</LoadGate></div>
+    </div>
+  )
+  return <ConceptView c={full.data} />
+}
+
+function ConceptView({ c }: { c: Concept }) {
+  const id = c.id
   const open = useStore((s) => s.open)
   const reachLayer = useStore((s) => s.reachLayer)
   const addCard = useStore((s) => s.addCard)

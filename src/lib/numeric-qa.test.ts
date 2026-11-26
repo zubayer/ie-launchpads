@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CONCEPTS } from '../content'
+import { CONCEPTS } from '../content/full'
 import { isUncheckedNumeric } from './contentStats'
 import { shows } from './numeric'
 

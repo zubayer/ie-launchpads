@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CONCEPT_MAP } from '../content'
+import { CONCEPT_MAP } from '../content/full'
 import { ROLES } from '../content/roles'
 import { GUIDE, guidePath, HOTSPOTS, MYSTERIES, PAIRS, TOOLS, WASTES } from '../content/discovery'
 import { runLine, SCENARIOS } from '../sims/Factory'

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CONCEPTS, CONCEPT_MAP } from '../content'
+import { CONCEPTS, CONCEPT_MAP } from '../content/full'
 import { SOURCES } from '../content/sources'
 import { PILOTS, DISCOVERY, LENSES, studioCitations } from '../content/topicStudio'
 import { taktLab, ladderLab, newtonLab, npvLab, capabilityLab } from './topicStudioMath'

@@ -4,6 +4,7 @@ import { phi } from '../lib/math'
 import { neighbors } from '../content'
 import { DOMAIN_MAP } from '../content/domains'
 import type { Concept } from '../types'
+import type { ConceptIndex } from '../content/assemble'
 
 /* A small library of parametric diagrams. Specs live in content/visuals.ts. */
 export interface TNode { label: string; gate?: 'AND' | 'OR'; kids?: TNode[] }
@@ -393,7 +394,7 @@ function Scatter({ s }: { s: Extract<VizSpec, { t: 'scatter' }> }) {
 }
 
 /** Every concept gets at least this: a mini map of what it connects to. */
-export function MiniMap({ c }: { c: Concept }) {
+export function MiniMap({ c }: { c: ConceptIndex }) {
   const nav = useNavigate()
   const near = neighbors(c).slice(0, 8)
   if (!near.length) return null

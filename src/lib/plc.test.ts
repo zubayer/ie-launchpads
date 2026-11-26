@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { PLC_LESSONS, PLC_LESSON_MAP } from '../content/plc/course'
-import { CONCEPT_MAP } from '../content'
+import { CONCEPT_MAP } from '../content/full'
 import { SOURCES } from '../content/sources'
 import { DEEP_DIVE } from '../content/deepDives'
 import { blockers, insText, lint, parseProgram, runScript, walk, type Device, type Program, type Step } from './ladder'

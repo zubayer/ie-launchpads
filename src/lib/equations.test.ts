@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CONCEPT_MAP } from '../content'
+import { CONCEPT_MAP } from '../content/full'
 import { EQUATION_FOR_CONCEPT } from '../content/equationIndex'
 import { EQUATIONS, EQUATION_MAP, evaluate, excelFormula, newtonIrr, responseTo } from '../content/equations'
 

@@ -1,4 +1,5 @@
 import type { Concept, DomainId } from '../types'
+import type { ConceptIndex } from '../content/assemble'
 
 // Search hints keep web lookups on-topic ("Etching" alone finds the art technique).
 export const DOMAIN_HINT: Record<DomainId, string> = {
@@ -77,9 +78,9 @@ export const WIKI_TITLE: Record<string, string> = {
 
 const q = (s: string) => encodeURIComponent(s)
 const cleanTerm = (s: string) => s.replace(/\s*\(.*?\)\s*/g, ' ').trim()
-export const searchName = (c: Concept) => (c.full && c.full.length < 60 ? `${c.term} ${c.full}` : c.term).replace(/[()]/g, '')
+export const searchName = (c: ConceptIndex) => (c.full && c.full.length < 60 ? `${c.term} ${c.full}` : c.term).replace(/[()]/g, '')
 
-export const links = (c: Concept) => {
+export const links = (c: ConceptIndex) => {
   const name = searchName(c)
   const hint = DOMAIN_HINT[c.domain]
   return {
@@ -137,7 +138,7 @@ export async function wiki(opts: { title?: string; query?: string }): Promise<Wi
   return out
 }
 
-export const wikiFor = (c: Concept) => wiki(WIKI_TITLE[c.id] ? { title: WIKI_TITLE[c.id] } : { query: `${c.full || c.term} ${DOMAIN_HINT[c.domain]}` })
+export const wikiFor = (c: ConceptIndex) => wiki(WIKI_TITLE[c.id] ? { title: WIKI_TITLE[c.id] } : { query: `${c.full || c.term} ${DOMAIN_HINT[c.domain]}` })
 
 /* ---------- More live sources (all free, keyless, browser-side) ---------- */
 
@@ -206,7 +207,7 @@ export const SE_SITE: Record<DomainId, { site: string; name: string }> = {
 export interface QA { title: string; url: string; score: number; answers: number; answered: boolean; tags: string[] }
 const decode = (s: string) => { try { return new DOMParser().parseFromString(s, 'text/html').documentElement.textContent || s } catch { return s } }
 /** Real questions practitioners asked about the topic, most relevant first. */
-export const stackQA = (c: Concept) => store<QA[] | null>(`se:${c.id}`, async () => {
+export const stackQA = (c: ConceptIndex) => store<QA[] | null>(`se:${c.id}`, async () => {
   const { site } = SE_SITE[c.domain]
   const run = async (text: string) => {
     const r = await fetch(`https://api.stackexchange.com/2.3/search/advanced?order=desc&sort=relevance&q=${q(text)}&site=${site}&pagesize=6&filter=default`)

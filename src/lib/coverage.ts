@@ -1,6 +1,7 @@
 import { CONCEPTS, CONCEPT_MAP } from '../content'
 import { AREAS, TOPIC_MAP, type KnowledgeArea } from '../content/curriculum'
 import type { Concept } from '../types'
+import type { ConceptIndex } from '../content/assemble'
 
 // Topic → concept matching for the curriculum coverage matrix. Deterministic and reviewable:
 // an explicit TOPIC_MAP entry wins, then exact name/alias matches, then whole-word containment.
@@ -15,7 +16,7 @@ for (const c of CONCEPTS) {
 const EXACT = new Map<string, string>()
 for (const n of NAMES) if (!EXACT.has(n.key)) EXACT.set(n.key, n.id)
 
-export function matchTopic(topic: string, area?: KnowledgeArea): Concept | null {
+export function matchTopic(topic: string, area?: KnowledgeArea): ConceptIndex | null {
   const key = area ? `${area.id}:${topic}` : topic
   if (key in TOPIC_MAP) { const id = TOPIC_MAP[key]; return id ? CONCEPT_MAP[id] ?? null : null }
   const k = stem(norm(topic))
@@ -31,7 +32,7 @@ export function matchTopic(topic: string, area?: KnowledgeArea): Concept | null 
 
 export interface AreaCoverage {
   area: KnowledgeArea
-  covered: { topic: string; concept: Concept }[]
+  covered: { topic: string; concept: ConceptIndex }[]
   missing: string[]
   pct: number
   level: 'None' | 'Low' | 'Partial' | 'Good' | 'Strong'

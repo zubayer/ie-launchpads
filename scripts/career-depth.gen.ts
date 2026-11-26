@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs'
 import { it, expect } from 'vitest'
-import { CONCEPTS } from '../src/content'
+import { CONCEPTS } from '../src/content/full'
 import { hasVisual } from '../src/lib/contentStats'
 it('audits the educational and career content of every topic', () => {
   const rows = CONCEPTS.map(c => {

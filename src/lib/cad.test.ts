@@ -189,7 +189,7 @@ describe('cantilever hand calculation', () => {
 
 import { BRACKET, CAD_LESSONS, CAD_LESSON_MAP, FEATURES, MATES, MATE_FEATURES, PARTS, SKETCHES } from '../content/cad/course'
 import { grade, keepPart, mateState, sketchState, smallestDepth, theoreticalMinimum } from '../content/cad/grade'
-import { CONCEPT_MAP } from '../content'
+import { CONCEPT_MAP } from '../content/full'
 import { SOURCES } from '../content/sources'
 import { DEEP_DIVE } from '../content/deepDives'
 

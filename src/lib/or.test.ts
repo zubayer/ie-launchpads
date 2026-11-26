@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CONCEPT_MAP } from '../content'
+import { CONCEPT_MAP } from '../content/full'
 import { OR_V3 } from '../content/lessons/or'
 import { Phi, mmc } from './math'
 

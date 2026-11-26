@@ -3,7 +3,7 @@
 import { writeFileSync } from 'node:fs'
 import { it } from 'vitest'
 import { coverage } from '../src/lib/coverage'
-import { CONCEPTS } from '../src/content'
+import { CONCEPTS } from '../src/content/full'
 
 it('writes the curriculum gap analysis', () => {
   const rows = coverage()

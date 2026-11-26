@@ -7,8 +7,9 @@ import { EXTRA_SIM } from '../content/visuals'
 import { useStore } from '../lib/store'
 import { PageHead } from '../components/ui'
 import type { Concept } from '../types'
+import type { ConceptIndex } from '../content/assemble'
 
-const simOf = (c: Concept) => SIM_META.find((s) => s.id === (c.sim || EXTRA_SIM[c.id])) || SIM_META.find((s) => s.concepts.includes(c.id))
+const simOf = (c: ConceptIndex) => SIM_META.find((s) => s.id === (c.sim || EXTRA_SIM[c.id])) || SIM_META.find((s) => s.concepts.includes(c.id))
 
 /* ================= Method Field Guide ================= */
 export function FieldGuide() {

@@ -1,7 +1,7 @@
 // Run npm run docs to regenerate the full topic inventory from the live lesson registry.
 import { writeFileSync } from 'node:fs'
 import { expect, it } from 'vitest'
-import { CONCEPTS } from '../src/content'
+import { CONCEPTS } from '../src/content/full'
 import { PILOTS, studioCitations } from '../src/content/topicStudio'
 import { hasVisual } from '../src/lib/contentStats'
 import { ALGOS } from '../src/content/algos'
