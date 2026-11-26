@@ -15,7 +15,7 @@ Instructions for coding agents and contributors. The product spec is the V3 mast
 | Dev server | `npm run dev` |
 | Type-check + build | `npm run build` |
 | Tests (content integrity, math checks, sources) | `npm test` |
-| Regenerate the coverage dashboard and gap analysis | `npm run docs` (or `docs:coverage`, `docs:gaps`) |
+| Regenerate the lesson index, coverage dashboard and gap analysis (run after any lesson content change) | `npm run docs` (or `docs:coverage`, `docs:gaps`) |
 | Initial JavaScript size | `npm run size` (after a build) |
 | Browser + accessibility audit (offline, light/dark, axe WCAG 2.2 AA) | `npx vite preview --port 4174 &` then `npm run audit` |
 
@@ -24,6 +24,7 @@ A change is done only when `npm test`, `npm run build` and `npm run audit` pass 
 ## Content rules
 
 - Concepts are typed data in `src/content/concepts/<domain>.ts`. Keep existing ids and routes stable; tests fail on broken references.
+- The app ships only a light lesson index (`src/content/conceptIndex.generated.ts`: id, term, one-liner, domain, links, formula and the other fields in `INDEX_KEYS`) and loads each domain's full lessons on demand (`src/content/load.ts`). After changing any lesson content, run `npm run docs` to regenerate the index; `src/content/split.test.ts` fails while it is stale. App code reads full lesson fields through `useConcept(id)` or `useAllConcepts()`, never from `src/content` directly; tests and generators import full content from `src/content/full.ts`. A new overlay file in `src/content/lessons/` must be added to `OVERLAY_DOMAIN` in `src/content/assemble.ts` and to `src/content/full.ts`.
 - Every numeric worked example needs `example.check.compute()` so the test suite recomputes the answer, and the checked value must appear in the displayed answer; when the answer shows a rounded or converted number, declare it with `check.shown`.
 - Equation Explorer experiments (`src/content/equations.ts`) and pathway questions (`src/content/pathways.ts`) need independent reference cases or recomputation tests, not a re-run of their own function.
 - SQL course queries (`src/content/sql/course.ts`) must run on the practice database; after changing a query or the data, run `npm run docs` to regenerate `src/content/sql/results.ts`, and check that every number in the prose still matches (the tests enforce takeaways).

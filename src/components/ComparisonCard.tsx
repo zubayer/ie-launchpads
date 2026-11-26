@@ -3,6 +3,7 @@ import { CONCEPT_MAP } from '../content'
 import type { Pair } from '../content/discovery'
 import { termMeaning, TERM_NOTES } from '../content/comparisonTerms'
 import { Tex, Rich } from './ui'
+import { useConcept } from '../content/load'
 
 function PairVisual({ p }: { p: Pair }) {
   if(p.a==='quality.cp' && p.b==='quality.cpk') {
@@ -31,11 +32,14 @@ function PairVisual({ p }: { p: Pair }) {
 
 export function ComparisonCard({ pair: p }: { pair: Pair }) {
   const A=CONCEPT_MAP[p.a], B=CONCEPT_MAP[p.b]
+  // Definitions, analogies and assumptions come with each lesson's domain; the rest of the card shows at once.
+  const full={[p.a]:useConcept(p.a).data,[p.b]:useConcept(p.b).data}
   return <article className="sheet min-w-0 rounded-xl border border-line p-3 sm:p-5">
     <h2 className="mb-3 text-lg font-bold break-words">{A.term} <span className="text-ink-2 font-normal">vs.</span> {B.term}</h2>
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {[A,B].map((c,i)=>{
         const meaning=termMeaning(c)
+        const f=full[c.id]
         return <section key={c.id} aria-label={'Concept '+(i?'B':'A')+': '+c.term} className={'min-w-0 rounded-lg border border-line border-t-4 p-3 '+(i?'border-t-sorange bg-sorange/5':'border-t-sblue bg-sblue/5')}>
           <p className="label mb-1">Concept {i?'B':'A'}</p>
           <Link to={'/c/'+c.id} className="text-lg font-extrabold break-words hover:underline">{c.term}</Link>
@@ -43,11 +47,11 @@ export function ComparisonCard({ pair: p }: { pair: Pair }) {
           <p className="mt-2 text-sm"><Rich text={c.one}/></p>
           <details className="mt-3">
             <summary className="cursor-pointer text-sm font-semibold">Definition, analogy & formula</summary>
-            <p className="mt-2 text-sm break-words"><Rich text={c.def}/></p>
+            {f ? <p className="mt-2 text-sm break-words"><Rich text={f.def}/></p> : <p className="mt-2 text-sm text-ink-2" role="status">Loading the definition…</p>}
             {TERM_NOTES[c.id]?.note && <p className="mt-2 text-sm">{TERM_NOTES[c.id].note}</p>}
-            {c.analogy && <p className="mt-2 text-sm"><strong>Think of:</strong> <Rich text={c.analogy}/></p>}
+            {f?.analogy && <p className="mt-2 text-sm"><strong>Think of:</strong> <Rich text={f.analogy}/></p>}
             {c.formula && <div className="mt-2 min-w-0"><Tex tex={c.formula.tex} block/>{!!c.formula.vars?.length&&<ul className="mt-1 list-disc pl-4 text-xs">{c.formula.vars.map(([v,meaning],j)=><li key={j}><Tex tex={v}/> — {meaning}</li>)}</ul>}</div>}
-            {c.assumptions?.[0] && <p className="mt-2 text-xs"><strong>Keep in mind:</strong> <Rich text={c.assumptions[0]}/></p>}
+            {f?.assumptions?.[0] && <p className="mt-2 text-xs"><strong>Keep in mind:</strong> <Rich text={f.assumptions[0]}/></p>}
           </details>
           <Link className="mt-3 inline-block text-sm font-semibold underline" to={'/c/'+c.id}>Open full lesson</Link>
         </section>

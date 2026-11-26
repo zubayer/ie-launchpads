@@ -1,5 +1,6 @@
 import type { Concept, DomainId, RolePath } from '../types'
 import { ROLES } from './roles'
+import type { ConceptIndex } from './assemble'
 
 // Real job-board titles that ask for each area. Sub-area lists are more specific and come first.
 export const DOMAIN_ROLES: Record<DomainId, string[]> = {
@@ -87,7 +88,7 @@ export interface Jobs { paths: RoleHit[]; titles: string[] }
 const uniq = (xs: string[]) => [...new Set(xs.map((x) => x.trim()).filter(Boolean))]
 
 /** Roles that need a concept: guided paths where it is a core step, then job-board titles. */
-export function jobsFor(c: Concept): Jobs {
+export function jobsFor(c: ConceptIndex): Jobs {
   const paths = ROLES.filter((r) => r.concepts.includes(c.id)).map((role) => ({ role, step: role.concepts.indexOf(c.id) + 1, of: role.concepts.length }))
   const titles = uniq([...(c.used?.roles || []), ...(SUB_ROLES[`${c.domain}/${c.sub}`] || []), ...DOMAIN_ROLES[c.domain]]).slice(0, 8)
   return { paths, titles }

@@ -1,6 +1,6 @@
 // Content coverage computed from the live content, never hand-typed. Used by the coverage
 // generator (scripts/coverage.gen.ts) and by tests that stop coverage from slipping.
-import { CONCEPTS } from '../content'
+import { CONCEPTS } from '../content/full'
 import { DOMAINS } from '../content/domains'
 import { VIZ, EXTRA_SIM } from '../content/visuals'
 import { SIM_META } from '../sims/registry'

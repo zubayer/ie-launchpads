@@ -10,6 +10,9 @@ import { shuffle } from '../lib/quiz'
 import { Bar, ConceptRow, PageHead, Rich, Section } from '../components/ui'
 import type { DomainId, InterviewQ, InterviewType } from '../types'
 import { InterviewCard, TYPE_LABEL } from '../components/Interview'
+import { LoadGate } from '../components/LoadGate'
+import { useAllConcepts } from '../content/load'
+import type { Concept } from '../types'
 
 const TYPES = Object.keys(TYPE_LABEL) as InterviewType[]
 
@@ -113,16 +116,16 @@ const TABS: [Tab, string][] = [['bank', 'Question bank'], ['mock', 'Mock intervi
 
 interface BankQ extends InterviewQ { src: string; domain?: DomainId; link?: string; concept?: string }
 
-function allQuestions(): BankQ[] {
-  const fromConcepts: BankQ[] = CONCEPTS.flatMap((c) => (c.iq || []).map((q) => ({ ...q, type: q.type || 'technical', src: c.term, domain: c.domain, link: `/c/${c.id}`, concept: c.id })))
+function allQuestions(concepts: Concept[]): BankQ[] {
+  const fromConcepts: BankQ[] = concepts.flatMap((c) => (c.iq || []).map((q) => ({ ...q, type: q.type || 'technical', src: c.term, domain: c.domain, link: `/c/${c.id}`, concept: c.id })))
   const fromRoles: BankQ[] = ROLES.flatMap((r) => r.questions.map((q) => ({ ...q, src: r.title, link: `/roles/${r.id}` })))
   const beh: BankQ[] = BEHAVIORAL.map((q) => ({ ...q, type: 'behavioral', src: 'Behavioral' }))
   const seen = new Set<string>()
   return [...fromConcepts, ...fromRoles, ...beh].filter((q) => (seen.has(q.q) ? false : (seen.add(q.q), true)))
 }
 
-function Bank() {
-  const qs = useMemo(allQuestions, [])
+function Bank({ concepts }: { concepts: Concept[] }) {
+  const qs = useMemo(() => allQuestions(concepts), [concepts])
   const [type, setType] = useState('')
   const [dom, setDom] = useState('')
   const [q, setQ] = useState('')
@@ -150,7 +153,7 @@ function Bank() {
   )
 }
 
-function Mock() {
+function Mock({ concepts }: { concepts: Concept[] }) {
   const [params] = useSearchParams()
   const [role, setRole] = useState(params.get('role') || '')
   const [n, setN] = useState(6)
@@ -166,7 +169,7 @@ function Mock() {
     return () => clearInterval(t)
   }, [set, i, reveal])
   const start = () => {
-    const all = allQuestions()
+    const all = allQuestions(concepts)
     const r = ROLES.find((x) => x.id === role)
     const roleIds = new Set(r?.concepts || [])
     const tech = shuffle(all.filter((q) => q.type !== 'behavioral' && (!r || (q.link && [...roleIds].some((id) => q.link === `/c/${id}`)) || q.src === r?.title)))
@@ -408,6 +411,7 @@ function Bullets() {
 
 export function Interview() {
   const [params, setParams] = useSearchParams()
+  const all = useAllConcepts()
   const tab = (params.get('tab') as Tab) || (params.get('role') ? 'mock' : 'bank')
   return (
     <div>
@@ -418,8 +422,8 @@ export function Interview() {
             className={`rounded-md border px-3 py-1.5 text-sm ${tab === k ? 'border-ink bg-sheet font-semibold' : 'border-line text-ink-2 hover:border-ink'}`}>{l}</button>
         ))}
       </div>
-      {tab === 'bank' && <Bank />}
-      {tab === 'mock' && <Mock />}
+      {tab === 'bank' && <LoadGate state={all} what="question bank">{(c) => <Bank concepts={c} />}</LoadGate>}
+      {tab === 'mock' && <LoadGate state={all} what="question bank">{(c) => <Mock concepts={c} />}</LoadGate>}
       {tab === 'star' && <Star />}
       {tab === 'cases' && <Cases />}
       {tab === 'decoder' && <Decoder />}

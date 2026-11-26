@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CONCEPTS, CONCEPT_MAP, ENRICHED_IDS } from './index'
+import { CONCEPTS, CONCEPT_MAP, ENRICHED_IDS } from './full'
 import { SOURCES } from './sources'
 import katex from 'katex'
 import { mathIn, splitMath } from '../lib/inlineMath'

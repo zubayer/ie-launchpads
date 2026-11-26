@@ -1,7 +1,7 @@
 // Regenerates docs/CONTENT-COVERAGE.md from the live content. Run: npm run docs:coverage
 import { readFileSync, writeFileSync } from 'node:fs'
 import { it } from 'vitest'
-import { CONCEPTS } from '../src/content'
+import { CONCEPTS } from '../src/content/full'
 import { DOMAINS } from '../src/content/domains'
 import { ROLES } from '../src/content/roles'
 import { ELEMENTS } from '../src/content/periodic'

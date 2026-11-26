@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CONCEPT_MAP } from '../content'
+import { CONCEPT_MAP } from '../content/full'
 import { hasVisual } from './contentStats'
 const ids = ["stats.std-dev","stats.confidence-interval","stats.p-value","stats.regression","doe.randomization","doe.interaction","reliability.availability","reliability.weibull","scm.reorder-point","scm.bullwhip","engecon.break-even","engecon.replacement","work.standard-time","ergo.fitts","service.pue","service.capacity-utilization"]
 describe('deep-learning career content batch', () => {

@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased — branch `v3/content-split` (2026-11-26)
+
+### Changed
+- **The first visit downloads half as much JavaScript**: 496 → 262 KB gzipped (1,476 → 818 KB raw, measured against main after PR #14). The app now ships a light lesson index (term, one-liner, domain, links, formula) and loads each domain’s full lessons (definitions, examples, interview questions, mistakes, sources) the first time a page needs them. Opening a statistics lesson downloads statistics, not all 22 domains. The interview bank, practice quiz and formula library load every domain, since they draw on the whole course.
+- KaTeX, the formula renderer (about 70 KB gzipped), now loads with the first formula on a page; the formula’s TeX source shows for that moment.
+- Lesson pages show the term and one-liner straight away with a loading status; if a domain fails to load (for example offline before it was ever opened) the page says so and offers a reload, which keeps all saved progress.
+- Search no longer matches words that appear only deep in a lesson’s formal definition; it still searches terms, aliases, full names, one-liners and subtopics.
+
+### Unchanged
+- Lesson ids, routes, saved progress, learning modes, labs, studios and deployment. Authors keep editing the same lesson files and run `npm run docs` afterwards to regenerate the index.
+
+### Verified
+- `src/content/split.test.ts`: the generated index matches the content exactly; every domain loads the same lessons, in the same order, with identical content to the eager build; every overlay file is wired to its domain.
+- Browser run: the home page loads no lesson or KaTeX chunk; an OR lesson loads only the OR chunks and KaTeX; a statistics lesson loads only statistics; interview bank, practice quiz, formula library, flashcard backs and the periodic-table detail all show full content; a blocked chunk shows the error and the reload recovers it.
+
 ## Proposed — Engineering Abbreviation Dictionary
 
 - Add a lazy-loaded, offline dictionary indexing every existing lesson, explicit full-name metadata, 216 curated terminology and notation records, and existing lesson/Equation Explorer symbols and units.

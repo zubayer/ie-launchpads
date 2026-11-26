@@ -1,49 +1,15 @@
-import type { Concept, DomainId } from '../types'
+import type { DomainId } from '../types'
 import { DOMAINS } from './domains'
-import stats from './concepts/stats'
-import quality from './concepts/quality'
-import doe from './concepts/doe'
-import or from './concepts/or'
-import simulation from './concepts/simulation'
-import datasci from './concepts/datasci'
-import manufacturing from './concepts/manufacturing'
-import lean from './concepts/lean'
-import semiconductor from './concepts/semiconductor'
-import automation from './concepts/automation'
-import systems from './concepts/systems'
-import safety from './concepts/safety'
-import reliability from './concepts/reliability'
-import pm from './concepts/pm'
-import scm from './concepts/scm'
-import engecon from './concepts/engecon'
-import work from './concepts/work'
-import ergo from './concepts/ergo'
-import facilities from './concepts/facilities'
-import service from './concepts/service'
-import sustain from './concepts/sustain'
-import career from './concepts/career'
-import { LEAN_V2 } from './lessons/lean'
-import { QUALITY_V2 } from './lessons/quality'
-import { PILOTS, studioCitations } from './topicStudio'
-import { AUTOMATION_V3 } from './lessons/automation'
-import { OR_V3 } from './lessons/or'
+import type { ConceptIndex } from './assemble'
+import { INDEX } from './conceptIndex.generated'
 
-const BASE: Concept[] = [
-  ...stats, ...quality, ...doe, ...or, ...simulation, ...datasci, ...manufacturing, ...lean,
-  ...semiconductor, ...automation, ...systems, ...safety, ...reliability, ...pm, ...scm,
-  ...engecon, ...work, ...ergo, ...facilities, ...service, ...sustain, ...career,
-]
+// The light lesson index that ships with the first page load: what lists, search, hover cards, maps and
+// recommendations need. A lesson's full text (definition, examples, questions, mistakes, sources) loads with
+// its domain when it is opened: see ./load. Tests and generators that need full content import ./full.
+export type { ConceptIndex } from './assemble'
 
-// V2 lesson enrichment (objectives, assumptions, scenarios, citations, review status) layered over the base
-// lessons, so the original content files stay untouched and every addition is reviewable in one place.
-const ENRICH: Record<string, Partial<Concept>> = { ...LEAN_V2, ...QUALITY_V2, ...AUTOMATION_V3, ...OR_V3 }
-export const ENRICHED_IDS = Object.keys(ENRICH)
-export const CONCEPTS: Concept[] = BASE.map((c) => {
-  const lesson = ENRICH[c.id] ? { ...c, ...ENRICH[c.id], id: c.id, domain: c.domain } : c
-  return PILOTS[lesson.id] ? { ...lesson, cites: studioCitations(lesson) } : lesson
-})
-
-export const CONCEPT_MAP: Record<string, Concept> = Object.fromEntries(CONCEPTS.map((c) => [c.id, c]))
+export const CONCEPTS: ConceptIndex[] = INDEX
+export const CONCEPT_MAP: Record<string, ConceptIndex> = Object.fromEntries(CONCEPTS.map((c) => [c.id, c]))
 
 export const byDomain = (id: DomainId) => CONCEPTS.filter((c) => c.domain === id)
 
@@ -57,7 +23,7 @@ export function bySub(id: DomainId) {
 }
 
 /** Concepts that link to this one, plus the ones it links to. */
-export function neighbors(c: Concept): Concept[] {
+export function neighbors(c: Pick<ConceptIndex, 'id' | 'rel' | 'pre'>): ConceptIndex[] {
   const ids = new Set([...(c.rel || []), ...(c.pre || [])])
   CONCEPTS.forEach((x) => {
     if (x.rel?.includes(c.id) || x.pre?.includes(c.id)) ids.add(x.id)
@@ -67,14 +33,14 @@ export function neighbors(c: Concept): Concept[] {
 }
 
 /** Order concepts so prerequisites come first (stable topological sort by level). */
-export function learningOrder(list: Concept[]): Concept[] {
-  const inSet = new Set(list.map((c) => c.id))
+export function learningOrder<T extends Pick<ConceptIndex, 'id' | 'pre' | 'level'>>(list: T[]): T[] {
+  const byId = new Map(list.map((c) => [c.id, c]))
   const done = new Set<string>()
-  const out: Concept[] = []
-  const visit = (c: Concept, stack: Set<string>) => {
+  const out: T[] = []
+  const visit = (c: T, stack: Set<string>) => {
     if (done.has(c.id) || stack.has(c.id)) return
     stack.add(c.id)
-    for (const p of c.pre || []) if (inSet.has(p) && CONCEPT_MAP[p]) visit(CONCEPT_MAP[p], stack)
+    for (const p of c.pre || []) { const q = byId.get(p); if (q) visit(q, stack) }
     done.add(c.id)
     out.push(c)
   }

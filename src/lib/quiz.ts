@@ -1,4 +1,5 @@
 import type { Concept } from '../types'
+import type { ConceptIndex } from '../content/assemble'
 
 export interface QuizItem {
   conceptId: string
@@ -33,7 +34,7 @@ export function shuffle<T>(arr: T[], rand = Math.random): T[] {
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /** Hide the term (and its aliases) in a sentence so the question doesn't give the answer away. */
-export function mask(text: string, c: Concept) {
+export function mask(text: string, c: ConceptIndex) {
   const names = [c.term, c.full, ...(c.aka || [])].filter(Boolean) as string[]
   let out = text
   for (const n of names.sort((a, b) => b.length - a.length)) {
@@ -43,7 +44,7 @@ export function mask(text: string, c: Concept) {
   return out
 }
 
-function distractors(c: Concept, pool: Concept[], n: number, rand: () => number) {
+function distractors(c: ConceptIndex, pool: ConceptIndex[], n: number, rand: () => number) {
   const same = pool.filter((x) => x.id !== c.id && x.domain === c.domain)
   const other = pool.filter((x) => x.id !== c.id && x.domain !== c.domain)
   const picked = shuffle(same, rand).slice(0, n)
@@ -51,9 +52,9 @@ function distractors(c: Concept, pool: Concept[], n: number, rand: () => number)
   return picked
 }
 
-const label = (c: Concept) => (c.full && c.full !== c.term ? `${c.term} (${c.full})` : c.term)
+const label = (c: ConceptIndex) => (c.full && c.full !== c.term ? `${c.term} (${c.full})` : c.term)
 
-export function makeQuestion(c: Concept, pool: Concept[], rand = Math.random): QuizItem {
+export function makeQuestion(c: Concept, pool: ConceptIndex[], rand = Math.random): QuizItem {
   const kinds: QuizItem['kind'][] = ['def', 'one', 'reverse']
   if (c.analogy) kinds.push('analogy')
   if (c.formula) kinds.push('formula')
@@ -83,7 +84,7 @@ export function makeQuestion(c: Concept, pool: Concept[], rand = Math.random): Q
   }
 }
 
-export function makeQuiz(targets: Concept[], pool: Concept[], n: number, seed = Date.now()): QuizItem[] {
+export function makeQuiz(targets: Concept[], pool: ConceptIndex[], n: number, seed = Date.now()): QuizItem[] {
   const rand = rng(seed)
   return shuffle(targets, rand).slice(0, n).map((c) => makeQuestion(c, pool, rand))
 }

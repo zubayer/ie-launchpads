@@ -9,8 +9,10 @@ import { PageHead, Tex } from '../components/ui'
 import { equationForConcept } from '../content/equations'
 import { EquationStrip } from './Equations'
 import type { Concept } from '../types'
+import type { ConceptIndex } from '../content/assemble'
+import { loadedConcept, useAllConcepts } from '../content/load'
 
-const simOf = (c: Concept) => SIM_META.find((s) => s.id === (c.sim || EXTRA_SIM[c.id])) || SIM_META.find((s) => s.concepts.includes(c.id))
+const simOf = (c: ConceptIndex) => SIM_META.find((s) => s.id === (c.sim || EXTRA_SIM[c.id])) || SIM_META.find((s) => s.concepts.includes(c.id))
 
 /** Every concept with a formula, in domain order. */
 export const FORMULAS = CONCEPTS.filter((c) => c.formula)
@@ -22,6 +24,7 @@ export function Formulas() {
   const [dom, setDom] = useState('')
   const [pinnedOnly, setPinnedOnly] = useState(false)
   const pinned = useStore((s) => s.pinnedFormulas)
+  useAllConcepts() // assumptions and worked examples fill in once the lesson text has loaded
   const togglePin = useStore((s) => s.togglePinnedFormula)
   const domains = useMemo(() => DOMAINS.filter((d) => FORMULAS.some((c) => c.domain === d.id)), [])
   const list = useMemo(() => {
@@ -60,6 +63,7 @@ export function Formulas() {
           const f = c.formula!
           const sim = simOf(c)
           const on = pinned.includes(c.id)
+          const full = loadedConcept(c.id)
           return (
             <article key={c.id} className="sheet break-inside-avoid rounded-lg p-5">
               <div className="flex items-start justify-between gap-3">
@@ -76,15 +80,15 @@ export function Formulas() {
                 </dl>
               ) : null}
               <p className="mt-3 text-sm">{c.one}</p>
-              {c.assumptions?.length ? (
-                <div className="mt-3 text-sm"><p className="label">Assumptions and limits</p><ul className="mt-1 list-disc space-y-0.5 pl-5">{c.assumptions.map((a) => <li key={a}>{a}</li>)}</ul></div>
+              {full?.assumptions?.length ? (
+                <div className="mt-3 text-sm"><p className="label">Assumptions and limits</p><ul className="mt-1 list-disc space-y-0.5 pl-5">{full.assumptions.map((a) => <li key={a}>{a}</li>)}</ul></div>
               ) : null}
-              {c.example && (
+              {full?.example && (
                 <details className="mt-3 rounded-md border border-line px-3 py-2 text-sm">
-                  <summary className="cursor-pointer font-semibold">Worked example{c.example.check ? ' (answer checked by the test suite)' : ''}</summary>
-                  <p className="mt-2">{c.example.q}</p>
-                  <ol className="mt-2 list-decimal space-y-1 pl-5">{c.example.steps.map((s) => <li key={s}>{s}</li>)}</ol>
-                  <p className="mt-2 font-semibold">{c.example.a}</p>
+                  <summary className="cursor-pointer font-semibold">Worked example{full.example.check ? ' (answer checked by the test suite)' : ''}</summary>
+                  <p className="mt-2">{full.example.q}</p>
+                  <ol className="mt-2 list-decimal space-y-1 pl-5">{full.example.steps.map((s) => <li key={s}>{s}</li>)}</ol>
+                  <p className="mt-2 font-semibold">{full.example.a}</p>
                 </details>
               )}
               <p className="no-print mt-3 flex flex-wrap gap-2 text-sm">

@@ -38,6 +38,6 @@ export const TERM_NOTES: Record<string, { name: string; note?: string }> = {
   'safety.mil-std-882': { name: 'MIL-STD: military standard; 882E is the edition identifier' },
   'service.pue': { name: 'PUE: power usage effectiveness', note: 'For an energy-based reporting interval, divide total facility energy by IT equipment energy using consistent boundaries.' },
 }
-export function termMeaning(c: Concept): string | undefined {
+export function termMeaning(c: Pick<Concept, 'id' | 'term' | 'full'>): string | undefined {
   return TERM_NOTES[c.id]?.name || (c.full && c.full !== c.term ? c.full : undefined)
 }

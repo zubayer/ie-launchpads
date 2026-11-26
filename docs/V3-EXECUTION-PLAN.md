@@ -50,7 +50,7 @@ Not measured: field performance (LCP/INP/CLS), real touch devices, screen reader
 | AI-01 | Deterministic adaptive planner | In progress | Do next rules and scenario tests | Diagnostics; weekly plan |
 | AI-02 | Source-grounded tutor | Blocked | Needs an approved server and key held server-side | Owner decision |
 | ARCH-01 | Modular architecture | In progress | Pure kernels with tests: `equations`, `answers`, `recommend`, `contentStats` | ADRs for storage and chunking |
-| ARCH-02 | Performance and offline | In progress | Initial JS 1,259.5 KB raw / 422.0 KB gzip after batch 1 (+2.3 KB raw vs baseline); new pages lazy-loaded | Split concepts by domain; PWA with safe updates |
+| ARCH-02 | Performance and offline | In progress (content split Tested) | Initial JS 818 KB raw / 262 KB gzip after the content split (main before it: 1,476 / 496): light lesson index up front, full lessons per domain on demand (`src/content/load.ts`), KaTeX on first formula; new pages lazy-loaded | Split concepts by domain; PWA with safe updates |
 | ARCH-03 | Reliability, security | In progress | Persist v2 migration; imports validate `attempts` | Error boundaries per route; import size limits |
 | ARCH-04 | Deployment and CI | Implemented | Pages deploy on `main`; new PR check (`.github/workflows/ci.yml`): tests, build, size, browser audit | Confirm it passes on the first PR |
 
@@ -86,6 +86,14 @@ Not done: OR sources were found by search but not opened, so most OR lessons are
 
 Coordination: ChatGPT’s roadmap (`docs/DEEP-LEARNING-CAREER-ROADMAP.md`) enriches topics in the concept files directly; this batch keeps OR changes in `src/content/lessons/or.ts` so the two streams don’t edit the same lines. Next domains should be claimed here before work starts.
 
+## Batch 5 (2026-11-26, branch `v3/content-split`)
+
+Owner request: cut the first download before more domains are enriched. Measured with source maps first: lesson text was 579 KB of the 1,393 KB initial JavaScript and KaTeX 235 KB. Shipped a generated light index (174 KB raw, the fields lists, search and hover cards need), per-domain on-demand loading of full lessons, KaTeX on first use, a loading state and a reload-based retry. Initial JavaScript 496 → 262 KB gzipped (against main after PR #14).
+
+Evidence: `npm test` 220 passed (new `src/content/split.test.ts` proves the index and every domain chunk match the eager build exactly); build passed; `npm run audit` 113 routes × 2 themes clean; scripted browser run of which chunks each page fetches, the interview bank, practice quiz, formula library, flashcards, periodic-table detail and a blocked-chunk retry, at 1366 and 390 px.
+
+Trade-offs: a lesson in a domain not yet visited needs one or two extra requests (about 3 KB gzipped for Sustainability up to 33 KB for Operations Research); the interview bank, practice quiz and formula library fetch every domain; a failed chunk recovers by reloading the page because browsers cache failed dynamic imports. There is still no service worker, so lessons not yet opened are not available offline.
+
 ## Next batch
 
 0. **Open and cite the OR sources** (Gurobi, OR-Tools, plus an open textbook for queueing and the newsvendor) and lift the OR lessons to source-checked; then the same depth pass for Simulation and Manufacturing Systems, with rubrics added to their existing questions.
@@ -93,5 +101,5 @@ Coordination: ChatGPT’s roadmap (`docs/DEEP-LEARNING-CAREER-ROADMAP.md`) enric
 1. **PLC pathway** (EDU-01/03): a guided path through the PLC studio with rung-outcome items in the pathway engine (the ladder engine can generate and grade them); sensors, HMI and VFD lessons enriched.
 2. **EDU-03 everywhere**: evidence on lesson pages and Progress; numeric items in the practice quiz; matching and ordering items.
 3. **LAB-02 kernel**: discrete-event serial line in a Web Worker with seeded runs, validated against Little’s Law and hand cases.
-4. **ARCH-02**: split concept content by domain behind a small search index; measure before and after with `npm run size`.
+4. **ARCH-02**: a service worker that precaches the domain chunks after first load (true offline), and a smaller index (move `used` and `formula` vars out if the index grows past ~60 KB gzipped).
 5. **UX-01**: top-level groups from the spec with route aliases; first-visit onboarding (goal, level, time).
