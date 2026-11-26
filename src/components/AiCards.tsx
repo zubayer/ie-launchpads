@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import type { ConceptIndex } from '../content/assemble'
 import { AI_SOURCES, aiKey, deviceAiStatus, deviceSummary, pollinationsSummary, want, type AiSource } from '../lib/ai'
-import { DOMAIN_HINT, askLinks } from '../lib/web'
+import { DOMAIN_HINT } from '../lib/web'
 
 // Several free AI explanations of the same topic, side by side, each labelled with where it came from.
 // They load without a click; the only exception is Chrome's on-device model, whose one-time download the
@@ -90,14 +90,4 @@ function DeviceCard({ c, src }: { c: ConceptIndex; src: AiSource }) {
 /** Every available free AI source as its own card. */
 export function AiCards({ c }: { c: ConceptIndex }) {
   return <>{AI_SOURCES.map((s) => (s.where === 'device' ? <DeviceCard key={s.id} c={c} src={s} /> : <PollinationsCard key={s.id} c={c} src={s} />))}</>
-}
-
-/** Links that open other assistants with the same question filled in. */
-export function AskElsewhere({ c }: { c: ConceptIndex }) {
-  return (
-    <p className="no-print mt-2 flex flex-wrap items-center gap-1.5 text-sm">
-      <span className="text-ink-2">Ask the same question elsewhere:</span>
-      {askLinks(c.term).slice(2, 5).map((l) => <a key={l.label} className="pop-btn" href={l.href} target="_blank" rel="noopener noreferrer">{l.label} ↗</a>)}
-    </p>
-  )
 }

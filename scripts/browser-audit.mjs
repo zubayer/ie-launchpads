@@ -99,9 +99,13 @@ for (const theme of ['light', 'dark']) {
     await page.getByRole('link',{name:'Terminology & symbols',exact:true}).click()
     await page.getByRole('heading',{name:'Engineering abbreviation dictionary',exact:true}).waitFor()
   } catch(e) { failures++; console.log('✗ ['+theme+'] dictionary: '+e.message) }
-  // Owner decision (2026-11-26): the quick preview and live sources load without any click.
+  // Owner decisions (2026-11-26): live sources load without any click, and “Live from the web” is the second section
+  // (the former “Quick preview” is gone).
   await page.goto(`${BASE}?autopreview=1#/c/lean.takt-time`)
-  await page.waitForSelector('#preview', { timeout: 5000 }).catch(() => {})
+  await page.waitForSelector('#live', { timeout: 5000 }).catch(() => {})
+  const order = await page.evaluate(() => [...document.querySelectorAll('main section[id]')].map((s) => s.id).slice(0, 3).join(','))
+  if (!order.startsWith('keyword,live')) { failures++; console.log(`✗ [${theme}] lesson sections start ${order}, expected keyword then live`) }
+  if (await page.locator('#preview').count()) { failures++; console.log(`✗ [${theme}] the removed Quick preview section is back`) }
   const gates = await page.getByRole('button', { name: /Load external quick preview|Load live web sources|Request AI explanation/ }).count()
   if (gates) { failures++; console.log(`✗ [${theme}] lesson preview still asks for a click before loading (${gates} button(s))`) }
   // Contextual terminology, Equation X-Ray and comparison interactions.

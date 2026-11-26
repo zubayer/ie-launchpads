@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — branch `v3/live-first` (2026-11-26)
+
+### Changed
+- **“Live from the web” is now section 2 of every lesson, and “Quick preview” is gone** (owner request). The full section (Wikipedia, the AI cards, Google and AI-search links, related articles, practitioner Q&A and research) sits right after the keyword in the default view and in the Quick learn, Absolute beginner and Research modes, which used to show the preview. Other modes keep their own section lists.
+- The Wikipedia summary and AI answers are fetched once and shown once, instead of twice (preview and live section).
+- The browser audit fails if a lesson’s sections don’t start with the keyword and then “Live from the web”, or if the Quick preview comes back.
+
 ## Unreleased — branch `v3/multi-ai` (2026-11-26)
 
 ### Added

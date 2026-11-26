@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Concept } from '../types'
 import { DOMAIN_HINT, SE_SITE, askLinks, papers, searchName, stackQA, wikiSearch, type Paper, type QA, type WikiHit, type WikiSummary } from '../lib/web'
 import { WikiCard } from './Glossary'
-import { AiCards, AskElsewhere } from './AiCards'
+import { AiCards } from './AiCards'
 
 type Tab = 'articles' | 'qa' | 'papers' | 'new'
 const TABS: [Tab, string][] = [['articles', 'Related articles'], ['qa', 'Practitioner Q&A'], ['papers', 'Key research'], ['new', 'Recent research']]
@@ -140,19 +140,4 @@ export function LiveWeb({ c, wiki }: { c: Concept; wiki: { data: WikiSummary | n
 export function prefetchLive(c: Concept) {
   const name = searchName(c)
   void stackQA(c); void papers(name, 'relevance'); void papers(name, 'recent')
-}
-
-/** Wikipedia's summary and every free AI explanation, side by side, loaded as soon as the lesson opens. */
-export function QuickPreview({ c, wiki, hasLive }: { c: Concept; wiki: { data: WikiSummary | null; loading: boolean }; hasLive: boolean }) {
-  return <div>
-    <div className="grid items-start gap-3 md:grid-cols-2 xl:grid-cols-3">
-      <div className="rounded-lg border border-line p-4">
-        <p className="label mb-2">Wikipedia · supplementary orientation</p>
-        <WikiCard data={wiki.data} loading={wiki.loading} query={c.full || c.term} compact />
-      </div>
-      <AiCards c={c}/>
-    </div>
-    <AskElsewhere c={c} />
-    {hasLive && <p className="mt-2 text-sm"><a href="#live" className="font-semibold text-sblue hover:underline" onClick={e=>{e.preventDefault();document.getElementById('live')?.scrollIntoView({behavior:'smooth'})}}>More live sources ↓</a></p>}
-  </div>
 }

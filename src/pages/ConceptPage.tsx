@@ -16,7 +16,7 @@ import { QuestionCard } from '../components/Quiz'
 import { Linked } from '../components/Glossary'
 import { MiniMap, Viz } from '../components/Viz'
 import { AlgoFlow } from '../components/Algo'
-import { LiveWeb, QuickPreview } from '../components/LiveWeb'
+import { LiveWeb } from '../components/LiveWeb'
 import TopicStudio from '../components/TopicStudio'
 import { termMeaning, TERM_NOTES } from '../content/comparisonTerms'
 import { PAIRS } from '../content/discovery'
@@ -42,7 +42,9 @@ interface Layer { id: string; name: string }
 export const simFor = (c: ConceptIndex) => SIM_META.find((s) => s.id === (c.sim || EXTRA_SIM[c.id])) || SIM_META.find((s) => s.concepts.includes(c.id))
 
 function layersFor(c: Concept): Layer[] {
-  const L: Layer[] = [{ id: 'keyword', name: 'Keyword' }, { id: 'preview', name: 'Quick preview' }, { id: 'plain', name: 'Plain meaning' }]
+  // Owner decision (2026-11-26): “Live from the web” (Wikipedia, AI cards, research, Q&A) is the second section of every
+  // lesson and replaces the former “Quick preview”.
+  const L: Layer[] = [{ id: 'keyword', name: 'Keyword' }, { id: 'live', name: 'Live from the web' }, { id: 'plain', name: 'Plain meaning' }]
   if (c.analogy) L.push({ id: 'analogy', name: 'Analogy' })
   L.push({ id: 'picture', name: 'Picture it' })
   if (c.why) L.push({ id: 'why', name: 'Why it matters' })
@@ -55,7 +57,6 @@ function layersFor(c: Concept): Layer[] {
   L.push({ id: 'try', name: 'Check yourself' })
   if (c.iq?.length) L.push({ id: 'interview', name: 'Interview' })
   L.push({ id: 'teach', name: 'Teach it back' })
-  L.push({ id: 'live', name: 'Live from the web' })
   L.push({ id: 'sources', name: 'Sources & review' })
   L.push({ id: 'more', name: 'Learn more' })
   return L
@@ -230,7 +231,6 @@ function ConceptView({ c }: { c: Concept }) {
 
   // Each section's content, keyed by layer id. The learning mode decides which appear and in what order.
   const sections: Record<string, () => React.ReactNode> = {
-    preview: () => <QuickPreview key={c.id} c={c} wiki={web} hasLive={layers.some((l) => l.id === 'live')} />,
     keyword: () => (
       <>
           <div className="grid gap-5 md:grid-cols-[1fr_auto]">
