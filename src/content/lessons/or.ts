@@ -60,10 +60,10 @@ export const OR_V3: Record<string, Partial<Concept>> = {
     mistakes: ['Shading the wrong side of a ≥ constraint', 'Checking only the corners on the axes', 'Calling a model “unbounded” when a constraint was simply forgotten'],
     real: ill('Promotion planning', 'Marketing caps a product at what the stores can display. Adding that cap to the planning model moves the optimum to a new corner and frees capacity in a department that used to be the bottleneck.'),
     iq: [
-      { q: 'Your LP solver reports “infeasible.” How do you find out why?', a: 'Ask the solver for an irreducible infeasible subsystem (IIS), the smallest set of constraints that cannot hold together. Then check those for unit errors, a wrong inequality direction or a demand larger than total capacity. A practical fix is to add slack variables with a penalty, so the model tells you how far short each requirement falls.', type: 'troubleshooting',
-        hint: 'You want the smallest group of constraints that conflict.',
+      { q: 'Your LP solver reports “infeasible.” How do you find out why?', a: 'Ask the solver for an irreducible infeasible subsystem (IIS): a set of constraints and/or bounds that is infeasible, but becomes feasible if any member is removed. It need not be the smallest possible such set. Then check those for unit errors, a wrong inequality direction or a demand larger than total capacity. A practical fix is to add slack variables with a penalty, so the model tells you how far short each requirement falls.', type: 'troubleshooting',
+        hint: 'Look for a conflicting subsystem in which every member is necessary for that conflict.',
         followUps: ['What is the risk of adding penalized slack to every constraint?', 'How would you explain an infeasible plan to a production manager?'],
-        rubric: ['Mentions IIS or isolating the conflicting constraints', 'Lists likely causes (units, sign, demand above capacity)', 'Offers penalized slack or elastic constraints', 'Talks about communicating the shortfall'] },
+        rubric: ['Explains that an IIS is irreducible, not necessarily minimum-cardinality', 'Lists likely causes (units, sign, demand above capacity)', 'Offers penalized slack or elastic constraints', 'Talks about communicating the shortfall'] },
     ],
     review: math(`The corner-point example with the chair limit is recomputed by vertex enumeration. ${TESTED}`),
   },

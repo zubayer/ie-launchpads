@@ -1,5 +1,10 @@
 # Changelog
 
+## Proposed — Topic Intelligence Studio integration
+
+- Reconcile draft PR #9 with batch 4; preserve OR depth, interview rubrics, teach-back, SQL/PLC/CAD and existing learning modes.
+- Add shared studio, five pilot families, on-demand external discovery and topic inventory. Correct IIS explanation. CI and visual review pending.
+
 ## Unreleased — branch `v3/topic-depth` (2026-11-26)
 
 ### Added

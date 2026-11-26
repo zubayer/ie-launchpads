@@ -101,6 +101,21 @@ const list: SourceRecord[] = [
   {"id":"openstax-break-even","title":"Principles of Accounting, Volume 2: Managerial Accounting — Calculate a Break-Even Point in Units and Dollars","publisher":"OpenStax, Rice University","url":"https://openstax.org/books/principles-managerial-accounting/pages/3-2-calculate-a-break-even-point-in-units-and-dollars","tier":2,"kind":"academic","access":"open","checkedOn":"2026-11-26"},
   {"id":"doe-data-center-pue","title":"Cooling Water Efficiency Opportunities for Federal Data Centers","publisher":"U.S. Department of Energy","url":"https://www.energy.gov/cmei/femp/cooling-water-efficiency-opportunities-federal-data-centers","tier":1,"kind":"government","access":"open","checkedOn":"2026-11-26"},
   {"id":"psu-fitts","title":"FittsLaw Applet — target acquisition","publisher":"Penn State University","url":"https://acs.ist.psu.edu/discrete-math/applets/fittslaw/FittsLawApplet.html","tier":2,"kind":"academic","access":"open","checkedOn":"2026-11-26"},
+  {
+    id: 'rockwell-bit-instructions', title: 'Common instructions — Micro800 controller instruction set', publisher: 'Rockwell Automation',
+    url: 'https://www.rockwellautomation.com/en-us/docs/factorytalk-design-workbench/1-01-00/ftdw-help-ditamap/micro800-controller/micro800-instruction-set/common-instructions.html',
+    tier: 3, kind: 'industry', access: 'open', checkedOn: '2026-11-25',
+  },
+  {
+    id: 'openstax-newton', title: 'Calculus Volume 1 — Newton’s Method', publisher: 'OpenStax',
+    url: 'https://openstax.org/books/calculus-volume-1/pages/4-9-newtons-method',
+    tier: 2, kind: 'academic', access: 'open', checkedOn: '2026-11-25',
+  },
+  {
+    id: 'openstax-npv', title: 'Principles of Finance — Net Present Value Method', publisher: 'OpenStax',
+    url: 'https://openstax.org/books/principles-finance/pages/16-2-net-present-value-npv-method',
+    tier: 2, kind: 'academic', access: 'open', checkedOn: '2026-11-25',
+  },
 ]
 
 export const SOURCES: Record<string, SourceRecord> = Object.fromEntries(list.map((s) => [s.id, s]))

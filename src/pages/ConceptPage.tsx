@@ -13,10 +13,11 @@ import { makeQuestion, rng } from '../lib/quiz'
 import { links, wikiFor, type WikiSummary } from '../lib/web'
 import { StatusBadge, Tex } from '../components/ui'
 import { QuestionCard } from '../components/Quiz'
-import { Linked, useWiki } from '../components/Glossary'
+import { Linked } from '../components/Glossary'
 import { MiniMap, Viz } from '../components/Viz'
 import { AlgoFlow } from '../components/Algo'
-import { LiveWeb, QuickPreview, prefetchLive } from '../components/LiveWeb'
+import { LiveWeb, QuickPreview } from '../components/LiveWeb'
+import TopicStudio from '../components/TopicStudio'
 import { MODES, applyMode, modeOf, type ModeId } from '../lib/modes'
 import { JobsBlock, RoleChips } from '../components/Jobs'
 import { ReviewChip, SourcesBlock } from '../components/Sources'
@@ -145,10 +146,22 @@ export default function ConceptPage() {
   const deepest = useStore((s) => s.progress[id]?.layers ?? -1)
   const [active, setActive] = useState(0)
   const [qSeed, setQSeed] = useState(1)
-  const web = useWiki(() => (c ? wikiFor(c) : Promise.resolve(null)), [id])
+  const [consent,setConsent] = useState<{ id: string; preview?: boolean; sources?: boolean }>({ id: '' })
+  const previewEnabled = consent.id === id && !!consent.preview
+  const sourcesEnabled = consent.id === id && !!consent.sources
+  const liveEnabled = previewEnabled || sourcesEnabled
+  const enable = (panel: 'preview' | 'sources') => setConsent(old => ({ ...(old.id===id?old:{ id }), [panel]: true }))
+  const [wikiState,setWikiState] = useState<{ id: string; data: WikiSummary | null; loading: boolean }>({ id: '', data: null, loading: false })
+  const web = liveEnabled && wikiState.id===id ? wikiState : { data: null, loading: liveEnabled }
+  useEffect(() => {
+    if (!c || !liveEnabled) return
+    let current = true
+    setWikiState({id:c.id,data:null,loading:true})
+    wikiFor(c).then(data => {if(current)setWikiState({id:c.id,data,loading:false})}).catch(()=>{if(current)setWikiState({id:c.id,data:null,loading:false})})
+    return () => {current=false}
+  }, [c,liveEnabled])
 
   useEffect(() => { if (c) open(c.id) }, [c, open])
-  useEffect(() => { if (!c) return; const t = setTimeout(() => prefetchLive(c), 1200); return () => clearTimeout(t) }, [c])
   const [params, setParams] = useSearchParams()
   const savedMode = useStore((s) => s.settings.learnMode)
   const requestedMode = params.get('mode')
@@ -187,7 +200,12 @@ export default function ConceptPage() {
 
   // Each section's content, keyed by layer id. The learning mode decides which appear and in what order.
   const sections: Record<string, () => React.ReactNode> = {
-    preview: () => <QuickPreview key={c.id} c={c} wiki={web} hasLive={layers.some((l) => l.id === 'live')} />,
+    preview: () => previewEnabled ? <QuickPreview key={c.id} c={c} wiki={web} hasLive={layers.some((l) => l.id === 'live')} /> : (
+      <div className="rounded-md border border-line p-4">
+        <p className="measure">{c.one}</p><p className="mt-2 text-sm text-ink-2">The studio and built-in lesson work without external services. Load Wikipedia and optional AI resources only if you want to explore further.</p>
+        <button className="btn-ghost btn mt-3" onClick={()=>enable('preview')}>Load external quick preview</button>
+      </div>
+    ),
     keyword: () => (
       <>
           <div className="grid gap-5 md:grid-cols-[1fr_auto]">
@@ -223,6 +241,10 @@ export default function ConceptPage() {
             <button className="btn-ghost btn" onClick={() => toggleBookmark(c.id)}>{bookmarked ? 'Bookmarked' : 'Bookmark'}</button>
             {sim && <a className="btn-tape btn" href="#sim" onClick={(e) => { e.preventDefault(); document.getElementById('sim')?.scrollIntoView({ behavior: 'smooth' }) }}>Simulate it</a>}
           </div>
+          <details className="mt-4" open={mode.id==='full'} key={c.id+'-'+mode.id}>
+            <summary className="cursor-pointer font-semibold">Topic Intelligence Studio — explore, experiment and master</summary>
+            <TopicStudio key={c.id} c={c} layers={layers.map(l=>l.id)} hasVisual={!!(spec||sim)} onFull={()=>changeMode('full')}/>
+          </details>
           <div className="mt-3"><ExploreButtons c={c} wiki={web.data} /></div>
       </>
     ),
@@ -381,7 +403,7 @@ export default function ConceptPage() {
     ),
     live: () => (
       <>
-          <LiveWeb key={c.id} c={c} wiki={web} />
+          {sourcesEnabled ? <LiveWeb key={c.id} c={c} wiki={web} /> : <div className="rounded-md border border-line p-4"><p className="text-sm">External article, practitioner and research discovery is optional. Requests may send the public topic title to third-party providers.</p><button className="btn-ghost btn mt-3" onClick={()=>enable('sources')}>Load live web sources</button></div>}
       </>
     ),
     sources: () => (

@@ -30,8 +30,8 @@ function SelfCheck({ points, item, concept, label }: { points: string[]; item: s
   const n = got.filter(Boolean).length
   const pass = n >= Math.ceil(points.length * 0.7)
   const save = () => {
-    if (concept) recordAttempt({ item, concept, dim: 'communicate', correct: pass, given: `${n}/${points.length}` })
-    setSaved(pass ? `Covered ${n} of ${points.length}: a strong answer.` : `Covered ${n} of ${points.length}. Rehearse the missing points and try again tomorrow.`)
+    if (concept) recordAttempt({ item, concept, dim: 'communicate', provenance: 'self-assessed', correct: pass, given: `${n}/${points.length}` })
+    setSaved(pass ? `Self-assessed: covered ${n} of ${points.length}.` : `Covered ${n} of ${points.length}. Rehearse the missing points and try again tomorrow.`)
   }
   return (
     <fieldset className="mt-3 rounded-md border border-line p-3">
@@ -46,6 +46,7 @@ function SelfCheck({ points, item, concept, label }: { points: string[]; item: s
           </li>
         ))}
       </ul>
+      <p className="mt-2 text-xs text-ink-2">Self-assessment: this checklist does not independently verify your spoken or written answer.</p>
       <button type="button" className="btn mt-2" onClick={save}>{concept ? 'Save my self-check' : 'Score my answer'}</button>
       {saved && <p className="mt-1 text-sm" aria-live="polite">{saved}</p>}
     </fieldset>
@@ -130,7 +131,7 @@ export function TeachBackCard({ c, render = plain }: { c: Concept; render?: (t: 
           {c.why && <p className="mt-1 text-[0.95rem]">{render(c.why)}</p>}
           <div className="mt-2 flex flex-wrap gap-2">
             {([['Mine covers the same ideas', true], ['I missed something important', false]] as const).map(([l, ok]) => (
-              <button key={l} type="button" className="btn-ghost btn" onClick={() => { recordAttempt({ item: `teach:${c.id}`, concept: c.id, dim: 'communicate', correct: ok, given: `${words} words` }); setSelf(ok ? 'Saved. Explaining it is the strongest test of understanding.' : 'Saved. Reread the missing idea, then explain it again tomorrow.') }}>{l}</button>
+              <button key={l} type="button" className="btn-ghost btn" onClick={() => { recordAttempt({ item: `teach:${c.id}`, concept: c.id, dim: 'communicate', provenance: 'self-assessed', correct: ok, given: `${words} words` }); setSelf(ok ? 'Saved as self-assessed evidence. Compare your explanation with a worked application.' : 'Saved as self-assessed evidence. Reread the missing idea, then explain it again tomorrow.') }}>{l}</button>
             ))}
           </div>
           {self && <p className="mt-1 text-sm" aria-live="polite">{self}</p>}
