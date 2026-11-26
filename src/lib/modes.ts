@@ -17,7 +17,7 @@ export interface LearnMode {
 }
 
 /** Every section id a topic page can render, in the default order. */
-export const ALL_SECTIONS = ['keyword', 'preview', 'plain', 'analogy', 'picture', 'why', 'math', 'algo', 'example', 'real', 'jobs', 'sim', 'try', 'interview', 'live', 'sources', 'more'] as const
+export const ALL_SECTIONS = ['keyword', 'preview', 'plain', 'analogy', 'picture', 'why', 'math', 'algo', 'example', 'real', 'jobs', 'sim', 'try', 'interview', 'teach', 'live', 'sources', 'more'] as const
 
 export const MODES: LearnMode[] = [
   { id: 'full', name: 'Zero to mastery', blurb: 'Every section, from plain meaning to the math, the job and the interview.', order: null, depth: 'full' },
@@ -25,9 +25,9 @@ export const MODES: LearnMode[] = [
   { id: 'beginner', name: 'Absolute beginner', blurb: 'Everyday words first: plain meaning, an analogy, a picture and a gentle example. The formal definition stays folded away.', order: ['keyword', 'preview', 'plain', 'analogy', 'picture', 'why', 'example', 'sim', 'try', 'more'], depth: 'gentle' },
   { id: 'visual', name: 'Visual', blurb: 'Diagrams, simulators and flowcharts first, words second.', order: ['keyword', 'picture', 'sim', 'algo', 'example', 'plain', 'analogy', 'try', 'more'], depth: 'short' },
   { id: 'math', name: 'Math deep dive', blurb: 'The formula, every variable, the worked numbers and the algorithm.', order: ['keyword', 'plain', 'math', 'example', 'algo', 'sim', 'try', 'sources', 'more'], depth: 'full' },
-  { id: 'work', name: 'On the job', blurb: 'Where it shows up at work: the scenario, why it matters, the roles and tools, and the common mistakes.', order: ['keyword', 'plain', 'real', 'why', 'jobs', 'sim', 'example', 'interview', 'more'], depth: 'short' },
-  { id: 'interview', name: 'Interview prep', blurb: 'Interview questions first, backed by the definition, a real scenario and the numbers.', order: ['keyword', 'plain', 'interview', 'real', 'why', 'example', 'math', 'jobs', 'try', 'more'], depth: 'full' },
-  { id: 'revision', name: 'Revision', blurb: 'For topics you have met before: one line, the formula, the solved example and a recall check.', order: ['keyword', 'plain', 'math', 'example', 'try', 'interview', 'more'], depth: 'short', revealSteps: true },
+  { id: 'work', name: 'On the job', blurb: 'Where it shows up at work: the scenario, why it matters, the roles and tools, and the common mistakes.', order: ['keyword', 'plain', 'real', 'why', 'jobs', 'sim', 'example', 'interview', 'teach', 'more'], depth: 'short' },
+  { id: 'interview', name: 'Interview prep', blurb: 'Interview questions first, backed by the definition, a real scenario and the numbers.', order: ['keyword', 'plain', 'interview', 'teach', 'real', 'why', 'example', 'math', 'jobs', 'try', 'more'], depth: 'full' },
+  { id: 'revision', name: 'Revision', blurb: 'For topics you have met before: one line, the formula, the solved example and a recall check.', order: ['keyword', 'plain', 'math', 'example', 'try', 'interview', 'teach', 'more'], depth: 'short', revealSteps: true },
   { id: 'research', name: 'Research', blurb: 'What Wikipedia, research papers and practitioners say, with the cited sources.', order: ['keyword', 'preview', 'plain', 'live', 'sources', 'more'], depth: 'full' },
 ]
 

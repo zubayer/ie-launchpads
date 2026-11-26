@@ -2,7 +2,7 @@
 // and the lesson stay the single source of the concept; this file adds what an experiment needs:
 // symbols with units and limits, a pure compute function, validity rules, spreadsheet and Python
 // equivalents, and reference cases that are checked by src/lib/equations.test.ts.
-import { Phi } from '../lib/math'
+import { Phi, PhiInv, mmc } from '../lib/math'
 
 export type Vals = Record<string, number>
 /** sign: the physically valid domain. Default 'positive'; counts and amounts that can be zero are 'nonneg'; signed values (temperatures, spec limits) are 'any'. */
@@ -252,6 +252,69 @@ export const EQUATIONS: Equation[] = [
     fixtures: [{ inputs: { lam: 8, mu: 10 }, expect: 24, tol: 1e-9, source: 'M/M/1 lesson example: 0.8 / (10 − 8) h = 24 min' }],
     sweep: 'lam', predict: 'lam',
     explain: (v, y) => `The server is busy ${((v.lam / v.mu) * 100).toFixed(0)}% of the time and a job waits ${y.toFixed(1)} min on average before service starts.`,
+  },
+  {
+    id: 'mmc', concept: 'or.mmc', related: ['or.mm1', 'service.erlang-staffing'],
+    title: 'Multi-server queue (M/M/c, Erlang C)', blurb: 'How many servers a shared line needs before waits stop exploding.',
+    tex: 'W_q=\\dfrac{C(c,a)}{c\\mu-\\lambda},\\qquad a=\\dfrac{\\lambda}{\\mu},\\quad \\rho=\\dfrac{\\lambda}{c\\mu}',
+    inputs: [
+      { key: 'lam', tex: '\\lambda', name: 'Arrival rate', unit: 'arrivals per hour', min: 0.1, max: 200, step: 0.1, value: 10, py: 'arrivals_per_h' },
+      { key: 'mu', tex: '\\mu', name: 'Service rate per server', unit: 'per hour', min: 0.1, max: 60, step: 0.1, value: 4, py: 'service_per_h' },
+      { key: 'c', tex: 'c', name: 'Servers', unit: 'servers', min: 1, max: 40, step: 1, value: 3, py: 'servers', integer: true },
+    ],
+    output: { tex: 'W_q', name: 'Average wait in queue', unit: 'min', digits: 1 },
+    compute: ({ lam, mu, c }) => mmc(lam, mu, c).wq * 60,
+    invalid: ({ lam, mu, c }) => (lam >= c * mu ? 'Unstable: arrivals reach or exceed the total service rate cμ, so the line grows without limit. Add servers or speed up service.' : null),
+    extras: [
+      { ...pctOut('Utilisation per server', '\\rho'), f: ({ lam, mu, c }) => lam / (c * mu) },
+      { ...pctOut('Probability an arrival waits (Erlang C)', 'C(c,a)'), f: ({ lam, mu, c }) => mmc(lam, mu, c).pw },
+      { tex: 'L_q', name: 'Average number waiting', unit: 'customers', digits: 2, f: ({ lam, mu, c }) => mmc(lam, mu, c).lq },
+    ],
+    dims: 'probability ÷ (per hour − per hour) = hours; × 60 = min',
+    assumptions: ['Poisson arrivals and exponential service times', 'c identical servers sharing one first-come-first-served line', 'Nobody leaves the line (no abandonment) and the waiting room is unlimited', 'Steady state: long-run averages'],
+    traps: ['Dividing arrivals evenly over separate lines and calling it the same thing (pooled lines wait less)', 'Sizing staff on average utilisation alone', 'Ignoring abandonment in call centres, where Erlang A fits better'],
+    excel: '=LET(a,{lam}/{mu},r,a/{c},t,a^{c}/FACT({c})/(1-r),s,SUMPRODUCT(a^(ROW(INDIRECT("1:"&{c}))-1)/FACT(ROW(INDIRECT("1:"&{c}))-1)),t/(s+t)/({c}*{mu}-{lam})*60)',
+    python: 'from math import factorial\na = arrivals_per_h / service_per_h\nrho = a / servers\ntop = a**servers / factorial(servers) / (1 - rho)\np_wait = top / (sum(a**k / factorial(k) for k in range(servers)) + top)\nwq_min = p_wait / (servers * service_per_h - arrivals_per_h) * 60',
+    fixtures: [
+      { inputs: { lam: 10, mu: 4, c: 3 }, expect: 21.067, tol: 0.001, source: 'Hand-worked: a = 2.5, P0 = 1/22.25, P(wait) = 15.625/22.25 = 0.70225, Wq = 0.70225/2 h' },
+      { inputs: { lam: 8, mu: 10, c: 1 }, expect: 24, tol: 1e-9, source: 'With one server it must equal the M/M/1 lesson example (24 min)' },
+      { inputs: { lam: 10, mu: 6, c: 2 }, expect: 22.727, tol: 0.001, source: 'Hand-worked pooling case: P(wait) = (25/9)/(11/3) = 0.75758, Wq = 0.37879 h' },
+    ],
+    sweep: 'lam', predict: 'c',
+    insight: 'Adding servers cuts the wait far more than in proportion, because the line is shared: a free server takes the next customer at once.',
+    explain: (v, y) => `Each server is busy ${((v.lam / (v.c * v.mu)) * 100).toFixed(0)}% of the time; ${(mmc(v.lam, v.mu, v.c).pw * 100).toFixed(0)}% of arrivals wait, on average ${y.toFixed(1)} min.`,
+  },
+  {
+    id: 'newsvendor', concept: 'or.newsvendor', related: ['or.eoq', 'scm.service-level'],
+    title: 'Newsvendor order quantity', blurb: 'How much to stock for one selling season when demand is uncertain.',
+    tex: 'Q^*=\\mu+z\\,\\sigma,\\qquad \\Phi(z)=\\dfrac{C_u}{C_u+C_o}=\\dfrac{p-c}{p-s}',
+    inputs: [
+      { key: 'p', tex: 'p', name: 'Selling price', unit: '$ per unit', min: 0.5, max: 200, step: 0.1, value: 12, py: 'price' },
+      { key: 'c', tex: 'c', name: 'Unit cost', unit: '$ per unit', min: 0.5, max: 200, step: 0.1, value: 5, py: 'cost' },
+      { key: 's', tex: 's', name: 'Salvage value', unit: '$ per unit', min: 0, max: 200, step: 0.1, value: 1, sign: 'nonneg', py: 'salvage' },
+      { key: 'mu', tex: '\\mu', name: 'Mean demand', unit: 'units', min: 10, max: 5000, step: 1, value: 500, py: 'mean' },
+      { key: 'sigma', tex: '\\sigma', name: 'Demand standard deviation', unit: 'units', min: 1, max: 1000, step: 0.1, value: 120, py: 'sd' },
+    ],
+    output: { tex: 'Q^*', name: 'Order quantity', unit: 'units', digits: 1 },
+    compute: ({ p, c, s, mu, sigma }) => mu + PhiInv((p - c) / (p - s)) * sigma,
+    invalid: ({ p, c, s }) => (c >= p ? 'The unit cost is at or above the price, so every unit loses money: stock nothing.' : s >= c ? 'Salvage is at or above cost, so leftovers cost nothing and the model says stock without limit. Check the salvage value.' : null),
+    warn: ({ mu, sigma }) => (sigma > mu / 3 ? 'The standard deviation is more than a third of the mean, so a normal model gives real probability to negative demand. Consider a lognormal or empirical demand distribution.' : null),
+    extras: [
+      { ...pctOut('Critical ratio (target in-stock probability)', '\\frac{C_u}{C_u+C_o}'), f: ({ p, c, s }) => (p - c) / (p - s) },
+      { tex: 'z', name: 'Standard normal quantile', unit: '', digits: 3, f: ({ p, c, s }) => PhiInv((p - c) / (p - s)) },
+    ],
+    dims: 'units + (dimensionless z × units) = units',
+    assumptions: ['One selling period: leftovers cannot be sold at full price later', 'Demand is approximately normal with the given mean and standard deviation', 'Costs are linear: each extra unit costs c and each leftover recovers s', 'Lost sales cost only the lost margin (no goodwill penalty unless added to Cu)'],
+    traps: ['Ordering the mean demand by habit', 'Using the price instead of the margin as the underage cost', 'Forgetting salvage when computing the overage cost'],
+    excel: '=NORM.INV(({p}-{c})/({p}-{s}),{mu},{sigma})', python: 'from scipy.stats import norm\nq = norm.ppf((price - cost) / (price - salvage), mean, sd)',
+    fixtures: [
+      { inputs: { p: 12, c: 5, s: 1, mu: 500, sigma: 120 }, expect: 541.85, tol: 0.05, source: 'Newsvendor lesson example: critical ratio 7/11, z ≈ 0.349' },
+      { inputs: { p: 10, c: 6, s: 2, mu: 500, sigma: 120 }, expect: 500, tol: 1e-6, source: 'Cu = Co = 4 gives a critical ratio of 0.5, so Q* is the mean' },
+      { inputs: { p: 20, c: 4, s: 0, mu: 1000, sigma: 200 }, expect: 1168.32, tol: 0.05, source: 'Critical ratio 16/20 = 0.80; z(0.80) = 0.8416 from the standard normal table' },
+    ],
+    sweep: 'sigma', predict: 'sigma',
+    insight: 'When shortages cost more than leftovers, more uncertainty means stocking more, not less: the safety margin z·σ grows with σ.',
+    explain: (v, y) => { const cr = (v.p - v.c) / (v.p - v.s); return `The critical ratio is ${(cr * 100).toFixed(1)}%, so stock enough to meet demand that often: about ${Math.round(y)} units, ${y >= v.mu ? `${Math.round(y - v.mu)} above` : `${Math.round(v.mu - y)} below`} the mean.` },
   },
   {
     id: 'calibration', concept: 'automation.sensors', related: ['manufacturing.measurement-uncertainty', 'automation.plc'],

@@ -20,6 +20,7 @@ import { LiveWeb, QuickPreview, prefetchLive } from '../components/LiveWeb'
 import { MODES, applyMode, modeOf, type ModeId } from '../lib/modes'
 import { JobsBlock, RoleChips } from '../components/Jobs'
 import { ReviewChip, SourcesBlock } from '../components/Sources'
+import { InterviewCard, TeachBackCard } from '../components/Interview'
 
 interface Layer { id: string; name: string }
 
@@ -38,6 +39,7 @@ function layersFor(c: Concept): Layer[] {
   if (simFor(c)) L.push({ id: 'sim', name: 'Simulate it' })
   L.push({ id: 'try', name: 'Check yourself' })
   if (c.iq?.length) L.push({ id: 'interview', name: 'Interview' })
+  L.push({ id: 'teach', name: 'Teach it back' })
   L.push({ id: 'live', name: 'Live from the web' })
   L.push({ id: 'sources', name: 'Sources & review' })
   L.push({ id: 'more', name: 'Learn more' })
@@ -367,14 +369,14 @@ export default function ConceptPage() {
     interview: () => (
       <>
             <div className="space-y-2">
-              {c.iq!.map((q) => (
-                <details key={q.q} className="group rounded-md border border-line px-4 py-3">
-                  <summary className="cursor-pointer font-medium marker:text-ink-2">{q.q} {q.type && <span className="chip ml-2 align-middle">{q.type}</span>}</summary>
-                  <p className="measure mt-2 text-[0.97rem]"><Linked text={q.a} self={c.id} /></p>
-                </details>
-              ))}
+              {c.iq!.map((q) => <InterviewCard key={q.q} q={q} concept={c.id} render={(t) => <Linked text={t} self={c.id} />} />)}
             </div>
             <p className="mt-3 text-sm text-ink-2">Say your answer out loud before opening the model answer. More in <Link className="underline" to="/interview">Interview prep</Link>.</p>
+      </>
+    ),
+    teach: () => (
+      <>
+          <TeachBackCard key={c.id} c={c} render={(t) => <Linked text={t} self={c.id} />} />
       </>
     ),
     live: () => (

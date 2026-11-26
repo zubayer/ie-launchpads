@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { CONCEPTS, CONCEPT_MAP, ENRICHED_IDS } from './index'
 import { SOURCES } from './sources'
 import katex from 'katex'
+import { mathIn, splitMath } from '../lib/inlineMath'
 import { DOMAINS } from './domains'
 import { ROLES } from './roles'
 import { CASES } from './cases'
@@ -209,6 +210,45 @@ describe('sources and review statuses', () => {
   })
 })
 
+describe('inline math and dollar amounts', () => {
+  it('dollar amounts stay text; $…$ math still renders', () => {
+    expect(mathIn('Up to 20 h, gaining about $6 an hour, roughly $120.')).toEqual([])
+    expect(mathIn('Profits: $600 at (20, 0); $800 at (0, 20); −$200k.')).toEqual([])
+    expect(mathIn('Wait grows like $\\rho/(1-\\rho)$ near full load.')).toEqual(['\\rho/(1-\\rho)'])
+    expect(mathIn('Costs $5 when $x^2$ exceeds $y$.')).toEqual(['x^2', 'y'])
+    expect(splitMath('a $x$ b').length).toBe(3)
+  })
+})
+
+describe('interview questions and teach-back', () => {
+  const all = () => [...CONCEPTS.flatMap((c) => (c.iq || []).map((q) => ({ where: c.id, q }))), ...ROLES.flatMap((r) => r.questions.map((q) => ({ where: r.id, q })))]
+  it('a question marked reported names a registered source; practice questions carry no report', () => {
+    const bad: string[] = []
+    for (const { where, q } of all()) {
+      if (q.origin === 'reported' && !(q.reported && SOURCES[q.reported.src] && q.reported.supports.trim().length > 5)) bad.push(`${where}: “${q.q.slice(0, 40)}” is marked reported without a registered source`)
+      if (q.origin !== 'reported' && q.reported) bad.push(`${where}: “${q.q.slice(0, 40)}” has a report but is not marked reported`)
+    }
+    expect(bad).toEqual([])
+  })
+  it('hints, follow-ups and rubrics are real text', () => {
+    const bad: string[] = []
+    for (const { where, q } of all()) {
+      if (q.hint !== undefined && q.hint.trim().length < 10) bad.push(`${where}: hint`)
+      if (q.hint && q.a.toLowerCase().startsWith(q.hint.toLowerCase().slice(0, 30))) bad.push(`${where}: the hint gives away the answer`)
+      for (const f of q.followUps || []) if (f.trim().length < 10) bad.push(`${where}: follow-up “${f}” is too short to be a real prompt`)
+      if (q.rubric && q.rubric.length < 2) bad.push(`${where}: a rubric needs at least two criteria`)
+      if (new Set(q.rubric || []).size !== (q.rubric || []).length) bad.push(`${where}: duplicate rubric points`)
+    }
+    expect(bad).toEqual([])
+  })
+  it('teach-back prompts have at least three checkable points', () => {
+    for (const c of CONCEPTS) if (c.teachBack) {
+      expect(c.teachBack.prompt.trim().length, c.id).toBeGreaterThan(20)
+      expect(c.teachBack.points.length, c.id).toBeGreaterThanOrEqual(3)
+    }
+  })
+})
+
 describe('content quality', () => {
   it('prerequisites form no cycles', () => {
     const state = new Map<string, 0 | 1 | 2>()
@@ -238,7 +278,7 @@ describe('content quality', () => {
     for (const c of CONCEPTS) {
       if (c.formula) { tryTex(c.id, c.formula.tex); c.formula.vars?.forEach(([s]) => tryTex(c.id, s)) }
       const prose = [c.one, c.def, c.why, c.analogy, c.example?.q, c.example?.a, ...(c.example?.steps || [])].filter(Boolean) as string[]
-      for (const p of prose) for (const m of p.matchAll(/\$([^$]+)\$/g)) tryTex(c.id, m[1])
+      for (const p of prose) for (const m of mathIn(p)) tryTex(c.id, m)
     }
     expect(bad).toEqual([])
   })
