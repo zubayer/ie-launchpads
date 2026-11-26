@@ -1,4 +1,4 @@
-import type { Concept } from '../types'
+import type { ConceptIndex as Concept } from './assemble'
 
 export type TermKind = 'acronym' | 'notation' | 'term'
 export interface TermDetail { label: string; meaning: string; kind: TermKind; note?: string; source?: string }

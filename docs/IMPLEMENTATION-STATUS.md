@@ -79,7 +79,7 @@ Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXE
 - The ladder engine is a teaching model of Rockwell Logix instruction behaviour (synchronous scan, listed prescan rules), not a controller emulator; the CAD labs model the ideas under SOLIDWORKS, not the software.
 - Units are not yet a structured field on formulas; the library shows only what the lessons state.
 - Progress is saved per browser and separately for V1 and V2.
-- The main bundle is ~1.2 MB (417 kB gzipped) because all concept content loads up front; see backlog item P1-4.
+- The first visit downloads ~818 KB of JavaScript (262 KB gzipped); full lesson text loads per domain on demand. Without a service worker, a domain never opened before needs a connection.
 
 ## Proposed comparison studio (November 26)
 

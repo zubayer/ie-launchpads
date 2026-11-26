@@ -7,9 +7,11 @@ import { SIM_META } from '../sims/registry'
 import { EXTRA_SIM } from '../content/visuals'
 import { LEVEL_NAME, type Concept } from '../types'
 import { PageHead, Tex } from '../components/ui'
+import type { ConceptIndex } from '../content/assemble'
+import { useConcept } from '../content/load'
 
 const FAM = Object.fromEntries(FAMILIES.map((f) => [f.id, f])) as Record<FamilyId, (typeof FAMILIES)[number]>
-const simOf = (c: Concept) => SIM_META.find((s) => s.id === (c.sim || EXTRA_SIM[c.id])) || SIM_META.find((s) => s.concepts.includes(c.id))
+const simOf = (c: ConceptIndex) => SIM_META.find((s) => s.id === (c.sim || EXTRA_SIM[c.id])) || SIM_META.find((s) => s.concepts.includes(c.id))
 const famStyle = (f: FamilyId, level = 1) => ({ '--fam-l': FAM[f].light, '--fam-d': FAM[f].dark, '--tint': `${[0, 6, 11, 17, 24][level]}%`, '--tint-d': `${[0, 9, 15, 22, 30][level]}%` }) as CSSProperties
 const BY_SYM = Object.fromEntries(ELEMENTS.map((e) => [e.id, e]))
 
@@ -26,8 +28,9 @@ function Tile({ e, big = false, marks = '' }: { e: Element; big?: boolean; marks
 function Detail({ e }: { e: Element }) {
   const c = e.c
   const io = ELEMENT_IO[e.id]
-  const traps = io?.traps || c.mistakes || []
-  const example = io?.example || c.example?.a
+  const full = useConcept(c.id).data // mistakes and worked numbers come with the lesson text
+  const traps: string[] = io?.traps || full?.mistakes || []
+  const example = io?.example || full?.example?.a
   const sim = simOf(c)
   const near = neighbors(c).slice(0, 6)
   return (

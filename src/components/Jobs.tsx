@@ -2,9 +2,10 @@ import { Link } from 'react-router-dom'
 import type { Concept } from '../types'
 import { TITLE_PATH, jobLinks, jobsFor, skillJobLinks } from '../content/jobs'
 import { useStore } from '../lib/store'
+import type { ConceptIndex } from '../content/assemble'
 
 /** Compact chips for the top of a concept page. */
-export function RoleChips({ c }: { c: Concept }) {
+export function RoleChips({ c }: { c: ConceptIndex }) {
   const { paths, titles } = jobsFor(c)
   const names = [...paths.map((p) => p.role.title), ...titles.filter((t) => !paths.some((p) => TITLE_PATH[t] === p.role.id))].slice(0, 5)
   return (
@@ -16,7 +17,7 @@ export function RoleChips({ c }: { c: Concept }) {
   )
 }
 
-export function JobsBlock({ c }: { c: Concept }) {
+export function JobsBlock({ c }: { c: ConceptIndex }) {
   const { paths, titles } = jobsFor(c)
   const where = useStore((s) => s.settings.jobLocation || '')
   const setSettings = useStore((s) => s.setSettings)

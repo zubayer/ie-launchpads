@@ -3,7 +3,7 @@ import initSqlJs, { type SqlJsStatic } from 'sql.js'
 import { MACHINES, PRODUCTION, DEFECTS, DOWNTIME, PRODUCTS, WORK_ORDERS, SCHEMA, plantSql } from '../content/sql/plant'
 import { SQL_LESSONS } from '../content/sql/course'
 import { RESULTS } from '../content/sql/results'
-import { CONCEPT_MAP } from '../content'
+import { CONCEPT_MAP } from '../content/full'
 import { hintFor, sameResult, type Cell } from './sql'
 import { DEEP_DIVE } from '../content/deepDives'
 

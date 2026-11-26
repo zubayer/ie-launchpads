@@ -1,5 +1,6 @@
 import type { Concept } from '../types'
 import { CONCEPT_MAP } from './index'
+import type { ConceptIndex } from './assemble'
 
 // The Periodic Table of Industrial Engineering: 107 core methods as "elements" in 10 families.
 // Inside a family, elements run from Foundation (level 1) to Advanced (level 4), like periods.
@@ -35,7 +36,7 @@ const RAW: Record<FamilyId, [string, string][]> = {
   data: [["datasci.confusion-matrix", "Cx"], ["datasci.overfitting", "Of"], ["datasci.sql", "Sq"], ["datasci.decision-tree", "Dc"], ["datasci.random-forest", "Rf"], ["datasci.kmeans", "Km"], ["datasci.gradient-boosting", "Gb"], ["datasci.pca", "Pc"]],
 }
 
-export interface Element { n: number; id: string; sym: string; family: FamilyId; c: Concept }
+export interface Element { n: number; id: string; sym: string; family: FamilyId; c: ConceptIndex }
 
 /** Elements numbered 1…107: family by family, Foundation first inside each family. */
 export const ELEMENTS: Element[] = (() => {

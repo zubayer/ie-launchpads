@@ -1,7 +1,7 @@
 import { CONCEPTS } from '../content'
 import { CURATED, metadataTerm, type TermKind } from '../content/dictionaryTerms'
 import { EQUATIONS } from '../content/equations'
-import type { Concept } from '../types'
+import type { ConceptIndex as Concept } from '../content/assemble'
 
 export interface DictionaryEntry {
   id: string; concept: Concept; label: string; meaning: string; kind: TermKind

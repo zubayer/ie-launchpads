@@ -7,11 +7,19 @@ import { PAIRS } from '../content/discovery'
 import { termMeaning } from '../content/comparisonTerms'
 import { PageHead,Rich,Tex } from '../components/ui'
 import type { Concept } from '../types'
+import { useConcept } from '../content/load'
+import { LoadGate } from '../components/LoadGate'
 
 const Labs=lazy(()=>import('../components/ComparisonLabs'))
 const colors=['#2563eb','#0d9488','#b45309','#7c3aed']
 const FOCUS=['Overview','Equations','Applications','Interview'] as const
 type Focus=typeof FOCUS[number]
+/** Definitions, assumptions, cases and questions load with each lesson's domain (src/content/load.ts). */
+function LessonFields({id,focus}:{id:string;focus:Focus}){
+  const state=useConcept(id)
+  return <LoadGate state={state} what="lesson details">{c=><Fields c={c} focus={focus}/>}</LoadGate>
+}
+
 function Fields({c,focus}:{c:Concept;focus:Focus}){
   if(focus==='Equations')return <>
     {c.formula?<><Tex tex={c.formula.tex} block/>{!!c.formula.vars?.length&&<ul className="mt-2 space-y-1 text-sm">{c.formula.vars.map(([v,m],i)=><li key={i}><Tex tex={v}/> — {m}</li>)}</ul>}</>:<p className="text-sm text-ink-2">No equation is authored for this topic.</p>}
@@ -55,7 +63,7 @@ export function AdvancedCompare(){
     </section>
     {ids.length<2?<p className="sheet rounded-lg p-4">Choose at least two concepts to compare. You can also start with a curated family.</p>:<>
       <div role="group" aria-label="Comparison focus" className="mb-3 flex flex-wrap gap-2">{FOCUS.map(f=><button className={'pop-btn '+(focus===f?'!border-sblue font-semibold':'')} key={f} aria-pressed={focus===f} onClick={()=>setFocus(f)}>{f}</button>)}</div>
-      <div className={'grid gap-3 sm:grid-cols-2 '+(ids.length===3?'xl:grid-cols-3':ids.length===4?'2xl:grid-cols-4':'')}>{concepts.map((c,i)=><article className="sheet min-w-0 rounded-lg border border-line border-t-4 p-4" style={{borderTopColor:colors[i]}} key={c.id}><p className="label">Concept {i+1} · {DOMAIN_MAP[c.domain].short}</p><h2 className="mt-1 text-xl font-bold break-words">{c.term}</h2>{termMeaning(c)&&<p className="mt-1 text-sm font-medium">{termMeaning(c)}</p>}<div className="mt-3 border-t border-line pt-3"><Fields c={c} focus={focus}/></div><Link className="mt-3 block text-sm font-semibold underline" to={'/c/'+c.id}>Open full lesson</Link></article>)}</div>
+      <div className={'grid gap-3 sm:grid-cols-2 '+(ids.length===3?'xl:grid-cols-3':ids.length===4?'2xl:grid-cols-4':'')}>{concepts.map((c,i)=><article className="sheet min-w-0 rounded-lg border border-line border-t-4 p-4" style={{borderTopColor:colors[i]}} key={c.id}><p className="label">Concept {i+1} · {DOMAIN_MAP[c.domain].short}</p><h2 className="mt-1 text-xl font-bold break-words">{c.term}</h2>{termMeaning(c)&&<p className="mt-1 text-sm font-medium">{termMeaning(c)}</p>}<div className="mt-3 border-t border-line pt-3"><LessonFields id={c.id} focus={focus}/></div><Link className="mt-3 block text-sm font-semibold underline" to={'/c/'+c.id}>Open full lesson</Link></article>)}</div>
       {family&&<section className="sheet mt-4 rounded-lg border border-line border-l-4 border-l-sgreen p-4"><h2 className="text-lg font-bold">Key differences · {family.title}</h2><p className="mt-2">{family.insight}</p><p className="mt-2 text-sm"><strong>When to use what:</strong> {family.decision}</p><details className="mt-3 rounded border border-line p-3"><summary className="cursor-pointer font-semibold">Interview challenge</summary><p className="mt-2 text-sm">{family.question}</p><details className="mt-2"><summary className="cursor-pointer text-sm font-semibold">Reveal professional answer</summary><p className="mt-2 text-sm">{family.answer}</p></details></details></section>}
       {!!pairs.length&&<section className="sheet mt-4 rounded-lg p-4"><h2 className="font-bold text-lg">Authored pairwise distinctions</h2>{pairs.map(p=><div key={p.a+'|'+p.b} className="mt-3 border-t border-line pt-3"><p className="font-semibold">{CONCEPT_MAP[p.a].term} vs. {CONCEPT_MAP[p.b].term}</p><p className="mt-1 text-sm">{p.diff}</p></div>)}</section>}
       {!family&&!pairs.length&&<p className="mt-4 text-sm text-ink-2">These topics do not have an authored relationship yet. Compare their existing lesson content above; no new distinction is inferred automatically.</p>}

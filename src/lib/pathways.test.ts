@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CONCEPT_MAP } from '../content'
+import { CONCEPT_MAP } from '../content/full'
 import { EQUATION_MAP } from '../content/equations'
 import { MYSTERIES } from '../content/discovery'
 import { PATHWAYS, allItems, type NumericItem } from '../content/pathways'

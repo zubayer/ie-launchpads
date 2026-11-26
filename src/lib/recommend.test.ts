@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { plan, suggestions, type LearnerState } from './recommend'
 import { ROLES } from '../content/roles'
-import { CONCEPT_MAP } from '../content'
+import { CONCEPT_MAP } from '../content/full'
 import type { Attempt, Mistake } from './store'
 import { PATHWAYS, itemKey } from '../content/pathways'
 

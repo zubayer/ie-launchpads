@@ -8,7 +8,6 @@ export const fuse = new Fuse(CONCEPTS, {
     { name: 'full', weight: 3 },
     { name: 'one', weight: 1 },
     { name: 'sub', weight: 0.5 },
-    { name: 'def', weight: 0.4 },
   ],
   threshold: 0.33,
   ignoreLocation: true,
