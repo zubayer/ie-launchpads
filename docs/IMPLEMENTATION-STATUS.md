@@ -80,3 +80,11 @@ Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXE
 - Units are not yet a structured field on formulas; the library shows only what the lessons state.
 - Progress is saved per browser and separately for V1 and V2.
 - The main bundle is ~1.2 MB (417 kB gzipped) because all concept content loads up front; see backlog item P1-4.
+
+## Proposed comparison studio (November 26)
+
+| Feature | Status | Evidence |
+|---|---|---|
+| Confused Pairs expansion and accessible comparison cards | In development | 51 authored pairs, 102 practice scenarios; search, domain and concept filters, formula/analogy disclosures and two visual comparisons. |
+| Topic terminology explanations | In development | 35 specialized records plus existing full-name fields; Cp/Cpk explicitly mathematical notation. |
+| Release validation | In development | Data tests, numeric reference checks and mobile/browser interactions added; CI and rendered review pending. |
