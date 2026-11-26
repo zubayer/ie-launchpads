@@ -46,29 +46,32 @@ export const loadedConcept = (id: string) => byId.get(id)
 
 export type Loaded<T> = { data: T; error?: undefined } | { data?: undefined; error?: string }
 
-function useLoaded<T>(key: string, get: () => T | undefined, load: () => Promise<unknown>): Loaded<T> & { retry: () => void } {
-  const [state, setState] = useState<{ key: string; tick: number; error?: string }>({ key, tick: 0 })
+function useLoaded<T>(key: string, get: () => T | undefined, load: (() => Promise<unknown>) | null): Loaded<T> & { retry: () => void } {
+  // `settled` marks a key whose load finished: once it has, the effect never runs again for that key, even
+  // when the load produced nothing (an unknown id), so an empty or missing lesson can't cause a render loop.
+  const [state, setState] = useState<{ key: string; settled?: boolean; error?: string }>({ key })
   const data = get()
-  const error = state.key === key ? state.error : undefined
+  const mine = state.key === key ? state : { key }
   useEffect(() => {
-    if (get()) return
+    if (!load || get() !== undefined || (state.key === key && (state.settled || state.error))) return
     let live = true
-    load().then(() => { if (live) setState((s) => ({ key, tick: s.tick + 1 })) }, () => {
-      if (live) setState((s) => ({ key, tick: s.tick, error: 'This part of the course didn’t load. Check your connection and try again.' }))
+    load().then(() => { if (live) setState({ key, settled: true }) }, () => {
+      if (live) setState({ key, error: 'This part of the course didn’t load. Check your connection and try again.' })
     })
     return () => { live = false }
     // `get` and `load` are recreated each render on purpose and keyed by `key`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, state.tick])
+  }, [key])
   // Browsers remember a failed dynamic import for the life of the page, so a real retry has to reload it.
   // Progress and settings are saved in local storage, so nothing is lost.
-  const retry = () => { if (typeof window !== 'undefined') window.location.reload(); else setState((s) => ({ key, tick: s.tick + 1 })) }
-  return data !== undefined ? { data, retry } : { error, retry }
+  const retry = () => { if (typeof window !== 'undefined') window.location.reload() }
+  return data !== undefined ? { data, retry } : { error: mine.error, retry }
 }
 
 /** The full lesson for an id; `data` is undefined while its domain loads (and for unknown ids). */
 export function useConcept(id: string) {
-  return useLoaded(`c:${id}`, () => byId.get(id), () => (id.includes('.') ? loadDomain(domainOf(id)) : Promise.resolve()))
+  const known = id.includes('.') && DOMAIN_ORDER.includes(domainOf(id))
+  return useLoaded(`c:${id}`, () => byId.get(id), known ? () => loadDomain(domainOf(id)) : null)
 }
 
 /** Every full lesson; for pages that search or sample across the whole course (practice, interview bank). */

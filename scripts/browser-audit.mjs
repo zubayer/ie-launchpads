@@ -99,6 +99,19 @@ for (const theme of ['light', 'dark']) {
     await page.getByRole('link',{name:'Terminology & symbols',exact:true}).click()
     await page.getByRole('heading',{name:'Engineering abbreviation dictionary',exact:true}).waitFor()
   } catch(e) { failures++; console.log('✗ ['+theme+'] dictionary: '+e.message) }
+  // Lesson content loads on demand: an empty or unknown lesson must not keep the page busy (render loop guard).
+  if (theme === 'light') {
+    const cdp = await page.context().newCDPSession(page)
+    await cdp.send('Performance.enable')
+    const busy = async () => (await cdp.send('Performance.getMetrics')).metrics.find((m) => m.name === 'TaskDuration').value
+    for (const r of ['review', 'c/no-such.lesson', 'c/or.not-a-lesson']) {
+      await page.goto(`${BASE}?idle=${r}#/${r}`)
+      await page.waitForSelector('h1', { timeout: 5000 }).catch(() => {})
+      await page.waitForTimeout(400)
+      const a = await busy(); await page.waitForTimeout(1000); const ms = (await busy() - a) * 1000
+      if (ms > 300) { failures++; console.log(`✗ [${theme}] /${r} kept the page busy for ${ms.toFixed(0)} ms of 1000 while idle`) }
+    }
+  }
   if (errors.length) { failures += errors.length; console.log(`✗ [${theme}] script errors:\n  ${errors.join('\n  ')}`) }
   await page.close()
 }
