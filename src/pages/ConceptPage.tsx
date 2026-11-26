@@ -18,6 +18,8 @@ import { MiniMap, Viz } from '../components/Viz'
 import { AlgoFlow } from '../components/Algo'
 import { LiveWeb, QuickPreview } from '../components/LiveWeb'
 import TopicStudio from '../components/TopicStudio'
+import { termMeaning, TERM_NOTES } from '../content/comparisonTerms'
+import { PAIRS } from '../content/discovery'
 import { MODES, applyMode, modeOf, type ModeId } from '../lib/modes'
 import { JobsBlock, RoleChips } from '../components/Jobs'
 import { ReviewChip, SourcesBlock } from '../components/Sources'
@@ -235,7 +237,8 @@ function ConceptView({ c }: { c: Concept }) {
             <div>
               <div className="mb-3 h-1.5 w-20 rounded-sm" style={{ background: d.tape }} />
               <h1 className="display text-4xl sm:text-5xl">{c.term}</h1>
-              {c.full && c.full !== c.term && <p className="wide mt-2 text-lg text-ink-2">{c.full}</p>}
+              {termMeaning(c) && <p className="wide mt-2 text-lg text-ink-2">{termMeaning(c)}</p>}
+              {TERM_NOTES[c.id]?.note && <p className="mt-2 max-w-2xl text-sm text-ink-2">{TERM_NOTES[c.id].note}</p>}
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <StatusBadge id={c.id} />
                 <ReviewChip c={c} />
@@ -262,6 +265,7 @@ function ConceptView({ c }: { c: Concept }) {
           <div className="no-print mt-4 flex flex-wrap gap-2">
             <button className="btn" onClick={() => addCard(c.id)} disabled={inDeck}>{inDeck ? 'In your review deck' : 'Add to review deck'}</button>
             <button className="btn-ghost btn" onClick={() => toggleBookmark(c.id)}>{bookmarked ? 'Bookmarked' : 'Bookmark'}</button>
+            {PAIRS.some(p=>p.a===c.id||p.b===c.id)&&<Link className="btn-ghost btn" to={'/pairs?concept='+encodeURIComponent(c.id)}>Compare related concepts</Link>}
             {sim && <a className="btn-tape btn" href="#sim" onClick={(e) => { e.preventDefault(); document.getElementById('sim')?.scrollIntoView({ behavior: 'smooth' }) }}>Simulate it</a>}
           </div>
           <details className="mt-4" open={mode.id==='full'} key={c.id+'-'+mode.id}>

@@ -1,3 +1,4 @@
+import { TERM_NOTES, termMeaning } from '../content/comparisonTerms'
 import { describe, expect, it } from 'vitest'
 import { CONCEPT_MAP } from '../content/full'
 import { ROLES } from '../content/roles'
@@ -41,6 +42,21 @@ describe('guide paths from the URL', () => {
 })
 
 describe('confused pairs', () => {
+  it('expands the library and explains mathematical notation without fake acronyms', () => {
+    expect(PAIRS.length).toBeGreaterThanOrEqual(50)
+    expect(missing(Object.keys(TERM_NOTES))).toEqual([])
+    expect(termMeaning(CONCEPT_MAP['quality.cpk'])).toContain('centering')
+    expect(termMeaning(CONCEPT_MAP['automation.plc'])).toMatch(/programmable logic controller/i)
+    expect(TERM_NOTES['quality.cpk'].note).toContain('not a standalone word')
+    expect(PAIRS.every(p=>p.diff.length>30 && p.quiz.length>=2)).toBe(true)
+  })
+  it('checks the comparison illustrations from independent formulas', () => {
+    expect((60-40)/(6*2)).toBeCloseTo(1.6666666667)
+    expect(Math.min(60-54,54-40)/(3*2)).toBe(1)
+    expect(420*60/420).toBe(60)
+    expect(Math.floor(420*60/75)).toBe(336)
+    expect(420-Math.floor(420*60/75)).toBe(84)
+  })
   it('pairs two different real lessons, each with scenarios for both sides', () => {
     expect(missing(PAIRS.flatMap((p) => [p.a, p.b]))).toEqual([])
     PAIRS.forEach((p) => {

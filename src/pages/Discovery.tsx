@@ -6,6 +6,9 @@ import { SIM_META } from '../sims/registry'
 import { EXTRA_SIM } from '../content/visuals'
 import { useStore } from '../lib/store'
 import { PageHead } from '../components/ui'
+import { ComparisonCard } from '../components/ComparisonCard'
+import { termMeaning } from '../content/comparisonTerms'
+import { DOMAIN_MAP } from '../content/domains'
 import type { Concept } from '../types'
 import type { ConceptIndex } from '../content/assemble'
 
@@ -94,6 +97,19 @@ const shuffle = <T,>(xs: T[], seed: number) => {
 }
 
 export function Pairs() {
+  const [params,setParams] = useSearchParams()
+  const [search,setSearch] = useState('')
+  const [domain,setDomain] = useState('')
+  const selected = params.get('concept') || ''
+  const domains = Array.from(new Set(PAIRS.flatMap(p=>[CONCEPT_MAP[p.a].domain,CONCEPT_MAP[p.b].domain]))).sort((a,b)=>DOMAIN_MAP[a].name.localeCompare(DOMAIN_MAP[b].name))
+  const visible = PAIRS.filter(p=>{
+    const concepts=[CONCEPT_MAP[p.a],CONCEPT_MAP[p.b]]
+    if(selected && ![p.a,p.b].includes(selected)) return false
+    if(domain && !concepts.some(c=>c.domain===domain)) return false
+    const words=search.trim().toLowerCase().split(/\s+/).filter(Boolean)
+    const hay=[p.diff,...concepts.flatMap(c=>[c.term,termMeaning(c)||'',c.one,...(c.aka||[])])].join(' ').toLowerCase()
+    return words.every(w=>hay.includes(w))
+  })
   const [mode, setMode] = useState<'study' | 'drill'>('study')
   const [seed, setSeed] = useState(() => Math.floor(Date.now() % 100000) + 1)
   const deck = useMemo(() => shuffle(PAIRS.flatMap((p, pi) => p.quiz.map((q) => ({ ...q, pi }))), seed), [seed])
@@ -114,30 +130,25 @@ export function Pairs() {
   const restart = () => { setSeed((s) => s + 1); setK(0); setPick(null); setScore({ right: 0, done: 0 }) }
   return (
     <div>
-      <PageHead title="Confused pairs" sub={`${PAIRS.length} pairs of ideas that interviewers love to mix up. Study them side by side, then drill: each scenario has one right answer.`} />
-      <div className="mb-5 flex gap-2" role="group" aria-label="Mode">
+      <PageHead title="Confused pairs" sub={`${PAIRS.length} comparisons of engineering ideas. Study the differences, formulas and applications, then practice choosing the right method.`} />
+      <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Mode">
         <button className={`pop-btn !py-2 !text-sm ${mode === 'study' ? '!border-sblue !text-sblue' : ''}`} aria-pressed={mode === 'study'} onClick={() => setMode('study')}>Study side by side</button>
-        <button className={`pop-btn !py-2 !text-sm ${mode === 'drill' ? '!border-sblue !text-sblue' : ''}`} aria-pressed={mode === 'drill'} onClick={() => setMode('drill')}>Drill: which one?</button>
+        <button className={`pop-btn !py-2 !text-sm ${mode === 'drill' ? '!border-sblue !text-sblue' : ''}`} aria-pressed={mode === 'drill'} onClick={() => setMode('drill')}>Drill: which one? (all pairs)</button>
       </div>
       {mode === 'study' ? (
-        <div className="grid gap-4 xl:grid-cols-2">
-          {PAIRS.map((p) => {
-            const A = CONCEPT_MAP[p.a], B = CONCEPT_MAP[p.b]
-            return (
-              <article key={p.a + p.b} className="sheet rounded-lg p-5">
-                <div className="grid grid-cols-2 gap-3">
-                  {[A, B].map((c) => (
-                    <div key={c.id} className="rounded-md border border-line bg-paper/50 p-3">
-                      <Link to={`/c/${c.id}`} className="text-lg font-extrabold hover:text-sblue hover:underline">{c.term}</Link>
-                      <p className="mt-1 text-sm">{c.one}</p>
-                    </div>
-                  ))}
-                </div>
-                <p className="mt-3"><strong>The difference:</strong> {p.diff}</p>
-              </article>
-            )
-          })}
-        </div>
+        <>
+          <div className="sheet mb-4 rounded-lg p-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="text-sm font-semibold">Find a comparison<input className="input mt-1 w-full" value={search} onChange={e=>setSearch(e.target.value)} placeholder="e.g. Cpk, inventory, net present value"/></label>
+              <label className="text-sm font-semibold">Engineering domain<select className="input mt-1 w-full" value={domain} onChange={e=>setDomain(e.target.value)}><option value="">All domains</option>{domains.map(d=><option key={d} value={d}>{DOMAIN_MAP[d].name}</option>)}</select></label>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm text-ink-2" aria-live="polite">{visible.length} of {PAIRS.length} comparisons{selected && CONCEPT_MAP[selected]?' · '+CONCEPT_MAP[selected].term:''}</p>
+              {(search||domain||selected)&&<button className="btn-ghost btn" onClick={()=>{setSearch('');setDomain('');setParams({})}}>Clear filters</button>}
+            </div>
+          </div>
+          {!visible.length?<p className="sheet rounded-lg p-5">No matching comparisons. Try another search or clear the filters.</p>:<div className="grid gap-4 xl:grid-cols-2">{visible.map(p=><ComparisonCard key={p.a+'|'+p.b} pair={p}/>)}</div>}
+        </>
       ) : card && pair ? (
         <section className="sheet max-w-3xl rounded-lg p-6">
           <p className="flex justify-between text-sm text-ink-2"><span>Scenario {k + 1} of {deck.length}</span><span aria-live="polite">{score.right} of {score.done} right</span></p>

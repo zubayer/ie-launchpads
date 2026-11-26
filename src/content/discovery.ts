@@ -1,3 +1,4 @@
+import { MORE_PAIRS } from './comparisonPairs'
 // Content for the discovery tools: Method Field Guide, Confused Pairs, Factory Mysteries, Tool Cards, Spot the Waste.
 // Every concept id is checked by src/lib/discovery.test.ts. Scenarios are illustrative, not documented events.
 
@@ -222,7 +223,7 @@ export const PAIRS: Pair[] = [
     { s: 'You need one number that drops when the mean drifts toward a spec limit.', ans: 'b' }, { s: 'You want the capability the process would have if it were perfectly centred.', ans: 'a' }] },
   { a: 'lean.takt-time', b: 'lean.cycle-time', diff: 'Takt is the pace demand requires (available time ÷ demand). Cycle time is the pace the process actually achieves.', quiz: [
     { s: 'Demand is 480 units over 8 hours of work. What pace must the line hit?', ans: 'a' }, { s: 'A stopwatch shows a unit leaving station 3 every 52 seconds.', ans: 'b' }] },
-  { a: 'engecon.npv', b: 'engecon.irr', diff: 'NPV is a dollar value at your MARR; IRR is the rate at which NPV is zero. Between mutually exclusive projects, choose by NPV.', quiz: [
+  { a: 'engecon.npv', b: 'engecon.irr', diff: 'NPV is a dollar value at your MARR; IRR is the rate at which NPV is zero. For mutually exclusive projects, compare incremental NPV on a consistent study basis.', quiz: [
     { s: 'Choose between two mutually exclusive projects of different sizes.', ans: 'a' }, { s: 'Your manager asks what return the project earns, to compare with a 12% hurdle rate.', ans: 'b' }] },
   { a: 'safety.fmea', b: 'safety.fta', diff: 'FMEA works bottom-up from each step’s or component’s failure modes. FTA works top-down from one undesired event to its causes.', quiz: [
     { s: 'List how each of 40 assembly steps could fail and rank them.', ans: 'a' }, { s: 'Compute the probability that the braking system fails to stop the car.', ans: 'b' }] },
@@ -232,26 +233,27 @@ export const PAIRS: Pair[] = [
     { s: 'Ordering Christmas trees for one season.', ans: 'b' }, { s: 'Restocking printer paper used every week.', ans: 'a' }] },
   { a: 'reliability.mtbf', b: 'reliability.mttr', diff: 'MTBF is the average time between failures (how often it breaks). MTTR is the average time to repair (how long it stays down).', quiz: [
     { s: 'Pumps run 600 hours on average before they break.', ans: 'a' }, { s: 'A breakdown takes 3 hours to fix on average.', ans: 'b' }] },
-  { a: 'quality.control-chart', b: 'quality.cpk', diff: 'A control chart asks whether the process is stable over time (the voice of the process). Cpk asks whether it meets the specification (the voice of the customer).', quiz: [
+  { a: 'quality.control-chart', b: 'quality.cpk', diff: 'A control chart asks whether the process is stable over time (the voice of the process). Cpk compares a stable process’s estimated variation and centering with specifications; it is not a guarantee of conformance.', quiz: [
     { s: 'Did something change on the night shift last week?', ans: 'a' }, { s: 'Will this process meet the customer’s ±0.05 mm tolerance?', ans: 'b' }] },
   { a: 'or.lp', b: 'or.ip', diff: 'Linear programming allows fractional answers. Integer programming forces whole numbers or yes/no choices, and is much harder to solve.', quiz: [
     { s: 'Decide which of 5 warehouses to open.', ans: 'b' }, { s: 'Blend three crude oils into gasoline at minimum cost.', ans: 'a' }] },
   { a: 'or.tsp', b: 'or.vrp', diff: 'TSP: one traveller visits every stop once. VRP: a fleet of capacity-limited vehicles splits the stops between them.', quiz: [
     { s: 'One field technician visits 12 sites today.', ans: 'a' }, { s: 'Eight trucks carrying 20 pallets each deliver to 90 stores.', ans: 'b' }] },
-  { a: 'simulation.monte-carlo', b: 'simulation.des', diff: 'Monte Carlo samples uncertain inputs to get a distribution of outcomes, with no flow of time. Discrete-event simulation moves entities through queues and resources over time.', quiz: [
+  { a: 'simulation.monte-carlo', b: 'simulation.des', diff: 'Monte Carlo samples uncertain inputs to estimate outcome distributions; it can also be used within time-dependent models. Discrete-event simulation moves entities through queues and resources over time.', quiz: [
     { s: 'Estimate the range of total project cost from uncertain task costs.', ans: 'a' }, { s: 'Model patients waiting for beds in an emergency department over a week.', ans: 'b' }] },
-  { a: 'stats.t-test', b: 'stats.anova', diff: 'A t-test compares two means. ANOVA compares three or more without inflating the false-alarm rate of many separate t-tests.', quiz: [
+  { a: 'stats.t-test', b: 'stats.anova', diff: 'A two-sample t-test compares two means. One-way ANOVA tests equality of two or more group means, avoiding separate unadjusted pairwise tests.', quiz: [
     { s: 'Compare yield across four suppliers.', ans: 'b' }, { s: 'Did the new fixture change cycle time compared with the old one?', ans: 'a' }] },
   { a: 'doe.full-factorial', b: 'doe.fractional-factorial', diff: 'A full factorial runs every combination. A fractional factorial runs a planned subset to screen many factors, at the cost of confounding some interactions.', quiz: [
     { s: 'Seven two-level factors and a budget of 16 runs (a full design needs 128).', ans: 'b' }, { s: 'Three factors at two levels, 8 runs affordable, every interaction needed.', ans: 'a' }] },
-  { a: 'manufacturing.mrp', b: 'lean.kanban', diff: 'MRP pushes work from a forecast-driven schedule. Kanban pulls work only when the next process uses something up.', quiz: [
+  { a: 'manufacturing.mrp', b: 'lean.kanban', diff: 'MRP plans requirements from the master schedule, BOM, inventory and lead times. Kanban signals replenishment based on consumption; hybrid systems are common.', quiz: [
     { s: 'Plan component orders for the next 12 weeks from the master schedule.', ans: 'a' }, { s: 'A bin empties at the line and its card goes back to the supplying cell.', ans: 'b' }] },
   { a: 'service.capacity-utilization', b: 'lean.oee', diff: 'Utilisation counts how busy a resource is. OEE also counts speed losses and defects, so a busy machine can still have a low OEE.', quiz: [
     { s: 'The press ran 90% of the shift but ran slow and made scrap. Which measure shows the loss?', ans: 'b' }, { s: 'How busy are the nurses compared with their available hours?', ans: 'a' }] },
-  { a: 'reliability.pm', b: 'reliability.pdm', diff: 'Preventive maintenance services equipment on a fixed schedule. Predictive maintenance services it when condition data shows failure is near.', quiz: [
+  { a: 'reliability.pm', b: 'reliability.pdm', diff: 'Scheduled preventive maintenance uses time or usage intervals. Predictive maintenance uses data to forecast degradation or failure risk.', quiz: [
     { s: 'Change the gearbox oil every 500 running hours.', ans: 'a' }, { s: 'Replace the bearing when its vibration level starts rising.', ans: 'b' }] },
   { a: 'pm.cpm', b: 'pm.pert', diff: 'CPM uses one fixed duration per task. PERT uses three estimates (optimistic, most likely, pessimistic) to model uncertainty.', quiz: [
     { s: 'Tasks repeat from past builds and their durations are well known.', ans: 'a' }, { s: 'New R&D tasks with best, likely and worst-case guesses.', ans: 'b' }] },
+  ...MORE_PAIRS,
 ]
 
 /* ---------------- Factory mysteries ---------------- */

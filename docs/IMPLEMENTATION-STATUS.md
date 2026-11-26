@@ -79,4 +79,12 @@ Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXE
 - The ladder engine is a teaching model of Rockwell Logix instruction behaviour (synchronous scan, listed prescan rules), not a controller emulator; the CAD labs model the ideas under SOLIDWORKS, not the software.
 - Units are not yet a structured field on formulas; the library shows only what the lessons state.
 - Progress is saved per browser and separately for V1 and V2.
-- The first visit downloads ~765 KB of JavaScript (243 KB gzipped); full lesson text loads per domain on demand. Without a service worker, a domain never opened before needs a connection.
+- The first visit downloads ~818 KB of JavaScript (262 KB gzipped); full lesson text loads per domain on demand. Without a service worker, a domain never opened before needs a connection.
+
+## Proposed comparison studio (November 26)
+
+| Feature | Status | Evidence |
+|---|---|---|
+| Confused Pairs expansion and accessible comparison cards | In development | 51 authored pairs, 102 practice scenarios; search, domain and concept filters, formula/analogy disclosures and two visual comparisons. |
+| Topic terminology explanations | In development | 35 specialized records plus existing full-name fields; Cp/Cpk explicitly mathematical notation. |
+| Release validation | In development | Data tests, numeric reference checks and mobile/browser interactions added; CI and rendered review pending. |
