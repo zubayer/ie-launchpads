@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased — branch `v3/certifications` (2026-11-27)
+
+### Added
+- **Certifications** (`/certifications`, in the menu under Career and on the landing page):
+  - six certifications mapped heading by heading to lessons: IISE Lean Green Belt, IISE Six Sigma Green Belt, ASQ CSSGB, ASQ CQE, NCEES FE Industrial and Systems, ASCM CPIM
+  - for each: eligibility (and whether a student can sit it), exam format, official syllabus headings with weights, the lessons that teach each heading with your progress dots, gaps marked "Not taught here yet", and a "Start here" list
+  - every fact links to its source and says when it was read; fees are left to the official pages
+  - **Which certification next?**: pick the jobs you're aiming for, your experience and what you hold; the guide ranks by can-sit-now, then how many of 16 real postings name it, then coverage
+  - what 16 job postings (read 2026-11-27) asked for, with links and a note on the sample's bias
+  - seven more certifications to know (PE, CSSYB, CSSBB, CRE, CMfgT, CMfgE, Lean Bronze/Silver/Gold)
+- Lesson pages show which certification syllabi include them, linked.
+
+### Changed
+- The landing page's "IE career map" tile is now "Certifications"; the subway map is still in the menu.
+- The old free-text "Shows up in" line on lessons is replaced by the linked badges.
+
 ## Unreleased — branch `v3/plc-bottle-filler` (2026-11-27)
 
 ### Added

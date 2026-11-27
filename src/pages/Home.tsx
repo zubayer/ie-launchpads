@@ -36,7 +36,7 @@ const FEATURES: { to: string; icon: string; title: string; text: string }[] = [
   { to: '/interview', icon: 'interview', title: 'Interview prep', text: 'Practice questions with hints, follow-ups and model answers.' },
   { to: '/mysteries', icon: 'cases', title: 'Shop-floor cases', text: 'Illustrative factory problems to diagnose with IE methods.' },
   { to: '/tools', icon: 'tools', title: 'Tools & software', text: 'What Excel, Minitab, simulation and PLC tools are used for.' },
-  { to: '/subway', icon: 'career', title: 'IE career map', text: 'How the domains connect to the jobs, line by line.' },
+  { to: '/certifications', icon: 'cert', title: 'Certifications', text: 'Which certification to take next, its official syllabus, and the lessons that teach it.' },
 ]
 
 export default function Home() {

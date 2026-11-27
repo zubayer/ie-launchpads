@@ -27,6 +27,7 @@ import { InterviewCard, TeachBackCard } from '../components/Interview'
 import type { ConceptIndex } from '../content/assemble'
 import { useConcept } from '../content/load'
 import { LoadGate } from '../components/LoadGate'
+import { certsForLesson } from '../content/certs'
 
 const EquationSymbols = lazy(()=>import('../components/EquationSymbols'))
 function SymbolDisclosure({id}:{id:string}) {
@@ -399,7 +400,7 @@ function ConceptView({ c }: { c: Concept }) {
                 <ul className="measure mt-1 list-disc space-y-1 pl-5">{c.mistakes.map((m) => <li key={m}><Linked text={m} self={c.id} max={2} /></li>)}</ul>
               </div>
             )}
-            {c.cert && <p className="mt-4 text-sm text-ink-2">Shows up in: {c.cert.join(', ')}</p>}
+            <CertBadges id={c.id} />
             <p className="mt-4 text-sm"><a className="underline" href={links(c).youtube} target="_blank" rel="noopener noreferrer">▶ See it done in real life on YouTube ↗</a></p>
       </>
     ),
@@ -514,6 +515,21 @@ function ConceptView({ c }: { c: Concept }) {
           </div>
         </nav>
       </article>
+    </div>
+  )
+}
+
+function CertBadges({ id }: { id: string }) {
+  const hits = certsForLesson(id)
+  if (!hits.length) return null
+  return (
+    <div className="mt-4 text-sm">
+      <p className="label">On these certification syllabi</p>
+      <ul className="mt-1 flex flex-wrap gap-1.5">
+        {hits.map((c) => (
+          <li key={c.id}><Link to={`/certifications/${c.id}`} className="chip hover:border-sblue hover:text-sblue">{c.short}</Link></li>
+        ))}
+      </ul>
     </div>
   )
 }
