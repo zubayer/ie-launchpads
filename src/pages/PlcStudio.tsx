@@ -38,6 +38,10 @@ export function PlcStudio() {
             <p className="mt-1">Rungs are written in the text form Allen-Bradley Logix uses: <code>XIC(Start) XIO(Stop) OTE(Motor)</code>, with <code>[ , ]</code> (or BST/NXB/BND) for branches. It runs XIC, XIO, ONS, OTE, OTL, OTU, TON, TOF, RTO, CTU, CTD, RES, MOV, ADD, SUB and six comparisons, scan by scan, following the behaviour on Rockwell’s instruction pages.</p>
             <p className="mt-2 text-ink-2">It is a teaching model, not a controller emulator: use it to learn and to test ideas, never to commission a machine.</p>
           </section>
+          <section className="sheet rounded-lg border-l-4 !border-l-tape p-4 text-sm" aria-labelledby="machine-h">
+            <h2 id="machine-h" className="label">Machine lab</h2>
+            <p className="mt-1"><Link className="font-semibold underline" to="/studio/plc/lab/bottle-filler">Bottle filler</Link>: watch a conveyor stop, fill and move bottles while the ladder runs, rung by rung and scan by scan.</p>
+          </section>
           <section className="sheet rounded-lg p-4 text-sm">
             <h2 className="label">Just want to experiment?</h2>
             <p className="mt-1">The <Link className="font-semibold underline" to="/lab/plc-ladder">PLC ladder lab</Link> has the classic circuits ready to run and edit.</p>
@@ -99,7 +103,10 @@ function Lesson({ l }: { l: PlcLesson }) {
                     <LadderDiagram program={p} label={`Ladder for: ${e.question}`} />
                     <details className="mt-2"><summary className="cursor-pointer text-sm font-semibold">Rung text</summary><Code src={e.program} label={`Rung text for: ${e.question}`} /></details>
                     <ul className="mt-2 list-disc space-y-0.5 pl-5 text-sm">{e.explain.map((x) => <li key={x}>{x}</li>)}</ul>
-                    <button className="pop-btn mt-3 !py-1.5" onClick={() => toPlayground(e.program, e.devices)}>Run it yourself in the playground</button>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button className="pop-btn !py-1.5" onClick={() => toPlayground(e.program, e.devices)}>Run it yourself in the playground</button>
+                      {e.lab && <Link className="pop-btn !py-1.5" to={e.lab.to}>{e.lab.label} →</Link>}
+                    </div>
                   </div>
                   <div className="min-w-0">
                     <p className="label mb-1">What the engine does, step by step</p>
@@ -264,5 +271,62 @@ function Task({ t, n, concept }: { t: PlcTask; n: number; concept: string }) {
       {hint && <p className="mt-1 text-sm">{t.hint}</p>}
       {answer && <div className="mt-2 space-y-2"><Code src={t.solution} label={`Model answer for task ${n}`} /><LadderDiagram program={prog(t.solution)} label={`Model answer ladder for task ${n}`} /></div>}
     </article>
+  )
+}
+
+/* ---------- Machine lab: the bottle filler (embedded from github.com/zubayer/PLCLadderLogic) ---------- */
+
+const LAB_SRC = `${import.meta.env.BASE_URL}labs/plc-bottle-filler/index.html`
+const ADDRESS_MAP: [string, string, string][] = [
+  ['I0.0', 'Bottle_At_Sensor', 'Photo sensor: a bottle is in the beam'],
+  ['Q0.0', 'Belt_Motor', 'Conveyor motor'],
+  ['Q0.1', 'Fill_Valve', 'Filling valve (solenoid)'],
+  ['M0.0', 'Full', 'Memory bit: this bottle is done'],
+  ['TON, PT 3 s, Q', 'TON(Fill_T, 3000), Fill_T.DN', 'Fill timer and its done bit'],
+  ['—| |—  /  —|/|—', 'XIC  /  XIO', 'Normally open / normally closed contact'],
+  ['( )  (S)  (R)', 'OTE  OTL  OTU', 'Coil, set (latch), reset (unlatch)'],
+]
+
+export function PlcMachineLab() {
+  const ex = PLC_LESSON_MAP.sequence.examples.find((e) => e.id === 'bottle-filler')!
+  const p = useMemo(() => prog(ex.program), [ex.program])
+  const r = useMemo(() => runScript(p, ex.devices, ex.script), [p, ex.devices, ex.script])
+  return (
+    <div>
+      <PageHead title="Machine lab: bottle filler" sub="A conveyor brings bottles to a filling valve. Watch the ladder run the machine: power flow in green, the TON timer filling, the I/O image updating, and a Scan by scan mode that freezes time between the read, solve and write phases." />
+      <p className="mb-3 text-sm text-ink-2 md:hidden">Best on a tablet or computer, or with your phone turned sideways. On a narrow screen the lab scrolls inside its frame.</p>
+      <div className="overflow-hidden rounded-lg border border-line bg-sheet">
+        <iframe src={LAB_SRC} title="PLC Ladder Lab: bottle-filling conveyor simulator" className="block h-[80vh] w-full md:aspect-video md:h-auto" loading="lazy" />
+      </div>
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm text-ink-2">
+        <span>Keys, after clicking inside the lab: <kbd className="kbd">Space</kbd> play/pause · <kbd className="kbd">N</kbd> next scan step · <kbd className="kbd">←</kbd> <kbd className="kbd">→</kbd> lesson steps</span>
+        <a className="font-semibold text-sblue hover:underline" href={LAB_SRC} target="_blank" rel="noopener">Open full screen ↗</a>
+      </div>
+      <p className="mt-2 text-sm text-ink-2">PLC Ladder Lab by Zubayer, built for IE 5355 Computer-Aided Manufacturing, Texas Tech University. Source: <a className="underline" href="https://github.com/zubayer/PLCLadderLogic" target="_blank" rel="noopener">github.com/zubayer/PLCLadderLogic</a>. The lab uses Siemens S7-1200 style addresses and IEC 61131-3 symbols.</p>
+
+      <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <section className="sheet rounded-lg p-4 sm:p-5" aria-labelledby="map-h">
+          <h2 id="map-h" className="text-xl font-extrabold">Same machine, two dialects</h2>
+          <p className="mt-1 text-sm">The lab writes Siemens addresses; the rest of this studio writes Allen-Bradley Logix tags. The logic is identical.</p>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <caption className="sr-only">Siemens S7 addresses in the lab and the matching Logix tags in the studio</caption>
+              <thead><tr className="border-b border-line"><th scope="col" className="py-1.5 pr-3">Lab (S7, IEC)</th><th scope="col" className="py-1.5 pr-3">Studio (Logix)</th><th scope="col" className="py-1.5">Meaning</th></tr></thead>
+              <tbody>{ADDRESS_MAP.map(([a, b, c]) => <tr key={a} className="border-b border-line/60"><td className="py-1.5 pr-3 font-mono">{a}</td><td className="py-1.5 pr-3 font-mono">{b}</td><td className="py-1.5">{c}</td></tr>)}</tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-sm text-ink-2">One difference: the lab puts the timer and the Set coil on one rung (rung 3). Here they are two rungs, because the timer's done bit is read on the next rung.</p>
+        </section>
+        <section className="sheet rounded-lg p-4 sm:p-5" aria-labelledby="tested-h">
+          <h2 id="tested-h" className="text-xl font-extrabold">The Auto cycle, tested</h2>
+          <p className="mt-1 text-sm">The lab's Auto cycle program, run on this studio's ladder engine. The test suite checks every row below on each change.</p>
+          <div className="mt-3"><LadderDiagram program={p} label="Ladder for the bottle filler auto cycle" /></div>
+          <details className="mt-2"><summary className="cursor-pointer text-sm font-semibold">Rung text</summary><Code src={ex.program} label="Rung text for the bottle filler auto cycle" /></details>
+          <p className="label mb-1 mt-4">What the engine does, step by step</p>
+          <ScenarioTable rows={r.rows} devices={ex.devices} show={ex.show} caption="Scenario for the bottle filler auto cycle" />
+          <p className="mt-3 text-sm">The full lesson, with the common mistake of making Full a plain coil: <Link className="font-semibold underline" to="/studio/plc/sequence">Sequences: steps, transitions and watchdogs</Link>.</p>
+        </section>
+      </div>
+    </div>
   )
 }

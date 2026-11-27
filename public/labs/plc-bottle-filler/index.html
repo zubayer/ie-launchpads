@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+  PLC Ladder Lab by Zubayer — https://github.com/zubayer/PLCLadderLogic (built for IE 5355, Texas Tech University).
+  Embedded copy for IE Launchpad's PLC studio. Changes from the original, all accessibility or hosting fixes:
+   1. Step button text is dark on the bright red in dark theme (white was 3.1:1, now above 4.5:1).
+   2. The machine and ladder drawings are role="group", not role="img": they contain clickable symbols.
+   3. Narrower than 900 px, the dashboard keeps a readable scale (0.92) and scrolls, instead of shrinking
+      every button to a few pixels.
+   4. Favicon path is relative, so it works under any folder.
+-->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PLC Ladder Lab</title>
+<meta name="description" content="Interactive PLC ladder logic simulator: bottle-filling conveyor with live ladder diagram, TON timer, Set/Reset latch, scan-by-scan stepping and signal trend.">
+<meta name="theme-color" content="#0a0d11">
+<meta property="og:title" content="PLC Ladder Lab">
+<meta property="og:description" content="Learn PLC ladder logic one scan at a time with a live bottle-filling conveyor simulation.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://plc-ladder-logic.vercel.app/">
+<meta property="og:image" content="https://plc-ladder-logic.vercel.app/images/cover.png">
+<meta property="og:image:width" content="1000"><meta property="og:image:height" content="420">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PLC Ladder Lab">
+<meta name="twitter:description" content="Learn PLC ladder logic one scan at a time with a live bottle-filling conveyor simulation.">
+<meta name="twitter:image" content="https://plc-ladder-logic.vercel.app/images/cover.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: compact HMI trainer, every panel visible at once
+   IDEA: a SCADA operator board, fixed 16:9, scaled to the window like a slide
+   PICTURE: lit filling line, glowing ladder, timer dial and trend side by side
+   COLOUR and TYPE: graphite panel, power green, timer cyan, juice amber, scan red; Space Grotesk + Inter, mono for addresses
+   LAYOUT: plant/timer/I-O/trend | scan/ladder/logic | lesson/inspector/legend, left to right, no scrolling */
+:root{color-scheme:dark;
+--bg:light-dark(#e7ebf0,#080b0f);--panel:light-dark(#fff,#10151b);--panel2:light-dark(#f3f5f8,#0b0f14);
+--ink:light-dark(#0e1318,#e8eef4);--mute:light-dark(#5a6571,#8a96a2);--line:light-dark(#d8dee5,#1e2630);
+--on:light-dark(#0f9a4a,#3ddc84);--onbg:light-dark(#dcf6e6,rgba(61,220,132,.13));--off:light-dark(#b3bcc6,#38434e);
+--sym:light-dark(#27303a,#c9d3dc);--cyan:light-dark(#0a76c0,#38bdf8);--cyanbg:light-dark(#e0f1fc,rgba(56,189,248,.13));
+--red:light-dark(#d8271c,#ff5a4e);--redbg:light-dark(#fdecea,rgba(255,90,78,.12));--amber:#ffb020}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%;margin:0;overflow:hidden}
+html.small,html.small body{overflow:auto}
+body{background:radial-gradient(900px 500px at 15% -10%,light-dark(#f7f9fb,#13202f),transparent 60%),var(--bg);color:var(--ink);font:12.5px/1.4 Inter,system-ui,sans-serif}
+#stage{position:absolute;left:0;top:0;width:1440px;height:810px;transform-origin:0 0;display:grid;grid-template-rows:42px minmax(0,1fr);gap:8px;padding:8px}
+.bar{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:0 8px}
+.brand{display:flex;align-items:center;gap:8px;margin-right:auto}
+.logo{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--onbg);color:var(--on)}
+.brand h1{font:700 16px/1.1 'Space Grotesk',Inter,sans-serif;margin:0}
+.brand p{margin:0;color:var(--mute);font-size:11px}
+.seg{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:2px;gap:2px}
+.seg button{border:0;background:transparent;color:var(--mute);min-height:26px;padding:0 9px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--panel)}
+.seg .n{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:5px;background:var(--line);color:var(--ink);font:700 10px 'JetBrains Mono',monospace;margin-right:5px}
+.seg button[aria-pressed=true] .n{background:var(--on);color:#04170c}
+button{font:600 12px Inter,sans-serif;min-height:28px;padding:0 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+button:hover{border-color:var(--mute)}
+.n{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:5px;background:var(--on);color:#04170c;font:700 10.5px 'JetBrains Mono',monospace;flex:none}
+.dd{position:relative;display:flex;align-items:center;gap:6px}
+#ddBtn{min-width:178px;justify-content:flex-start;gap:7px;font-size:12.5px}
+#ddBtn .chev{margin-left:auto;transition:transform .15s}#ddBtn[aria-expanded=true] .chev{transform:rotate(180deg)}
+.menu{position:absolute;top:calc(100% + 6px);left:52px;width:290px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:4px;box-shadow:0 14px 34px rgba(0,0,0,.45);z-index:50;display:grid;gap:2px}
+.menu[hidden]{display:none}
+.menu button{border:0;background:transparent;align-items:flex-start;gap:9px;padding:7px 8px;min-height:0;white-space:normal;text-align:left;color:var(--ink)}
+.menu button:hover,.menu button[aria-selected=true]{background:var(--panel2)}
+.menu button[aria-selected=true] b{color:var(--on)}
+.menu .n{background:var(--line);color:var(--ink);margin-top:1px}.menu button[aria-selected=true] .n{background:var(--on);color:#04170c}
+.menu b{display:block;font-size:12.5px}.menu small{display:block;color:var(--mute);font-weight:500;font-size:11px;line-height:1.3}
+#mode button{width:96px;justify-content:center}
+
+button:focus-visible,.el:focus-visible,#sensorHit:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+button svg{width:13px;height:13px;flex:none}
+.go{background:var(--on);border-color:var(--on);color:#04170c}
+.stepb{background:var(--red);border-color:var(--red);color:light-dark(#fff,#1a0606);min-width:150px;justify-content:center}
+.toggle[aria-pressed=true]{background:var(--redbg);border-color:var(--red);color:var(--red)}
+.grid{display:grid;grid-template-columns:700px minmax(0,1fr) 430px;gap:8px;min-height:0}
+.colA{display:grid;grid-template-rows:auto minmax(0,1fr);gap:8px;min-height:0}
+.rowTI{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:8px;min-height:0}
+.colB{display:grid;grid-template-rows:auto minmax(0,1fr) minmax(0,.8fr);gap:8px;min-height:0}
+.colC{display:grid;grid-template-rows:minmax(0,1fr) auto auto;gap:8px;min-height:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;min-height:0;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.hd{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px;min-height:22px}
+h2{font:600 13px/1.2 'Space Grotesk',Inter,sans-serif;margin:0;white-space:nowrap}
+.mut{color:var(--mute);font-size:11px}
+.chip{font:600 11px Inter,sans-serif;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--mute);background:var(--panel2);white-space:nowrap}
+.chip.live{color:var(--on);border-color:color-mix(in srgb,var(--on) 50%,transparent);background:var(--onbg)}
+.chip.warn{color:var(--red);border-color:color-mix(in srgb,var(--red) 50%,transparent);background:var(--redbg)}
+.fill{flex:1;min-height:0;position:relative}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.scenebox{flex:none;aspect-ratio:800/390;border-radius:8px;overflow:hidden;background:#1f2833;position:relative}
+.scenebox>svg{position:absolute;inset:0;width:100%;height:100%}
+.ladbox{border-radius:8px;background:var(--panel2);border:1px solid var(--line)}
+/* scan */
+.phases{display:flex;gap:3px;align-items:center;flex-wrap:wrap}
+.ph{font:600 11px Inter,sans-serif;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--mute);background:var(--panel2);white-space:nowrap}
+.ph.done{color:var(--on);border-color:color-mix(in srgb,var(--on) 50%,transparent);background:var(--onbg)}
+.ph.now{color:#fff;background:var(--red);border-color:var(--red);box-shadow:0 0 10px color-mix(in srgb,var(--red) 50%,transparent)}
+.ph.loop{color:var(--on);border-color:color-mix(in srgb,var(--on) 40%,transparent)}
+.arr{color:var(--mute);font-size:10px}
+.cap{margin:5px 0 0;font-size:12px;min-height:2.8em}
+/* ladder */
+.wire{stroke:var(--off);stroke-width:2.4;stroke-linecap:round}
+.won{stroke:var(--on);stroke-width:3.4;filter:drop-shadow(0 0 3px color-mix(in srgb,var(--on) 70%,transparent))}
+.rail{stroke:var(--on);stroke-width:4.5;stroke-linecap:round;filter:drop-shadow(0 0 4px color-mix(in srgb,var(--on) 60%,transparent))}
+.railn{stroke:var(--off);stroke-width:3.5;stroke-linecap:round}
+.bar2{stroke-width:3;stroke-linecap:round;fill:none}
+.sym{stroke:var(--sym)}.onS{stroke:var(--on);filter:drop-shadow(0 0 3px color-mix(in srgb,var(--on) 70%,transparent))}
+.nm{font:500 12px Inter,sans-serif;fill:var(--mute);text-anchor:middle}
+.ad{font:700 13px 'JetBrains Mono',monospace;fill:var(--ink);text-anchor:middle}
+.st{font:600 11.5px 'JetBrains Mono',monospace;fill:var(--mute);text-anchor:middle}
+.stc{fill:var(--on)}
+.cl{font:700 13px 'JetBrains Mono',monospace;text-anchor:middle}
+.rn{font:700 12px 'JetBrains Mono',monospace;fill:var(--mute);text-anchor:middle}
+.band{fill:transparent}.band.cur{fill:var(--redbg);stroke:color-mix(in srgb,var(--red) 50%,transparent)}.rn.cur{fill:var(--red)}
+.pend{opacity:.3}
+.el{cursor:pointer}.el .hit{fill:transparent;stroke:transparent}
+.el:hover .hit{fill:color-mix(in srgb,var(--cyan) 8%,transparent);stroke:color-mix(in srgb,var(--cyan) 40%,transparent)}
+.el.sel .hit{fill:var(--cyanbg);stroke:var(--cyan);stroke-width:1.5}
+.tonb{fill:var(--panel);stroke:var(--off);stroke-width:2}.tonb.in{stroke:var(--cyan)}.tonb.q{stroke:var(--on)}
+.tt{font:700 13px 'JetBrains Mono',monospace;fill:var(--ink);text-anchor:middle}
+.tp{font:600 11.5px 'JetBrains Mono',monospace;fill:var(--mute)}
+.qn{font:500 12px Inter,sans-serif;fill:var(--red)}
+/* timer */
+.timer{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.dial{flex:1 1 auto;min-height:60px;max-height:150px;width:auto;aspect-ratio:1}
+.ring{fill:none;stroke:var(--line);stroke-width:11}
+#arc{fill:none;stroke:var(--cyan);stroke-width:11;stroke-linecap:round;filter:drop-shadow(0 0 5px color-mix(in srgb,var(--cyan) 60%,transparent))}
+#arc.done{stroke:var(--on);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--on) 70%,transparent))}
+.dv{font:700 30px 'Space Grotesk',Inter,sans-serif;fill:var(--ink);text-anchor:middle}
+.du{font:500 12px Inter,sans-serif;fill:var(--mute);text-anchor:middle}
+.tk{stroke:var(--mute);stroke-width:1.5}
+.pins{display:flex;gap:4px 12px;justify-content:center;flex-wrap:wrap}
+.pin{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--mute)}
+.pin b{font-family:'JetBrains Mono',monospace;color:var(--ink)}
+.led{width:9px;height:9px;border-radius:50%;background:var(--off);flex:none}
+.led.on{background:var(--on);box-shadow:0 0 8px var(--on)}
+.led.cy{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.flow{display:flex;align-items:center;justify-content:center;gap:3px}
+.fs{font:600 11px Inter,sans-serif;padding:1px 7px;border-radius:6px;border:1px solid var(--line);color:var(--mute)}
+.fs.act{color:var(--ink);border-color:var(--cyan);background:var(--cyanbg)}
+.fs.act.d{border-color:var(--on);background:var(--onbg)}
+#tmsg{margin:0;font-size:11.5px;max-width:200px;line-height:1.35;text-align:center;min-height:2.7em}
+.dimmer[hidden]{display:none}.dimmer{position:absolute;inset:0;display:grid;place-items:center;background:color-mix(in srgb,var(--panel) 84%,transparent);backdrop-filter:blur(2px);color:var(--mute);font-weight:600;text-align:center;padding:14px}
+/* io */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{font-weight:600;color:var(--mute);text-align:left;font-size:10.5px;padding:2px 3px;border-bottom:1px solid var(--line)}
+td{padding:6px 3px;border-bottom:1px solid var(--line);line-height:1.2}
+td.a{font:700 11.5px 'JetBrains Mono',monospace;white-space:nowrap}
+.diff{display:block;color:var(--red);font-size:10px}td .led{display:inline-block;vertical-align:middle}
+/* trend */
+.tl{font:600 10.5px 'JetBrains Mono',monospace;fill:var(--ink)}
+.tg{stroke:var(--line)}.tgk{stroke:var(--line);stroke-dasharray:2 4}
+.tkx{font:500 10px Inter,sans-serif;fill:var(--mute)}
+.tw{fill:none;stroke:var(--on);stroke-width:2;stroke-linejoin:round}.tw.et{stroke:var(--cyan)}
+/* logic */
+.eqs{display:grid;grid-template-columns:1fr;gap:4px}
+.eq{border:1px solid var(--line);border-radius:7px;padding:4px 7px;background:var(--panel2)}
+.eq code{display:block;font:500 11px/1.4 'JetBrains Mono',monospace;overflow-wrap:anywhere}
+.eq .v{color:var(--on)}
+.eq.cur{border-color:var(--red);background:var(--redbg)}
+.eq.pending{opacity:.5}.eq.pending .v{color:var(--mute)}
+/* lesson */
+.dots{display:flex;gap:4px}
+.dots button{min-height:26px;min-width:26px;padding:0 6px;font:700 11px 'JetBrains Mono',monospace;color:var(--mute)}
+.dots button[aria-current=step]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.dots button.seen{color:var(--on)}
+.lbody{flex:1;min-height:0;overflow:auto}
+.lt{font:700 17px/1.15 'Space Grotesk',Inter,sans-serif;margin:8px 0 4px}
+.lx{margin:0 0 8px;font-size:12.5px}
+.think{border:1px dashed var(--line);border-radius:9px;padding:7px 9px;background:var(--panel2)}
+.think b{font-size:11px;color:var(--cyan)}
+.think p{margin:2px 0 6px;font-size:12px}
+.ans{border-left:3px solid var(--on);padding-left:8px;margin-top:6px;font-size:12px}
+.navb{display:flex;gap:6px;margin-top:8px}
+.navb button{flex:1;justify-content:center;min-height:30px}
+.insp b{display:block;font-size:12px;margin-bottom:2px;color:var(--cyan)}
+.insp span{font-size:11.5px;color:var(--mute);display:block;min-height:4.2em}
+.keys{color:var(--mute);font-size:10.5px}
+kbd{font:600 10px 'JetBrains Mono',monospace;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 3px;background:var(--panel2)}
+.legs{display:flex;flex-wrap:wrap;gap:2px 10px;margin-top:5px;font-size:10.5px;color:var(--mute)}.legs code{font:700 10.5px 'JetBrains Mono',monospace;color:var(--on)}.legs code.t{color:var(--cyan)}
+.leg{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
+.leg div{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--mute);line-height:1.25}
+.leg code{flex:none;width:48px;text-align:center;font:700 11.5px 'JetBrains Mono',monospace;color:var(--on)}
+.leg code.t{color:var(--cyan);border:1px solid var(--line);border-radius:4px}
+/* scene */
+.drip{stroke-dasharray:5 7;animation:pour .3s linear infinite}
+@keyframes pour{to{stroke-dashoffset:-12}}
+.pct{font:700 13px 'JetBrains Mono',monospace;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#00000088;stroke-width:3}
+.bdg{font:700 12px 'JetBrains Mono',monospace;fill:#e8eef4}
+.bdgs{font:500 10.5px Inter,sans-serif;fill:#9aa6b2}
+#sensorHit{cursor:pointer}
+@media(prefers-reduced-motion:reduce){.drip{animation:none}}
+</style>
+</head>
+<body>
+<div id="stage">
+<header class="bar">
+  <div class="brand">
+    <div class="logo"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 4v16M21 4v16M3 12h5M8 7v10M13 7v10M13 12h8"/></svg></div>
+    <div><h1>PLC Ladder Lab</h1><p>Bottle filler · S7-1200 addresses · IEC 61131-3</p></div>
+  </div>
+  <div class="dd" id="dd">
+    <span class="mut">Program</span>
+    <button id="ddBtn" aria-haspopup="listbox" aria-expanded="false"><span class="n" id="ddN">1</span><span id="ddL">Auto cycle</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button>
+    <div class="menu" id="ddMenu" role="listbox" aria-label="Program" hidden>
+      <button role="option" data-s="3"><span class="n">1</span><span><b>Auto cycle</b><small>Whole scenario: stop, fill 3 s, latch Full, restart</small></span></button>
+      <button role="option" data-s="1"><span class="n">2</span><span><b>Stop at sensor</b><small>Rung 1 only: the belt stops at the bottle</small></span></button>
+      <button role="option" data-s="2"><span class="n">3</span><span><b>Fill 3 s</b><small>Adds valve and timer, but no restart yet</small></span></button>
+    </div>
+  </div>
+  <div class="seg" id="mode" role="group" aria-label="Mode"><button data-m="run" title="Machine runs in real time">Run</button><button data-m="scan" title="Freeze time and walk through one PLC scan">Scan by scan</button></div>
+  <button id="play" class="go"></button>
+  <button id="nextPh" class="stepb" title="Next scan step (N)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 5l9 7-9 7zM16 5h3v14h-3z"/></svg><span>Step</span></button>
+  <button id="reset" title="Reset stage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v5h5"/></svg>Reset</button>
+  <div class="seg" id="speed" role="group" aria-label="Speed"><button data-v="0.5">½×</button><button data-v="1">1×</button><button data-v="2">2×</button></div>
+  <span class="keys"><kbd>Space</kbd> play <kbd>N</kbd> step <kbd>←</kbd><kbd>→</kbd> lesson</span>
+</header>
+
+<div class="grid">
+<div class="colA">
+  <section class="card">
+    <div class="hd"><h2>Machine</h2><div style="display:flex;gap:6px;align-items:center"><button id="handBtn" class="toggle" aria-pressed="false" title="Block the sensor beam by hand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5a1.5 1.5 0 0 1 3 0v6M11 10V3.5a1.5 1.5 0 0 1 3 0V10M14 10V5a1.5 1.5 0 0 1 3 0v7M17 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-1a7 7 0 0 1-5.6-2.8L4 15.5a1.6 1.6 0 0 1 2.5-2L8 15"/></svg>Block sensor</button><span class="chip live" id="status">Running</span></div></div>
+    <div class="scenebox"><svg id="scene" viewBox="0 -30 800 390" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Filling line: tank and valve Q0.1, sensor I0.0, belt motor Q0.0">
+      <defs>
+        <linearGradient id="gWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f2833"/><stop offset="1" stop-color="#121821"/></linearGradient>
+        <linearGradient id="gFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#262e38"/><stop offset="1" stop-color="#0b0f14"/></linearGradient>
+        <linearGradient id="gSteel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f6"/><stop offset=".45" stop-color="#a3aeba"/><stop offset=".55" stop-color="#808c99"/><stop offset="1" stop-color="#c6ced7"/></linearGradient>
+        <linearGradient id="gSteelV" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7c8794"/><stop offset=".35" stop-color="#e9eef3"/><stop offset=".6" stop-color="#aab4bf"/><stop offset="1" stop-color="#6f7a87"/></linearGradient>
+        <linearGradient id="gMotor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a86d0"/><stop offset=".5" stop-color="#2a5d9f"/><stop offset="1" stop-color="#173a66"/></linearGradient>
+        <linearGradient id="gJuice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd25e"/><stop offset="1" stop-color="#e5820a"/></linearGradient>
+        <linearGradient id="gJuiceH" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d97c08"/><stop offset=".5" stop-color="#ffd76a"/><stop offset="1" stop-color="#d97c08"/></linearGradient>
+        <linearGradient id="gPlc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9dee4"/><stop offset="1" stop-color="#aab3bd"/></linearGradient>
+        <radialGradient id="gLamp"><stop offset="0" stop-color="#b9ffd5"/><stop offset=".5" stop-color="#3ddc84"/><stop offset="1" stop-color="#3ddc84" stop-opacity="0"/></radialGradient>
+        <pattern id="pSlat" width="18" height="10" patternUnits="userSpaceOnUse"><rect width="18" height="10" fill="#1a1f25"/><rect width="3" height="10" fill="#2f3740"/></pattern>
+        <filter id="fBlur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>
+      </defs>
+      <rect y="-30" width="800" height="366" fill="url(#gWall)"/>
+      <g stroke="#ffffff" stroke-opacity=".05"><path d="M160 -30v366M320 -30v366M480 -30v366M640 -30v366M0 214h800"/></g>
+      <rect y="336" width="800" height="24" fill="url(#gFloor)"/>
+      <path d="M0 345h800" stroke="#f5c518" stroke-opacity=".55" stroke-width="2.5" stroke-dasharray="22 14"/>
+      <!-- PLC cabinet on wall -->
+      <g transform="translate(26,22)">
+        <rect width="150" height="104" rx="8" fill="#2a323c" stroke="#3d4753"/>
+        <rect x="10" y="10" width="130" height="62" rx="4" fill="url(#gPlc)"/>
+        <rect x="18" y="18" width="40" height="46" rx="3" fill="#1d242c"/>
+        <text x="38" y="36" text-anchor="middle" font-family="JetBrains Mono" font-size="9" font-weight="700" fill="#9aa6b2">CPU</text>
+        <circle id="pRun" cx="30" cy="50" r="3.2" fill="#3ddc84"/><text x="38" y="53" font-family="Inter" font-size="7.5" fill="#9aa6b2">RUN</text>
+        <g font-family="JetBrains Mono" font-size="8" font-weight="700" fill="#1d242c">
+          <circle id="pI0" cx="72" cy="26" r="3.2" fill="#4b5560"/><text x="80" y="29">I0.0</text>
+          <circle id="pQ0" cx="72" cy="42" r="3.2" fill="#4b5560"/><text x="80" y="45">Q0.0</text>
+          <circle id="pQ1" cx="72" cy="58" r="3.2" fill="#4b5560"/><text x="80" y="61">Q0.1</text>
+        </g>
+        <text x="75" y="92" text-anchor="middle" class="bdgs">PLC · reads I, drives Q</text>
+      </g>
+      <!-- gantry + tank -->
+      <rect x="314" y="44" width="14" height="292" fill="url(#gSteelV)"/>
+      <rect x="306" y="330" width="30" height="6" rx="2" fill="#56616d"/>
+      <rect x="314" y="58" width="104" height="10" rx="2" fill="url(#gSteel)"/>
+      <rect x="352" y="6" width="96" height="54" rx="12" fill="url(#gSteelV)" stroke="#5d6874"/>
+      <rect x="366" y="15" width="11" height="36" rx="4" fill="#0d1218" stroke="#5d6874"/>
+      <rect id="tankLvl" x="368" y="24" width="7" height="25" rx="2" fill="url(#gJuice)"/>
+      <text x="412" y="37" text-anchor="middle" font-family="Inter" font-weight="700" font-size="10" fill="#4a5561">JUICE</text>
+      <rect x="396" y="60" width="8" height="22" fill="url(#gSteelV)"/>
+      <rect x="384" y="82" width="32" height="22" rx="4" fill="url(#gSteel)" stroke="#5d6874"/>
+      <path d="M386 93h28" stroke="#6b7682"/>
+      <rect id="sol" x="352" y="84" width="28" height="18" rx="3" fill="#2b3440" stroke="#56616d"/>
+      <path d="M357 88v10M361 88v10M365 88v10M369 88v10M373 88v10" stroke="#56616d"/>
+      <path d="M380 93h4" stroke="#56616d" stroke-width="3"/>
+      <circle id="valveLed" cx="366" cy="80" r="3" fill="#4b5560"/>
+      <path d="M393 104h14l-3 24h-8z" fill="url(#gSteelV)" stroke="#5d6874"/>
+      <!-- sensor bracket post (behind bottles) -->
+      <rect x="478" y="100" width="8" height="160" fill="url(#gSteelV)"/>
+      <!-- conveyor -->
+      <ellipse cx="370" cy="338" rx="330" ry="6" fill="#000" opacity=".45"/>
+      <g fill="url(#gSteelV)"><rect x="100" y="290" width="10" height="46"/><rect x="380" y="290" width="10" height="46"/><rect x="640" y="290" width="10" height="46"/></g>
+      <g fill="#56616d"><rect x="94" y="331" width="22" height="5" rx="2"/><rect x="374" y="331" width="22" height="5" rx="2"/><rect x="634" y="331" width="22" height="5" rx="2"/></g>
+      <rect x="40" y="264" width="652" height="28" rx="14" fill="url(#gSteel)" stroke="#56616d"/>
+      <g fill="#6b7682"><circle cx="120" cy="278" r="2"/><circle cx="220" cy="278" r="2"/><circle cx="320" cy="278" r="2"/><circle cx="420" cy="278" r="2"/><circle cx="520" cy="278" r="2"/><circle cx="620" cy="278" r="2"/></g>
+      <rect x="46" y="255" width="640" height="10" rx="5" fill="url(#pSlat)" id="beltTop"/>
+      <g id="rl" transform="translate(56,278)"><circle r="12" fill="url(#gSteel)" stroke="#4d5763"/><path d="M-7 0h14M0-7v14" stroke="#4d5763" stroke-width="2"/></g>
+      <g id="rr" transform="translate(676,278)"><circle r="12" fill="url(#gSteel)" stroke="#4d5763"/><path d="M-7 0h14M0-7v14" stroke="#4d5763" stroke-width="2"/></g>
+      <ellipse id="puddle" cx="440" cy="257" rx="0" ry="3" fill="url(#gJuice)" opacity=".85"/>
+      <!-- liquid stream -->
+      <g id="stream" opacity="0"><rect id="streamR" x="397" y="128" width="6" height="120" rx="3" fill="url(#gJuiceH)"/><line id="streamD" class="drip" x1="400" y1="128" x2="400" y2="248" stroke="#fff3c4" stroke-width="1.6"/></g>
+      <g id="bottles"></g>
+      <!-- sensor -->
+      <rect x="420" y="96" width="66" height="7" rx="2" fill="url(#gSteel)"/>
+      <rect x="420" y="103" width="12" height="25" rx="2" fill="#2a3139" stroke="#66717d"/>
+      <path d="M420 108h12M420 113h12M420 118h12M420 123h12" stroke="#45505b"/>
+      <circle id="senLed" cx="426" cy="99.5" r="2.4" fill="#4b5560"/>
+      <line id="beamG" x1="426" y1="130" x2="426" y2="255" stroke="#ff3b30" stroke-width="7" opacity=".25" filter="url(#fBlur)"/>
+      <line id="beam" x1="426" y1="130" x2="426" y2="255" stroke="#ff5a4e" stroke-width="1.8" stroke-dasharray="3 3"/>
+      <circle id="spot" cx="426" cy="255" r="3.5" fill="#ff5a4e"/>
+      <g id="hand" opacity="0"><path d="M412 176c0-6 3-9 6-9v-14a3 3 0 0 1 6 0v12v-16a3 3 0 0 1 6 0v16v-13a3 3 0 0 1 6 0v15v-9a3 3 0 0 1 6 0v18c0 8-6 14-14 14h-2c-8 0-14-6-14-14z" fill="#e9a57d" stroke="#a96c48"/><rect x="414" y="186" width="30" height="16" rx="4" fill="#3a5f8f"/></g>
+      <!-- motor -->
+      <rect x="672" y="266" width="44" height="24" rx="10" fill="#2b333c" stroke="#3d4753"/>
+      <rect x="704" y="248" width="30" height="50" rx="5" fill="url(#gMotor)" stroke="#123158"/>
+      <g id="shaft" transform="translate(719,273)"><circle r="8" fill="#0f151c" stroke="#7d8996"/><path d="M0-7v14" stroke="#cfd6dc" stroke-width="2.5" stroke-linecap="round"/></g>
+      <rect x="734" y="255" width="56" height="36" rx="7" fill="url(#gMotor)" stroke="#123158"/>
+      <path d="M742 258v30M748 258v30M754 258v30M760 258v30M766 258v30M772 258v30M778 258v30" stroke="#ffffff" stroke-opacity=".16"/>
+      <rect x="787" y="259" width="8" height="28" rx="3" fill="#163156"/>
+      <rect x="712" y="298" width="74" height="6" rx="2" fill="#56616d"/>
+      <path d="M761 255v-10" stroke="#56616d" stroke-width="2"/>
+      <circle id="motorGlow" cx="761" cy="241" r="14" fill="url(#gLamp)" opacity="0"/>
+      <circle id="motorLamp" cx="761" cy="241" r="5" fill="#2d3640" stroke="#56616d"/>
+      <!-- badges -->
+      <g transform="translate(236,74)"><rect width="104" height="38" rx="9" fill="#0b0f14" fill-opacity=".82" stroke="#ffffff22"/><circle id="bV" cx="16" cy="19" r="5" fill="#4b5560"/><text class="bdg" x="28" y="17">Q0.1</text><text class="bdgs" x="28" y="30">Filling valve</text></g>
+      <g id="sensorHit" role="button" tabindex="0" aria-label="Sensor I0.0, press to block with hand">
+        <rect x="414" y="92" width="200" height="44" fill="transparent"/>
+        <g transform="translate(498,80)"><rect width="112" height="38" rx="9" fill="#0b0f14" fill-opacity=".82" stroke="#ffffff22"/><circle id="bS" cx="16" cy="19" r="5" fill="#4b5560"/><text class="bdg" x="28" y="17">I0.0</text><text class="bdgs" x="28" y="30">Sensor · tap me</text></g>
+      </g>
+      <g transform="translate(676,188)"><rect width="112" height="38" rx="9" fill="#0b0f14" fill-opacity=".82" stroke="#ffffff22"/><circle id="bM" cx="16" cy="19" r="5" fill="#4b5560"/><text class="bdg" x="28" y="17">Q0.0</text><text class="bdgs" x="28" y="30">Belt motor</text></g>
+    </svg></div>
+  </section>
+  <section class="card">
+    <div class="hd"><h2>Live ladder diagram</h2><span class="mut">green = power flows · click a symbol</span></div>
+    <div class="fill ladbox"><svg id="lad" viewBox="0 0 640 200" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Ladder diagram"></svg></div>
+    <div class="legs"><span><code>—| |—</code> NO: passes if 1</span><span><code>—|/|—</code> NC: passes if 0</span><span><code>( )</code> coil</span><span><code>(S)</code> latch 1</span><span><code>(R)</code> clear 0</span><span><code class="t">TON</code> on-delay</span></div>
+  </section>
+</div>
+
+<div class="colC">
+  <section class="card">
+    <div class="hd"><h2>What's happening</h2><span class="chip" id="stepNo"></span></div>
+    <div class="dots" id="dots"></div>
+    <div class="lbody">
+      <h3 class="lt" id="lt"></h3>
+      <p class="lx" id="lx"></p>
+      <div class="think"><b>Think first</b><p id="lesQ"></p><button id="reveal">Show answer</button><div class="ans" id="lesA" hidden></div></div>
+    </div>
+    <div class="navb"><button id="prev">← Back</button><button id="next" class="go">Next step →</button></div>
+  </section>
+  <section class="card insp"><b id="ist">Click any ladder symbol</b><span id="isx">It explains what it is doing right now, with live values.</span></section>
+  <section class="card">
+    <div class="hd"><h2>Rungs as Boolean logic</h2><span class="mut">rule · <span style="color:var(--on)">live values</span></span></div>
+    <div class="eqs" id="eqs"></div>
+  </section>
+</div>
+
+<div class="colB">
+  <section class="card">
+    <div class="hd"><h2>PLC scan cycle</h2><span class="mut">read → solve top to bottom → write</span></div>
+    <div class="phases" id="phases"></div>
+    <p class="cap" id="scanCap"></p>
+  </section>
+  <div class="rowTI">
+    <section class="card" id="timerCard">
+      <div class="hd"><h2>Fill timer · TON</h2><span class="chip">PT 3.0 s</span></div>
+      <div class="timer">
+        <svg class="dial" viewBox="0 0 140 140" aria-label="Timer dial">
+          <circle class="ring" cx="70" cy="70" r="54"/>
+          <circle id="arc" cx="70" cy="70" r="54" transform="rotate(-90 70 70)" stroke-dasharray="0 400"/>
+          <g id="ticks"></g>
+          <text class="dv" x="70" y="74" id="dialV">0.0</text><text class="du" x="70" y="92">of 3.0 s</text>
+        </svg>
+        <div class="pins"><div class="pin"><span class="led" id="ledIn"></span><span><b>IN</b> ← valve</span></div><div class="pin"><span class="led" id="ledQ"></span><span><b>Q</b> → <span id="qTarget">–</span></span></div></div>
+        <div class="flow"><span class="fs" id="fs0">Idle</span><span class="arr">→</span><span class="fs" id="fs1">Timing</span><span class="arr">→</span><span class="fs" id="fs2">Done</span></div>
+        <p id="tmsg"></p>
+      </div>
+      <div class="dimmer" id="tdim">Timer is added in "Fill 3 s"</div>
+    </section>
+    <section class="card">
+      <div class="hd"><h2>I/O image</h2><span class="mut">wire · program</span></div>
+      <table><thead><tr><th>Tag</th><th>Device</th><th>Wire</th><th>Prog</th></tr></thead><tbody id="io"></tbody></table><p class="mut" style="margin:8px 0 0">Wire = real terminal signal. Prog = memory copy the program uses. In Scan by scan they can differ until the next read/write.</p>
+    </section>
+  </div>
+  <section class="card">
+    <div class="hd"><h2>Signal trend</h2><span class="mut">last 15 s of machine time</span></div>
+    <div class="fill" id="tfig"><svg id="tsvg" aria-label="Timing diagram"></svg></div>
+  </section>
+</div>
+</div>
+</div>
+
+<script>
+{
+const NOZ=400,HALF=26,SEN=NOZ+HALF,START=80,END=690,SPACING=250,SPEED=100,PT=3,SCAN_DT=0.25,WIN=15,RL=34,RR=876,CX=812,CIRC=2*Math.PI*54;
+const A={I0:'I0.0',Q0:'Q0.0',Q1:'Q0.1',M0:'M0.0',T:'TON'};
+const $=s=>document.querySelector(s);
+const C=(k,tag,name,why='')=>({k,tag,name,why});
+
+/* program: the same data draws the ladder and runs the logic */
+const R1a={ser:[C('NC','I0','Sensor','It stays closed while the beam is clear and opens when a bottle blocks it, cutting power to the motor.')],out:C('Q','Q0','Belt motor')};
+const R2a={ser:[C('NO','I0','Sensor','A bottle must be under the nozzle.'),C('NC','Q0','Belt motor','Interlock: never pour onto a moving belt.')],out:C('Q','Q1','Filling valve')};
+const R3a={ser:[C('NO','Q1','Valve open','The timer only runs while the valve is pouring.'),C('TON','T','Fill timer')],out:null};
+const PROG={1:[R1a],2:[R1a,R2a,R3a],3:[
+  {par:[[C('NC','I0','Sensor','Top branch: run while the beam is clear.')],[C('NO','M0','Full','Bypass branch: lets a full bottle leave even though it still blocks the beam.')]],ser:[],out:C('Q','Q0','Belt motor')},
+  {ser:[R2a.ser[0],R2a.ser[1],C('NC','M0','Full','"Not full yet". It opens once M0.0 is latched, which closes the valve.')],out:C('Q','Q1','Filling valve')},
+  {ser:R3a.ser,out:C('S','M0','Full')},
+  {ser:[C('NC','I0','Sensor','Closes once the full bottle has left the beam.')],out:C('R','M0','Full')}]};
+
+const STEPS={
+1:[
+ {n:'Bottle on its way',set:{b:[[NOZ-170,0]]},t:'No bottle at the beam, so sensor I0.0 reads 0. Rung 1 uses a normally-closed contact —|/|—, which passes power while its tag is 0. Power reaches coil Q0.0 and the belt runs.',q:'If you put your hand in the beam, what happens to the belt?',a:'I0.0 becomes 1, the NC contact opens and Q0.0 drops to 0: the belt stops. Try it with "Block sensor".'},
+ {n:'Belt stops at sensor',set:{b:[[NOZ,0]]},t:'The bottle breaks the beam exactly when it is centred under the nozzle, so I0.0 = 1. The NC contact opens, the green path breaks, Q0.0 = 0 and the belt stops. Nothing else is programmed yet, so the machine waits here.',q:'Why use a normally-closed contact here and not a normally-open one?',a:'With NO, the motor would run only while a bottle is present, the opposite of what we want. NC means "run unless the sensor sees something": Q0.0 = NOT I0.0.'}],
+2:[
+ {n:'Bottle on its way',set:{b:[[NOZ-170,0]]},t:'Rung 1 runs the belt as before. Rung 2 needs a bottle (NO I0.0) AND a stopped belt (NC Q0.0). The first condition is 0, so valve Q0.1 stays shut.',q:'Rung 2 reads Q0.0, which is an output. Where does that value come from?',a:'From the process image. Rung 1 was solved just before rung 2 in the same scan, so rung 2 sees the fresh Q0.0. The order of rungs matters.'},
+ {n:'Belt stops, valve opens',set:{b:[[NOZ,0.1]],et:0.3},t:'I0.0 = 1 stops the belt (Q0.0 = 0). On rung 2 both contacts are now closed: bottle present AND belt not moving. Q0.1 turns on and juice pours. Watch the timer card: IN just switched on.',q:'What is the NC Q0.0 contact on rung 2 protecting against?',a:'Pouring onto a moving belt. It is an interlock: even if the sensor glitched, the valve cannot open while the motor runs.'},
+ {n:'Timer counting',set:{b:[[NOZ,0.67]],et:2},t:'Rung 3: while Q0.1 = 1, the timer input IN is 1, so the dial (elapsed time ET) fills toward PT = 3.0 s. Output Q stays 0 until the dial is full. The bottle fills at the same rate.',q:'If the valve closed at ET = 2.0 s, what would ET do?',a:'Drop straight back to 0. A TON resets whenever IN goes to 0; it cannot be paused. (A retentive TONR keeps its time.)'},
+ {n:'3 s reached, nothing reacts',set:{b:[[NOZ,1]],et:3},t:'The dial is full and TON.Q = 1. But TON.Q is not wired to anything, so the valve keeps pouring (see the puddle) and the belt never restarts. The "Auto cycle" program fixes this with a Full latch.',q:'Why not just add NC TON.Q to rung 2 to close the valve?',a:'The valve closes, so TON.IN drops, the timer resets, Q returns to 0 and the valve reopens: it chatters. You need a memory bit that remembers "this bottle is full". That is M0.0 with Set and Reset.'}],
+3:[
+ {n:'Empty bottle on its way',set:{b:[[NOZ-170,0]]},t:'I0.0 = 0 and M0.0 = 0. The top branch of rung 1 (NC I0.0) passes power, so the belt runs.',q:'Rung 1 has two parallel branches. What logic does "parallel" mean?',a:'OR. Q0.0 = NOT I0.0 OR M0.0. Either branch alone can power the coil.'},
+ {n:'Bottle stops, valve opens',set:{b:[[NOZ,0.15]],et:0.45},t:'I0.0 = 1 opens the top branch, and M0.0 = 0 keeps the bypass open, so Q0.0 = 0. Rung 2 sees bottle present AND belt stopped AND not full, so Q0.1 = 1.',q:'Write rung 2 as one Boolean equation.',a:'Q0.1 = I0.0 AND NOT Q0.0 AND NOT M0.0. Series contacts are AND.'},
+ {n:'Timer counting',set:{b:[[NOZ,0.7]],et:2.1},t:'Valve open, so TON.IN = 1 and the dial fills. The Set coil on rung 3 waits for TON.Q.',q:'Does M0.0 change while the timer is counting?',a:'No. A Set coil acts only when power reaches it. With TON.Q = 0 it leaves M0.0 alone.'},
+ {n:'Set coil latches Full',set:{b:[[NOZ,1]],et:3},t:'This is the exact scan where ET reaches 3.0 s. TON.Q = 1 powers (S) M0.0, so M0.0 = 1. Rung 2 was solved earlier in this same scan, so Q0.1 is still 1 for this one scan.',q:'When does the valve actually close?',a:'On the next scan. Rung 2 then reads M0.0 = 1, its NC M0.0 contact opens and Q0.1 = 0. Switch to "Scan by scan" and press Step to watch it.'},
+ {n:'Bypass restarts belt',set:{b:[[NOZ+26,1],[NOZ-250,0]],M0:1},t:'The full bottle still blocks the beam (I0.0 = 1), so the top branch is open. But M0.0 = 1 closes the bypass branch, so Q0.0 = 1 and the belt moves. Rung 2 is blocked twice (Q0.0 = 1 and M0.0 = 1), so nothing pours, and the timer drops back to Idle.',q:'Why not clear M0.0 as soon as the belt starts?',a:'The bottle is still in the beam. If M0.0 cleared now, rung 1 would see I0.0 = 1 and M0.0 = 0 and stop the belt again under the nozzle, stuck forever.'},
+ {n:'Reset clears Full',set:{b:[[NOZ+130,1],[NOZ-140,0]],M0:1},t:'The full bottle has cleared the beam (I0.0 = 0). Rung 4\'s NC I0.0 closes and powers (R) M0.0, so M0.0 = 0. The machine is ready for the next empty bottle.',q:'Rung 1 runs before rung 4. In this scan, which M0.0 value did rung 1 read?',a:'The old one, 1. Rung 4 clears it later in the same scan. Here it makes no difference because NOT I0.0 = 1 keeps the belt on anyway, but it shows the scan runs top to bottom.'}]};
+
+const S={stage:1,mode:'run',playing:true,speed:1,t:0,bottles:[],nid:1,hand:false,spill:0,
+  phys:{Q0:0,Q1:0},img:{I0:0,Q0:0,Q1:0,M0:0},tin:0,et:0,tq:0,phase:-1,traces:[],sel:null,step:0,reveal:false,hist:[],belt:0,roll:0,elmap:{}};
+const prog=()=>PROG[S.stage];
+const nb=x=>({id:S.nid++,x,fill:0});
+const blocker=()=>S.bottles.find(b=>b.x+HALF>=SEN&&b.x-HALF<=SEN);
+const sensed=()=>S.hand||blocker()?1:0;
+
+/* PLC execution */
+function timer(inp,dt){S.tin=inp;if(inp){S.et=Math.min(PT,S.et+dt);S.tq=S.et>=PT-1e-9?1:0}else{S.et=0;S.tq=0}}
+function cEval(e,pin){const raw=S.img[e.tag]?1:0,closed=e.k==='NC'?1-raw:raw;return{pin,raw,closed,pout:pin&&closed?1:0}}
+function evalRung(r,dt){
+  const tr={par:null,ser:[],pOut:0};let p=1;
+  if(r.par){tr.par=r.par.map(br=>{let q=1;const st=br.map(e=>{const c=cEval(e,q);q=c.pout;return c});return{st,out:q}});p=tr.par.some(b=>b.out)?1:0}
+  for(const e of r.ser){if(e.k==='TON'){const pin=p;timer(pin,dt);p=S.tq;tr.ser.push({pin,pout:p})}else{const c=cEval(e,p);p=c.pout;tr.ser.push(c)}}
+  tr.pOut=p;const o=r.out;
+  if(o){if(o.k==='Q')S.img[o.tag]=p;else if(o.k==='S'&&p)S.img[o.tag]=1;else if(o.k==='R'&&p)S.img[o.tag]=0}
+  return tr;
+}
+const readIn=()=>{S.img.I0=sensed()};
+const writeOut=()=>{S.phys.Q0=S.img.Q0;S.phys.Q1=S.img.Q1};
+function fullScan(dt){readIn();S.traces=prog().map(r=>evalRung(r,dt));writeOut()}
+function physics(dt){
+  if(S.phys.Q0){const dx=SPEED*dt;S.belt=(S.belt+dx)%18;S.roll=(S.roll+dx*5)%360;
+    for(const b of S.bottles){const p=b.x;b.x+=dx;if(!S.img.M0&&p<NOZ&&b.x>=NOZ)b.x=NOZ}
+    S.bottles=S.bottles.filter(b=>b.x<=END);
+    if(S.stage===3){const lm=Math.min(Infinity,...S.bottles.map(b=>b.x));if(lm>START+SPACING)S.bottles.push(nb(START))}
+    else if(!S.bottles.length)S.bottles.push(nb(START));}
+  if(S.phys.Q1){const tg=S.bottles.find(b=>Math.abs(b.x-NOZ)<=18);if(tg&&tg.fill<1)tg.fill=Math.min(1,tg.fill+dt/PT);else S.spill=Math.min(60,S.spill+dt*10)}
+}
+function record(){
+  const s={t:S.t,I0:S.img.I0,Q0:S.phys.Q0,Q1:S.phys.Q1,TQ:S.tq,M0:S.img.M0,ET:S.et},n=S.hist.length,l=S.hist[n-1],p2=S.hist[n-2];
+  const same=a=>a&&['I0','Q0','Q1','TQ','M0'].every(k=>a[k]===s[k]);
+  if(same(l)&&same(p2)&&s.t-p2.t<0.3)S.hist[n-1]=s;else S.hist.push(s);
+  while(S.hist.length&&S.hist[0].t<S.t-WIN-2)S.hist.shift();
+}
+function detect(){
+  const i=S.img.I0,m=S.img.M0;let k;
+  if(S.stage===1)k=i?1:0;
+  else if(S.stage===2)k=!i?0:S.tq?3:S.et<0.9?1:2;
+  else{const ex=S.bottles.some(b=>b.x>NOZ+30&&b.fill>0.8);k=S.tq&&m?3:i&&m?4:i&&S.et<0.9?1:i?2:ex?5:0}
+  if(k!==S.step){S.step=k;S.reveal=false}
+}
+
+/* controls */
+function reset(){S.bottles=[nb(START+40)];S.img={I0:0,Q0:0,Q1:0,M0:0};S.phys={Q0:0,Q1:0};S.et=S.tq=S.tin=0;S.hand=false;S.spill=0;S.t=0;S.hist=[];S.phase=-1;S.reveal=false;if(S.mode==='run')S.playing=true;fullScan(0);record();detect()}
+function setStage(n){S.stage=n;S.sel=null;S.step=0;reset()}
+function applyStep(i){const st=STEPS[S.stage][i].set;S.bottles=st.b.map(([x,f])=>({id:S.nid++,x,fill:f}));
+  S.img.M0=st.M0||0;S.et=st.et||0;S.tq=0;S.hand=false;S.spill=0;S.hist=[];S.phase=-1;S.playing=false;fullScan(0);record();S.step=i;S.reveal=false}
+function setMode(m){S.mode=m;S.phase=-1;S.playing=m==='run'}
+function nextPhase(){
+  if(S.mode!=='scan'){setMode('scan');fullScan(0)}
+  const P=prog(),n=P.length;
+  if(S.phase<0||S.phase>n){S.phase=0;readIn();S.traces=P.map(()=>null)}
+  else if(S.phase<n){S.traces[S.phase]=evalRung(P[S.phase],SCAN_DT);S.phase++}
+  else{writeOut();physics(SCAN_DT);S.t+=SCAN_DT;record();S.phase=n+1}
+  detect();
+}
+
+/* ladder drawing */
+const w=(x1,y1,x2,y2,on)=>`<line class="wire${on?' won':''}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+const selc=id=>S.sel===id?' sel':'';
+function contact(id,cx,y,e,st){
+  const po=st?st.pout:0,c=po?'onS':'sym';S.elmap[id]={e,st};
+  return `<g class="el${selc(id)}" data-id="${id}" tabindex="0" role="button" aria-label="${e.name} ${A[e.tag]}">
+  <rect class="hit" x="${cx-44}" y="${y-42}" width="88" height="74" rx="8"/>
+  <text class="nm" x="${cx}" y="${y-30}">${e.name}</text><text class="ad" x="${cx}" y="${y-16}">${A[e.tag]}</text>
+  ${w(cx-22,y,cx-9,y,st?st.pin:0)}${w(cx+9,y,cx+22,y,po)}
+  <path class="bar2 ${c}" d="M${cx-9} ${y-12}v24M${cx+9} ${y-12}v24${e.k==='NC'?`M${cx-14} ${y+12}L${cx+14} ${y-12}`:''}"/>
+  ${st?`<text class="st${st.closed?' stc':''}" x="${cx}" y="${y+25}">${st.raw} → ${st.closed?'closed':'open'}</text>`:''}</g>`;
+}
+function coil(id,cx,y,e,tr){
+  const p=tr?tr.pOut:0,col=p?'onS':'sym',L=e.k==='Q'?'':e.k;S.elmap[id]={e,p:tr?p:null};
+  const msg=!tr?'':e.k==='Q'?(p?'ON':'OFF'):p?(e.k==='S'?'set → 1':'reset → 0'):`idle · ${A[e.tag]}=${S.img[e.tag]}`;
+  return `<g class="el${selc(id)}" data-id="${id}" tabindex="0" role="button" aria-label="${e.k} coil ${A[e.tag]}">
+  <rect class="hit" x="${cx-56}" y="${y-42}" width="112" height="74" rx="8"/>
+  <text class="nm" x="${cx}" y="${y-30}">${e.name}</text><text class="ad" x="${cx}" y="${y-16}">${A[e.tag]}</text>
+  ${w(cx-22,y,cx-12,y,p)}${w(cx+12,y,cx+22,y,p)}
+  <path class="bar2 ${col}" d="M${cx-7} ${y-13}A15 15 0 0 0 ${cx-7} ${y+13}M${cx+7} ${y-13}A15 15 0 0 1 ${cx+7} ${y+13}"/>
+  ${L?`<text class="cl" x="${cx}" y="${y+5}" fill="${p?'var(--on)':'var(--sym)'}">${L}</text>`:''}
+  ${msg?`<text class="st${p?' stc':''}" x="${cx}" y="${y+26}">${msg}</text>`:''}</g>`;
+}
+function ton(id,x,y,e,st){
+  S.elmap[id]={e,st};const live=!!st,pct=live?S.et/PT:0,cls=live&&S.tq?' q':live&&S.tin?' in':'';
+  return `<g class="el${selc(id)}" data-id="${id}" tabindex="0" role="button" aria-label="TON timer">
+  <rect class="hit" x="${x-6}" y="${y-42}" width="144" height="76" rx="8"/>
+  <text class="nm" x="${x+66}" y="${y-30}">${e.name}</text>
+  <rect class="tonb${cls}" x="${x}" y="${y-22}" width="132" height="52" rx="7"/>
+  <text class="tt" x="${x+66}" y="${y-7}">TON</text>
+  <text class="tp" x="${x+8}" y="${y+5}" ${live&&S.tin?'fill="var(--cyan)"':''}>IN</text><text class="tp" x="${x+124}" y="${y+5}" text-anchor="end" ${live&&S.tq?'fill="var(--on)"':''}>Q</text>
+  <text class="tp" x="${x+8}" y="${y+18}">PT 3.0s</text><text class="tp" x="${x+124}" y="${y+18}" text-anchor="end" fill="var(--cyan)">ET ${live?S.et.toFixed(1):'–'}s</text>
+  <rect x="${x+10}" y="${y+23}" width="112" height="4" rx="2" fill="var(--panel2)" stroke="var(--line)"/>
+  <rect x="${x+10}" y="${y+23}" width="${(112*pct).toFixed(1)}" height="4" rx="2.5" fill="${S.tq?'var(--on)':'var(--cyan)'}"/></g>`;
+}
+const rungH=r=>(r.par?(r.par.length-1)*72:0)+80;
+function drawRung(r,ri,y,tr){
+  let h='',x=RL;
+  if(r.par){const xs=RL+26,len=Math.max(...r.par.map(b=>b.length)),xj=xs+len*100+10;h+=w(RL,y,xs,y,1);
+    r.par.forEach((b,bi)=>{const yb=y+bi*72,bt=tr?tr.par[bi]:null;let px=xs,cx=xs+50;if(bi)h+=w(xs,y,xs,yb,1);
+      b.forEach((e,j)=>{const st=bt?bt.st[j]:null;h+=w(px,yb,cx-22,yb,st?st.pin:0)+contact(`${ri}p${bi}_${j}`,cx,yb,e,st);px=cx+22;cx+=100});
+      const bo=bt?bt.out:0;h+=w(px,yb,xj,yb,bo);if(bi)h+=w(xj,yb,xj,y,bo)});
+    x=xj}
+  r.ser.forEach((e,j)=>{const st=tr?tr.ser[j]:null,pin=st?st.pin:0;
+    if(e.k==='TON'){const x0=x+28;h+=w(x,y,x0,y,pin)+ton(`${ri}s${j}`,x0,y,e,st);x=x0+132}
+    else{const cx=x+(x===RL?66:84);h+=w(x,y,cx-22,y,pin)+contact(`${ri}s${j}`,cx,y,e,st);x=cx+22}});
+  const p=tr?tr.pOut:0;
+  if(r.out)h+=w(x,y,CX-22,y,p)+coil(`${ri}o`,CX,y,r.out,tr)+w(CX+22,y,RR,y,p);
+  else h+=w(x,y,x+30,y,p)+`<text class="qn" x="${x+38}" y="${y+4}">TON.Q is not wired to anything yet</text>`;
+  return h;
+}
+function renderLadder(){
+  S.elmap={};const P=prog(),n=P.length;let y=8,body='';
+  P.forEach((r,ri)=>{const hR=rungH(r),ly=y+44,tr=S.traces[ri]||null;
+    const cur=S.mode==='scan'&&S.phase===ri+1,pend=S.mode==='scan'&&S.phase>=0&&S.phase<=n&&ri>=S.phase;
+    body+=`<rect class="band${cur?' cur':''}" x="2" y="${y}" width="896" height="${hR-6}" rx="10"/><text class="rn${cur?' cur':''}" x="16" y="${ly+4}">${ri+1}</text>`;
+    body+=`<g class="${pend?'pend':''}">${drawRung(r,ri,ly,pend?null:tr)}</g>`;y+=hR});
+  const H=y+4;$('#lad').setAttribute('viewBox',`0 0 900 ${H}`);
+  $('#lad').innerHTML=body+`<line class="rail" x1="${RL}" y1="6" x2="${RL}" y2="${H-6}"/><line class="railn" x1="${RR}" y1="6" x2="${RR}" y2="${H-6}"/>`;
+}
+
+/* equations */
+function eqText(r,tr){
+  const nm=e=>e.k==='NC'?`NOT ${A[e.tag]}`:A[e.tag],vl=(e,st)=>e.k==='NC'?`NOT ${st.raw}`:`${st.raw}`;
+  const ti=r.ser.findIndex(e=>e.k==='TON'),pre=ti<0?r.ser:r.ser.slice(0,ti),fa=[],va=[];
+  if(r.par){fa.push('('+r.par.map(b=>b.map(nm).join(' AND ')).join(' OR ')+')');if(tr)va.push('('+r.par.map((b,bi)=>b.map((e,j)=>vl(e,tr.par[bi].st[j])).join(' AND ')).join(' OR ')+')')}
+  pre.forEach((e,j)=>{fa.push(nm(e));if(tr)va.push(vl(e,tr.ser[j]))});
+  const F=fa.join(' AND '),V=va.join(' AND '),o=r.out;let f,v='';
+  if(ti>=0){const pin=tr?tr.ser[ti].pin:0;f=`TON.IN = ${F}`;if(tr)v=`IN = ${V} = ${pin} → ET ${S.et.toFixed(1)} s, Q = ${S.tq}`;
+    if(o){f+=`; IF TON.Q THEN SET ${A[o.tag]}`;if(tr)v+=`; ${tr.pOut?A[o.tag]+' := 1':'no change'}`}else f+='  (Q unused)'}
+  else if(o.k==='Q'){f=`${A[o.tag]} = ${F}`;if(tr)v=`= ${V} = ${tr.pOut}`}
+  else{const s=o.k==='S';f=`IF ${F} THEN ${s?'SET':'RESET'} ${A[o.tag]}`;if(tr)v=`${V} = ${tr.pOut} → ${tr.pOut?A[o.tag]+' := '+(s?1:0):'no change'}`}
+  return[f,v];
+}
+function renderEq(){
+  const P=prog(),n=P.length;
+  $('#eqs').innerHTML=P.map((r,ri)=>{const pend=S.mode==='scan'&&S.phase>=0&&S.phase<=n&&ri>=S.phase,tr=pend?null:S.traces[ri],g=eqText(r,tr),cur=S.mode==='scan'&&S.phase===ri+1;
+    return `<div class="eq${cur?' cur':''}${pend?' pending':''}"><code><b>R${ri+1}</b>  ${g[0]}</code><code class="v">${tr?g[1]:'not solved yet in this scan'}</code></div>`}).join('');
+}
+
+/* scene */
+const BOT='M-8 148H8V164C8 176 26 180 26 196V256Q26 262 20 262H-20Q-26 262-26 256V196C-26 180-8 176-8 164Z';
+const setF=(id,c)=>$(id).setAttribute('fill',c);
+function renderScene(){
+  const filling=S.phys.Q1;
+  $('#bottles').innerHTML=S.bottles.map(b=>{
+    const h=b.fill*59,top=259-h,under=filling&&Math.abs(b.x-NOZ)<=18;
+    let bub='';if(under&&h>10)for(let i=0;i<4;i++){const by=259-((S.t*55+i*17)%Math.max(4,h-3));bub+=`<circle cx="${-14+i*9}" cy="${by.toFixed(1)}" r="${1.2+i%2}" fill="#fff7d6" opacity=".7"/>`}
+    return `<g transform="translate(${b.x.toFixed(1)},-5)">
+      <ellipse cx="0" cy="263" rx="25" ry="3" fill="#000" opacity=".4"/>
+      <path d="${BOT}" fill="#bfe3ff" fill-opacity=".09"/>
+      ${h>0.4?`<rect x="-23" y="${top.toFixed(1)}" width="46" height="${h.toFixed(1)}" rx="3" fill="url(#gJuice)"/><ellipse cx="0" cy="${top.toFixed(1)}" rx="23" ry="2.4" fill="#ffe7a3"/>${bub}`:''}
+      <path d="${BOT}" fill="none" stroke="#e1efff" stroke-opacity=".8" stroke-width="1.6"/>
+      <path d="M-19 202V250" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/><path d="M18 206V246" stroke="#fff" stroke-opacity=".14" stroke-width="2" stroke-linecap="round"/>
+      <rect x="-10" y="143" width="20" height="6" rx="2" fill="#e1efff" fill-opacity=".3" stroke="#e1efff" stroke-opacity=".8"/>
+      ${b.fill>0.02?`<text class="pct" x="0" y="${h>26?236:190}">${Math.round(b.fill*100)}%</text>`:''}</g>`}).join('');
+  $('#pSlat').setAttribute('patternTransform',`translate(${S.belt.toFixed(1)},0)`);
+  $('#rl').setAttribute('transform',`translate(56,278) rotate(${S.roll.toFixed(0)})`);$('#rr').setAttribute('transform',`translate(676,278) rotate(${S.roll.toFixed(0)})`);
+  $('#shaft').setAttribute('transform',`translate(719,273) rotate(${(S.roll*0.6).toFixed(0)})`);
+  // stream
+  const tg=S.bottles.find(b=>Math.abs(b.x-NOZ)<=18),end=tg?(259-tg.fill*59)-5:255;
+  $('#stream').setAttribute('opacity',filling?'1':'0');$('#streamR').setAttribute('height',Math.max(0,end-128));$('#streamD').setAttribute('y2',end);
+  $('#puddle').setAttribute('rx',S.spill.toFixed(1));
+  // sensor
+  const lit=sensed(),bl=blocker(),bEnd=S.hand?168:bl?(bl.x>NOZ+8?186:192):255;
+  ['#beam','#beamG'].forEach(i=>$(i).setAttribute('y2',bEnd));$('#spot').setAttribute('cy',bEnd);
+  $('#hand').setAttribute('opacity',S.hand?'1':'0');
+  setF('#senLed',lit?'#ffb020':'#4b5560');setF('#bS',lit?'#3ddc84':'#4b5560');
+  setF('#valveLed',filling?'#3ddc84':'#4b5560');setF('#bV',filling?'#3ddc84':'#4b5560');$('#sol').setAttribute('stroke',filling?'#3ddc84':'#56616d');
+  setF('#motorLamp',S.phys.Q0?'#3ddc84':'#2d3640');$('#motorGlow').setAttribute('opacity',S.phys.Q0?'1':'0');setF('#bM',S.phys.Q0?'#3ddc84':'#4b5560');
+  setF('#pI0',S.img.I0?'#3ddc84':'#4b5560');setF('#pQ0',S.phys.Q0?'#3ddc84':'#4b5560');setF('#pQ1',S.phys.Q1?'#3ddc84':'#4b5560');
+  setF('#pRun',S.mode==='run'&&S.playing?'#3ddc84':'#ffb020');
+  const st=$('#status');st.textContent=(S.mode==='scan'?'Scan by scan':S.playing?'Running':'Paused')+` · ${S.t.toFixed(1)} s`;st.className='chip '+(S.mode==='run'&&S.playing?'live':'warn');
+}
+
+/* timer card */
+{let t='';for(let i=0;i<=3;i++){const a=i/3*2*Math.PI-Math.PI/2,c=Math.cos(a),s=Math.sin(a);t+=`<line class="tk" x1="${70+c*41}" y1="${70+s*41}" x2="${70+c*46}" y2="${70+s*46}"/>`;}$('#ticks').innerHTML=t}
+function renderTimer(){
+  $('#tdim').hidden=S.stage>1;
+  const pct=S.et/PT;$('#arc').setAttribute('stroke-dasharray',`${(CIRC*pct).toFixed(1)} ${CIRC}`);$('#arc').classList.toggle('done',!!S.tq);$('#arc').style.opacity=S.et>0.001?1:0;
+  $('#dialV').textContent=S.et.toFixed(1);
+  $('#ledIn').className='led'+(S.tin?' cy':'');$('#ledQ').className='led'+(S.tq?' on':'');
+  $('#qTarget').textContent=S.stage===3?'Set M0.0':'not wired yet';
+  const k=S.tq?2:S.tin?1:0;['#fs0','#fs1','#fs2'].forEach((id,i)=>$(id).className='fs'+(i===k?' act'+(i===2?' d':''):''));
+  $('#tmsg').textContent=k===0?'Valve closed, so IN = 0: ET held at 0 s, Q = 0.'
+    :k===1?`IN = 1, counting: ${S.et.toFixed(1)} of 3.0 s. Q stays 0 until full.`
+    :'ET hit 3.0 s, so Q = 1 (until IN drops).';
+}
+
+/* other panels */
+function renderScan(){
+  const n=prog().length,labels=['Inputs',...prog().map((_,i)=>`Rung ${i+1}`),'Outputs'],sc=S.mode==='scan';
+  $('#phases').innerHTML=labels.map((l,i)=>{const c=!sc?'loop':S.phase<0?'':i===S.phase?'now':i<S.phase?'done':'';return `${i?'<span class="arr">→</span>':''}<span class="ph ${c}">${l}</span>`}).join('')+(sc?'':'<span class="arr">↺</span>');
+  let cap;
+  if(!sc)cap='Running: the PLC repeats this loop every frame. Press Step (or N) to freeze time and walk through one scan.';
+  else if(S.phase<0)cap='Time is frozen. One scan = copy the input wires into memory, solve the rungs top to bottom, then send the outputs. Press Step.';
+  else if(S.phase===0)cap=`Inputs read: the sensor wire was copied into memory (I0.0 = ${S.img.I0}). If the wire changes now, the program won't see it until the next scan.`;
+  else if(S.phase<=n)cap=`Rung ${S.phase} solved left to right: ${eqText(prog()[S.phase-1],S.traces[S.phase-1])[1]}`;
+  else cap=`Outputs sent: motor Q0.0 = ${S.phys.Q0}, valve Q0.1 = ${S.phys.Q1}. The machine then runs ${SCAN_DT} s (a real S7-1200 scans every few ms).`;
+  $('#scanCap').textContent=cap;
+  const nx=S.phase<0||S.phase>n?'Read inputs':S.phase<n?`Solve rung ${S.phase+1}`:'Write outputs';
+  $('#nextPh').title=`Next scan step: ${nx} (N)`;$('#nextPh span').textContent=sc?`Step: ${nx}`:'Step scan';
+}
+function renderLesson(){
+  const L=STEPS[S.stage],s=L[S.step];
+  $('#dots').innerHTML=L.map((x,i)=>`<button data-i="${i}" title="${x.n}"${i===S.step?' aria-current="step"':''}${i<S.step?' class="seen"':''}>${i+1}</button>`).join('');
+  $('#stepNo').textContent=`Step ${S.step+1} of ${L.length}`;
+  $('#lt').textContent=s.n;$('#lx').textContent=s.t;$('#lesQ').textContent=s.q;$('#lesA').textContent=s.a;
+  $('#lesA').hidden=!S.reveal;$('#reveal').textContent=S.reveal?'Hide answer':'Show answer';
+}
+function inspText(){
+  const m=S.elmap[S.sel];if(!m)return null;const e=m.e,a=A[e.tag];
+  if(e.k==='NO'||e.k==='NC'){const st=m.st,rule=e.k==='NO'?'A normally-open contact —| |— passes power when its tag is 1.':'A normally-closed contact —|/|— passes power when its tag is 0; it means NOT.';
+    return[`${e.name}: ${a}, ${e.k==='NO'?'normally open':'normally closed'}`,st?`${rule} It reads ${a} = ${st.raw}, so it is ${st.closed?'closed':'open'}. Power in ${st.pin}, out ${st.pout}. ${e.why}`:`${rule} Not solved yet in this scan.`]}
+  if(e.k==='TON')return['Fill timer: TON, PT = 3.0 s',`While IN = 1, ET counts up; at 3.0 s, Q = 1. When IN drops to 0, ET resets at once. Now IN = ${S.tin}, ET = ${S.et.toFixed(2)} s, Q = ${S.tq}. The dial card shows the same thing.`];
+  const p=m.p,ps=p===null?'not solved yet':p;
+  if(e.k==='Q')return[`${e.name}: output coil ${a}`,`Copies the rung result into ${a} (power now ${ps}). The real ${e.name.toLowerCase()} follows at the "Write outputs" step.`];
+  if(e.k==='S')return[`Set coil (S): ${a}`,`When power reaches it, ${a} becomes 1 and stays 1 after the power is gone: a latch. Power now ${ps}; ${a} = ${S.img[e.tag]}. Only a Reset coil clears it.`];
+  return[`Reset coil (R): ${a}`,`When power reaches it, ${a} is forced to 0. Power now ${ps}; ${a} = ${S.img[e.tag]}.`];
+}
+const led=v=>`<span class="led${v?' on':''}"></span>`;
+function renderIO(){
+  const rows=[['I0','Sensor',1,sensed(),S.img.I0],['Q0','Belt motor',1,S.phys.Q0,S.img.Q0],['Q1','Valve',2,S.phys.Q1,S.img.Q1],['M0','Full (memory)',3,null,S.img.M0]];
+  $('#io').innerHTML=rows.filter(r=>r[2]<=S.stage).map(r=>{const d=r[3]!==null&&r[3]!==r[4];
+    return `<tr><td class="a">${A[r[0]]}</td><td>${r[1]}${d?`<span class="diff">${r[0]==='I0'?'updates at next Read':'sent at next Write'}</span>`:''}</td><td>${r[3]===null?'<span class="mut">–</span>':led(r[3])}</td><td>${led(r[4])}</td></tr>`}).join('');
+}
+const TROWS=[['I0','I0.0 sensor',1],['Q0','Q0.0 motor',1],['Q1','Q0.1 valve',2],['ET','TON ET',2],['TQ','TON.Q',2],['M0','M0.0 full',3]];
+function drawTiming(){
+  const rows=TROWS.filter(r=>r[2]<=S.stage),sv=$('#tsvg'),W=sv.clientWidth,H=sv.clientHeight;if(!W||!H)return;
+  const L=96,now=Math.max(S.t,WIN),t0=now-WIN,X=t=>L+(Math.max(t,t0)-t0)/WIN*(W-L-8),rh=(H-16)/rows.length;let h='';
+  for(let s=Math.ceil(t0);s<=now;s++){const x=X(s).toFixed(1);h+=`<line class="tgk" x1="${x}" y1="2" x2="${x}" y2="${H-14}"/>`;if(s%5===0)h+=`<text class="tkx" x="${x}" y="${H-3}" text-anchor="middle">${s}s</text>`}
+  rows.forEach((r,i)=>{const lo=(i+1)*rh-3,hi=lo-Math.min(rh*0.62,18),k=r[0];
+    h+=`<text class="tl" x="4" y="${(lo-2).toFixed(1)}">${r[1]}</text><line class="tg" x1="${L}" y1="${lo.toFixed(1)}" x2="${W-8}" y2="${lo.toFixed(1)}"/>`;
+    let d='';for(const s of S.hist){if(s.t<t0-0.5)continue;const x=X(s.t).toFixed(1),v=k==='ET'?s.ET/PT:s[k],y=(lo-(lo-hi)*v).toFixed(1);d+=d?(k==='ET'?`L${x} ${y}`:`H${x}V${y}`):`M${x} ${y}`}
+    if(d)h+=`<path class="tw${k==='ET'?' et':''}" d="${d}H${X(S.t).toFixed(1)}"/>`});
+  sv.innerHTML=h;
+}
+
+/* render + loop */
+let sigL='',sigS='',sigLe='',lastT=0,lastF=0;
+function render(){
+  renderScene();renderTimer();renderIO();
+  const sl=JSON.stringify([S.stage,S.mode,S.phase,S.sel,S.traces,S.img,S.et.toFixed(1),S.tq,S.tin]);
+  if(sl!==sigL){sigL=sl;renderLadder();renderEq()}
+  const ss=JSON.stringify([S.stage,S.mode,S.phase,S.img,S.phys]);if(ss!==sigS){sigS=ss;renderScan()}
+  const le=[S.stage,S.step,S.reveal].join();if(le!==sigLe){sigLe=le;renderLesson()}
+  const it=inspText();$('#ist').textContent=it?it[0]:'Click any ladder symbol';$('#isx').textContent=it?it[1]:'It explains what it is doing right now, with live values.';
+  document.querySelectorAll('#ddMenu button').forEach(b=>{const on=+b.dataset.s===S.stage;b.setAttribute('aria-selected',on);if(on){$('#ddN').textContent=b.querySelector('.n').textContent;$('#ddL').textContent=b.querySelector('b').textContent}});
+  document.querySelectorAll('#mode button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===S.mode));
+  document.querySelectorAll('#speed button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===S.speed));
+  const run=S.mode==='run'&&S.playing;
+  $('#play').innerHTML=run?'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>Pause':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg>Play';
+  $('#handBtn').setAttribute('aria-pressed',S.hand);
+  const now=performance.now();if(now-lastT>90){lastT=now;drawTiming()}
+}
+function loop(ts){
+  const dt=Math.min(0.05,lastF?(ts-lastF)/1000:0);lastF=ts;
+  if(S.mode==='run'&&S.playing&&dt>0){const d=dt*S.speed;fullScan(d);physics(d);S.t+=d;record();detect()}
+  render();requestAnimationFrame(loop);
+}
+
+/* events */
+const act=f=>()=>{f();render()};
+const btn=(sel,f)=>$(sel).addEventListener('click',e=>{const b=e.target.closest('button');if(b){f(b);render()}});
+const ddOpen=o=>{$('#ddMenu').hidden=!o;$('#ddBtn').setAttribute('aria-expanded',o)};
+$('#ddBtn').addEventListener('click',e=>{e.stopPropagation();ddOpen($('#ddMenu').hidden)});
+$('#ddMenu').addEventListener('click',e=>{const b=e.target.closest('button');if(b){setStage(+b.dataset.s);ddOpen(false);render()}});
+document.addEventListener('click',e=>{if(!e.target.closest('#dd'))ddOpen(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')ddOpen(false)});
+btn('#mode',b=>{if(b.dataset.m!==S.mode){setMode(b.dataset.m);if(S.mode==='scan')fullScan(0)}});
+btn('#speed',b=>{S.speed=+b.dataset.v});
+btn('#dots',b=>applyStep(+b.dataset.i));
+const togglePlay=()=>{if(S.mode==='scan')setMode('run');else S.playing=!S.playing};
+$('#play').addEventListener('click',act(togglePlay));
+$('#reset').addEventListener('click',act(reset));
+const toggleHand=()=>{S.hand=!S.hand;if(!(S.mode==='run'&&S.playing)&&S.mode==='run'){fullScan(0);record();detect()}};
+$('#handBtn').addEventListener('click',act(toggleHand));
+$('#sensorHit').addEventListener('click',act(toggleHand));
+$('#sensorHit').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleHand();render()}});
+$('#nextPh').addEventListener('click',act(nextPhase));
+$('#reveal').addEventListener('click',act(()=>{S.reveal=!S.reveal}));
+const stepBy=d=>{const n=STEPS[S.stage].length;applyStep((S.step+d+n)%n)};
+$('#prev').addEventListener('click',act(()=>stepBy(-1)));
+$('#next').addEventListener('click',act(()=>stepBy(1)));
+const pick=id=>{S.sel=S.sel===id?null:id};
+$('#lad').addEventListener('click',e=>{const g=e.target.closest('[data-id]');if(g){pick(g.dataset.id);render()}});
+$('#lad').addEventListener('keydown',e=>{const g=e.target.closest('[data-id]');if(g&&(e.key==='Enter'||e.key===' ')){e.preventDefault();pick(g.dataset.id);render()}});
+document.addEventListener('keydown',e=>{
+  if(e.target.closest('button,[role=button]')&&(e.key===' '||e.key==='Enter'))return;
+  if(e.key===' '){e.preventDefault();togglePlay()}else if(e.key==='n'||e.key==='N')nextPhase();
+  else if(e.key==='ArrowRight')stepBy(1);else if(e.key==='ArrowLeft')stepBy(-1);else return;render()});
+const ro=new ResizeObserver(drawTiming);ro.observe($('#tfig'));
+
+const fit=()=>{const st=$('#stage'),small=innerWidth<900,s=small?0.92:Math.min(innerWidth/1440,innerHeight/810);document.documentElement.classList.toggle('small',small);st.style.transform=small?`scale(${s})`:`translate(${Math.max(0,(innerWidth-1440*s)/2)}px,${Math.max(0,(innerHeight-810*s)/2)}px) scale(${s})`};
+addEventListener('resize',fit);fit();
+setStage(3);render();requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>

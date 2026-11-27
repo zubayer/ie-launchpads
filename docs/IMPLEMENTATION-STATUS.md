@@ -73,6 +73,19 @@ Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXE
 |---|---|---|
 | Compound-unit grading and bounded Do Next plans | In development | Regression tests added; PR CI and browser checks pending. See `docs/CHATGPT-LEARNING-QUALITY.md`. |
 
+## PLC machine lab: bottle filler (branch `v3/plc-bottle-filler`, 2026-11-27)
+
+Owner request: integrate Zubayer's standalone PLC Ladder Lab (github.com/zubayer/PLCLadderLogic) into the PLC studio. Owner chose option 3: embed the lab and verify its logic on the studio engine. The original repo stays separate; merging the two later is the owner's call.
+
+| Feature | Status | Evidence |
+|---|---|---|
+| Embedded lab at `/studio/plc/lab/bottle-filler` (iframe of `public/labs/plc-bottle-filler/`), credits and source link, S7 ↔ Logix address table, link from the studio index | Tested | Audit loads the route and waits for the ladder inside the frame |
+| Accessibility fixes in the embedded copy (step-button contrast, `role="group"` on clickable drawings, readable scale and scrolling under 900 px, relative favicon), listed at the top of the file | Tested | Audit runs axe on the embedded page itself at 1366 and 390 px: 0 violations (the original had contrast 1, nested-interactive 2, target-size 14 on phones) |
+| Auto cycle as a worked example in the Sequences lesson (`BOTTLE_FILLER` in `src/content/plc/course.ts`) | Tested | `src/lib/plc.test.ts`: the six-step scenario (arrive, fill 3 s, latch Full, restart, leave, reset, next bottle) passes on the ladder engine |
+| Common mistake “Full as a plain coil” | Tested | Same suite: the OTE version fails (the valve reopens and refills the same bottle) and the OTL fix passes |
+
+Limits: the lab keeps its own simulation code and dark look (no light theme), and loads Google Fonts when online (it falls back to system fonts offline). Updates to the original repo are copied over by hand.
+
 ## Known limitations
 
 - Review statuses on Lean, Quality, automation and OR lessons are AI-assisted; treat `source-checked` as "a source was matched", not expert review.

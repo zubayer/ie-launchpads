@@ -13,7 +13,7 @@ const sims = [...registry.matchAll(/id: '([a-z0-9-]+)'/g)].map((m) => `lab/${m[1
 const routes = [
   '', 'directory', 'domains', 'd/lean', 'd/lean/cheatsheet', 'c/quality.cpk', 'c/quality.cp', 'c/or.newton-raphson', 'c/engecon.npv', 'c/lean.takt-time', 'c/lean.takt-time?mode=quick', 'c/or.lp', 'c/or.branch-bound', 'c/or.mmc?mode=interview', 'formulas/mmc', 'formulas/newsvendor', 'c/safety.fmea',
   'review', 'practice', 'lab', 'roles', 'roles/quality-engineer', 'interview', 'plan', 'graph', 'progress', 'academy',
-  'curriculum', 'formulas', 'notebook', 'table', 'table?el=engecon.npv', 'chains', 'chains?chain=safety-case&step=2', 'sheets/engecon', 'method', 'formulas/oee', 'formulas/mm1', 'formulas/irr-newton', 'formulas/calibration?x=2', 'formulas/nope', 'paths', 'paths/lean-throughput', 'studio/sql', 'studio/sql/select', 'studio/sql/joins', 'studio/sql/windows', 'studio/sql/design', 'c/datasci.sql-joins', 'studio/plc', 'studio/plc/scan', 'studio/plc/nonc', 'studio/plc/sealin', 'studio/plc/timers', 'studio/plc/sequence', 'studio/plc/debug', 'studio/plc/safety', 'studio/plc/nope', 'studio/cad', 'studio/cad/sketch', 'studio/cad/intent', 'studio/cad/features', 'studio/cad/mates', 'studio/cad/drawings', 'studio/cad/analysis', 'studio/cad/dfx', 'c/automation.ladder-logic', 'c/automation.solidworks', 'guide', 'guide?path=root,flow,l-capacity', 'pairs', 'compare', 'compare?concepts=lean.takt-time%2Clean.cycle-time%2Clean.lead-time', 'dictionary', 'dictionary?concept=quality.cpk', 'mysteries', 'mysteries?case=beats-takt', 'subway', 'tools', 'spot-waste', 'no-such-page', ...sims,
+  'curriculum', 'formulas', 'notebook', 'table', 'table?el=engecon.npv', 'chains', 'chains?chain=safety-case&step=2', 'sheets/engecon', 'method', 'formulas/oee', 'formulas/mm1', 'formulas/irr-newton', 'formulas/calibration?x=2', 'formulas/nope', 'paths', 'paths/lean-throughput', 'studio/sql', 'studio/sql/select', 'studio/sql/joins', 'studio/sql/windows', 'studio/sql/design', 'c/datasci.sql-joins', 'studio/plc', 'studio/plc/scan', 'studio/plc/nonc', 'studio/plc/sealin', 'studio/plc/timers', 'studio/plc/sequence', 'studio/plc/debug', 'studio/plc/safety', 'studio/plc/nope', 'studio/plc/lab/bottle-filler', 'studio/cad', 'studio/cad/sketch', 'studio/cad/intent', 'studio/cad/features', 'studio/cad/mates', 'studio/cad/drawings', 'studio/cad/analysis', 'studio/cad/dfx', 'c/automation.ladder-logic', 'c/automation.solidworks', 'guide', 'guide?path=root,flow,l-capacity', 'pairs', 'compare', 'compare?concepts=lean.takt-time%2Clean.cycle-time%2Clean.lead-time', 'dictionary', 'dictionary?concept=quality.cpk', 'mysteries', 'mysteries?case=beats-takt', 'subway', 'tools', 'spot-waste', 'no-such-page', ...sims,
 ]
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] })
@@ -127,6 +127,24 @@ for (const theme of ['light', 'dark']) {
       await first.getByRole('dialog').waitFor({ timeout: 2000 }).catch(() => { throw new Error('"Search terms" did not open the search') })
     } finally { await fresh.close() }
   } catch (e) { failures++; console.log(`✗ [${theme}] landing page: ${e.message}`) }
+  // Owner decision (2026-11-27): Zubayer's PLC Ladder Lab (github.com/zubayer/PLCLadderLogic) is embedded in the PLC
+  // studio. axe does not look inside iframes, so the embedded page is audited on its own, wide and phone-sized.
+  try {
+    for (const [w, h] of [[1366, 768], [390, 844]]) {
+      await page.setViewportSize({ width: w, height: h })
+      await page.goto(`${BASE}labs/plc-bottle-filler/index.html?w=${w}`)
+      await page.waitForSelector('#lad', { timeout: 5000 })
+      await page.waitForTimeout(600)
+      if (!(await page.locator('#lad line, #lad path').count())) throw new Error(`ladder did not draw at ${w}px`)
+      await page.addScriptTag({ content: axe })
+      const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] })).violations.map((x) => `${x.id} (${x.nodes.length})`))
+      if (v.length) throw new Error(`embedded lab at ${w}px: ${v.join(', ')}`)
+    }
+    await page.setViewportSize({ width: 1366, height: 900 })
+    await page.goto(`${BASE}?machine=1#/studio/plc/lab/bottle-filler`)
+    const frame = page.frameLocator('iframe[title^="PLC Ladder Lab"]')
+    await frame.locator('#lad').waitFor({ timeout: 8000 })
+  } catch (e) { failures++; console.log(`✗ [${theme}] PLC machine lab: ${e.message}`) }
   // Owner decision (2026-11-26): on desktop the menu is hidden until asked for, search stays in the top bar.
   try {
     await page.setViewportSize({ width: 1366, height: 900 })
