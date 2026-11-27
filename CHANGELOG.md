@@ -16,6 +16,14 @@
 - The landing page's "IE career map" tile is now "Certifications"; the subway map is still in the menu.
 - The old free-text "Shows up in" line on lessons is replaced by the linked badges.
 
+## Unreleased — branch `v3/register-and-dst-fix` (2026-11-26)
+
+### Fixed
+- The “Last 7 days” row on the landing page counts calendar days, so a daylight-saving change can no longer show one date twice and skip another (Codex review on PR #24). Test pinned to New York time on 1 November 2026.
+
+### Docs
+- `docs/IMPLEMENTATION-STATUS.md` now records PRs #18–#24 with their evidence, and marks the old quick preview as replaced. The register had fallen behind the changelog.
+
 ## Unreleased — branch `v3/plc-bottle-filler` (2026-11-27)
 
 ### Added

@@ -215,6 +215,15 @@ export function statusOf(p: ConceptProgress | undefined, c: SrsCard | undefined)
   return 'learning'
 }
 
+/** The last `n` local calendar dates, oldest first, ending with `from`'s date. Steps by calendar day, not by
+ * 24 hours, so a daylight-saving change can't repeat or skip a date. */
+export function lastDays(n: number, from = new Date()): Date[] {
+  const d = new Date(from)
+  const out: Date[] = []
+  for (let i = 0; i < n; i++) { out.unshift(new Date(d)); d.setDate(d.getDate() - 1) }
+  return out
+}
+
 export function streak(activity: Record<string, number>): number {
   let n = 0
   const d = new Date()
