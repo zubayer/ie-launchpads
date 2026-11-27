@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased — branch `v3/plc-bottle-filler` (2026-11-27)
+
+### Added
+- **Machine lab: bottle filler** in the PLC studio (`/studio/plc/lab/bottle-filler`). It is Zubayer's PLC Ladder Lab ([github.com/zubayer/PLCLadderLogic](https://github.com/zubayer/PLCLadderLogic), built for IE 5355 at Texas Tech), embedded with credit and a full-screen link. Next to it:
+  - a table matching the lab's Siemens S7 addresses to the studio's Logix tags
+  - the lab's Auto cycle program running on the studio engine, with its scenario table
+- **Sequences lesson:** a new worked example, “A bottle filler with one latch and one timer”, tested scan by scan, and a new common mistake, “Full as a plain coil: the bottle never leaves”.
+- The browser audit checks the embedded lab on its own, wide and phone-sized, and loads it inside the studio page.
+
+### Changed (embedded copy only)
+- Accessibility fixes, listed at the top of `public/labs/plc-bottle-filler/index.html`:
+  - step-button contrast
+  - interactive drawings marked as groups
+  - a readable scale on phones, with scrolling instead of shrinking
+  - a relative favicon path
+  - keyboard focus kept on a ladder symbol across redraws (the original lost it every ~0.1 s while the timer ran), so keyboard users can open the symbol inspector
+
 ## Unreleased — branch `v3/landing-v2` (2026-11-26)
 
 ### Changed

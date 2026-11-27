@@ -29,6 +29,7 @@ const SqlStudio = page(() => import('./pages/SqlStudio'), 'SqlStudio')
 const SqlLessonPage = page(() => import('./pages/SqlStudio'), 'SqlLessonPage')
 const PlcStudio = page(() => import('./pages/PlcStudio'), 'PlcStudio')
 const PlcLessonPage = page(() => import('./pages/PlcStudio'), 'PlcLessonPage')
+const PlcMachineLab = page(() => import('./pages/PlcStudio'), 'PlcMachineLab')
 const CadStudio = page(() => import('./pages/CadStudio'), 'CadStudio')
 const CadLessonPage = page(() => import('./pages/CadStudio'), 'CadLessonPage')
 const PathwayPage = page(() => import('./pages/Pathways'), 'PathwayPage')
@@ -85,6 +86,7 @@ export default function App() {
           <Route path="studio/sql" element={<SqlStudio />} />
           <Route path="studio/sql/:lesson" element={<SqlLessonPage />} />
           <Route path="studio/plc" element={<PlcStudio />} />
+          <Route path="studio/plc/lab/bottle-filler" element={<PlcMachineLab />} />
           <Route path="studio/plc/:lesson" element={<PlcLessonPage />} />
           <Route path="studio/cad" element={<CadStudio />} />
           <Route path="studio/cad/:lesson" element={<CadLessonPage />} />
