@@ -6,7 +6,7 @@
 import type { Citation } from '../../types'
 import { pulses, type Device, type Op, type Step } from '../../lib/ladder'
 
-export interface PlcExample { id: string; title: string; question: string; program: string; devices: Device[]; script: Step[]; show: string[]; explain: string[]; takeaway: string }
+export interface PlcExample { id: string; title: string; question: string; program: string; devices: Device[]; script: Step[]; show: string[]; explain: string[]; takeaway: string; lab?: { to: string; label: string } }
 export interface PlcMistake { id: string; title: string; wrong: string; fix: string; devices: Device[]; wrongDevices?: Device[]; script: Step[]; show: string[]; why: string }
 export interface PlcTask { id: string; task: string; hint: string; solution: string; devices: Device[]; script: Step[]; show: string[]; starter?: string; forbid?: Op[] }
 export interface PlcCheck { id: string; q: string; options: string[]; answer: number; why: string }
@@ -38,6 +38,21 @@ const push = (tag: string, label: string, wiring?: 'NO' | 'NC'): Device => ({ ta
 const toggle = (tag: string, label: string, wiring?: 'NO' | 'NC'): Device => ({ tag, label, kind: 'toggle', wiring })
 const START = push('Start_PB', 'Start (NO)')
 const STOP = push('Stop_PB', 'Stop (NC)', 'NC')
+
+/** Auto cycle of the bottle filler machine lab (S7 in the lab: I0.0, Q0.0, Q0.1, M0.0). Rung for rung, except that the
+ * lab's rung 3 (TON with a Set coil on its Q) is two rungs here, because the timer's DN bit is read on the next rung. */
+export const BOTTLE_FILLER = [
+  '// 1. Belt runs while no bottle is at the sensor, or once the bottle is full',
+  '[XIO(Bottle_At_Sensor), XIC(Full)] OTE(Belt_Motor)',
+  '// 2. Fill while a bottle waits, the belt is stopped and it isn’t full yet',
+  'XIC(Bottle_At_Sensor) XIO(Belt_Motor) XIO(Full) OTE(Fill_Valve)',
+  '// 3. Time the filling: 3 s',
+  'XIC(Fill_Valve) TON(Fill_T, 3000)',
+  '// 4. Timer done: latch Full',
+  'XIC(Fill_T.DN) OTL(Full)',
+  '// 5. The bottle has left the beam: unlatch Full for the next one',
+  'XIO(Bottle_At_Sensor) OTU(Full)',
+].join('\n')
 
 const RA = 'https://www.rockwellautomation.com/en-us/docs/studio-5000-logix-designer/38-01/contents-ditamap/instruction-set'
 const RA2 = 'https://www.rockwellautomation.com/en-pr/docs/studio-5000-logix-designer/38-02/contents-ditamap/instruction-set'
@@ -749,6 +764,24 @@ export const PLC_LESSONS: PlcLesson[] = [
         takeaway: 'Seven rungs of transitions and three of outputs describe the whole machine, and anyone can see which step it is stuck in from one number.',
       },
       {
+        id: 'bottle-filler', title: 'A bottle filler with one latch and one timer', question: 'A conveyor brings bottles under a filling valve. Stop the belt when a bottle reaches the sensor, fill for 3 s, then move it on and get ready for the next bottle.',
+        // The Auto cycle program of Zubayer's PLC Ladder Lab (github.com/zubayer/PLCLadderLogic), in Logix form.
+        // There it is S7 style: I0.0 sensor, Q0.0 belt motor, Q0.1 filling valve, M0.0 Full, TON PT 3 s.
+        program: BOTTLE_FILLER,
+        devices: [toggle('Bottle_At_Sensor', 'Bottle at the sensor')], show: ['Belt_Motor', 'Fill_Valve', 'Fill_T.ACC', 'Full'],
+        script: [
+          { hold: 100, expect: { Belt_Motor: 1, Fill_Valve: 0, Full: 0 }, say: 'No bottle at the sensor: the belt runs' },
+          { set: { Bottle_At_Sensor: 1 }, hold: 1000, expect: { Belt_Motor: 0, Fill_Valve: 1, 'Fill_T.ACC': 1000, Full: 0 }, say: 'A bottle arrives: belt stops, valve opens, the timer counts' },
+          { hold: 2100, expect: { Full: 1, Fill_Valve: 0, Belt_Motor: 1, 'Fill_T.ACC': 0 }, say: '3 s of filling: Full latches, the valve shuts, the belt restarts' },
+          { hold: 500, expect: { Full: 1, Fill_Valve: 0, Belt_Motor: 1 }, say: 'Bottle still in the beam: Full holds, so the valve stays shut' },
+          { set: { Bottle_At_Sensor: 0 }, hold: 100, expect: { Full: 0, Belt_Motor: 1, Fill_Valve: 0 }, say: 'The bottle leaves the beam: Full resets for the next one' },
+          { set: { Bottle_At_Sensor: 1 }, hold: 500, expect: { Belt_Motor: 0, Fill_Valve: 1, Full: 0 }, say: 'The next bottle: the cycle repeats' },
+        ],
+        explain: ['Full is the memory of “this bottle is done”. Without the latch the valve would reopen as soon as the timer reset.', 'Full also bypasses the sensor on rung 1, so a full bottle can drive itself out of the beam.', 'Unlatching on the sensor going clear (rung 5) arms the machine for the next bottle.'],
+        takeaway: 'A two-state machine doesn’t need a step number: one latch and one timer carry the cycle. Add stations (cap, label) and a step register like the tank above becomes easier to read.',
+        lab: { to: '/studio/plc/lab/bottle-filler', label: 'Watch it run on the machine' },
+      },
+      {
         id: 'watchdog', title: 'A watchdog for a step that hangs', question: 'Filling should take under 5 s. If it doesn’t, latch a fault, stop filling, and refuse to start until the fault is reset.',
         program: 'EQU(Step, 0) XIC(Start_PB) MOV(1, Step)\nEQU(Step, 1) XIC(Level_High) MOV(2, Step)\n// Watchdog: filling should take under 5 s\nEQU(Step, 1) TON(Fill_WD, 5000)\nXIC(Fill_WD.DN) OTL(Fill_Fault)\n// A latched fault holds the sequence in step 0\nXIC(Fill_Fault) MOV(0, Step)\nXIC(Fault_Reset) OTU(Fill_Fault)\nEQU(Step, 1) OTE(Fill_Valve)',
         devices: [START, toggle('Level_High', 'Level at high switch'), push('Fault_Reset', 'Fault reset')], show: ['Step', 'Fill_Valve', 'Fill_Fault'],
@@ -764,6 +797,17 @@ export const PLC_LESSONS: PlcLesson[] = [
       },
     ],
     mistakes: [
+      {
+        id: 'bottle-no-latch', title: 'Full as a plain coil: the bottle never leaves',
+        wrong: BOTTLE_FILLER.replace('XIC(Fill_T.DN) OTL(Full)', 'XIC(Fill_T.DN) OTE(Full)'),
+        fix: BOTTLE_FILLER,
+        devices: [toggle('Bottle_At_Sensor', 'Bottle at the sensor')], show: ['Belt_Motor', 'Fill_Valve', 'Fill_T.ACC', 'Full'],
+        script: [
+          { set: { Bottle_At_Sensor: 1 }, hold: 3100, expect: { Full: 1, Fill_Valve: 0, Belt_Motor: 1 }, say: 'A bottle waits 3.1 s: it should be full and moving on' },
+          { hold: 500, expect: { Full: 1, Fill_Valve: 0 }, say: 'Still in the beam: the valve must stay shut' },
+        ],
+        why: 'With OTE, Full is on for one scan only: the valve shuts, so the timer resets, so DN drops, so Full drops, so the valve opens again and the same bottle refills forever. OTL keeps Full on until the bottle has left the beam.',
+      },
       {
         id: 'seq-double-jump', title: 'One press, three steps', wrong: 'EQU(Step, 0) XIC(Next_PB) MOV(1, Step)\nEQU(Step, 1) XIC(Next_PB) MOV(2, Step)\nEQU(Step, 2) XIC(Next_PB) MOV(3, Step)',
         fix: 'XIC(Next_PB) ONS(Next_ONS) OTE(Next)\n// Transitions in reverse order, so a step can’t advance twice in one scan\nEQU(Step, 2) XIC(Next) MOV(3, Step)\nEQU(Step, 1) XIC(Next) MOV(2, Step)\nEQU(Step, 0) XIC(Next) MOV(1, Step)',

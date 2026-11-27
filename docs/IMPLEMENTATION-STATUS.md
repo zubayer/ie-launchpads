@@ -2,7 +2,7 @@
 
 The single registry of what exists. Statuses: **Planned** → **In development** → **Implemented** (code merged) → **Tested** (automated tests and a browser run passed) → **Verified** (a named human reviewed it). **Blocked** means it can't proceed without something outside the repo. Nothing here is Verified yet: no human expert review has happened.
 
-Last updated 2026-11-26, branch `v3/register-and-dst-fix` (adds PRs #18–#24). The V3 register is `docs/V3-EXECUTION-PLAN.md`.
+Last updated 2026-11-27 (adds PRs #18–#26). The V3 register is `docs/V3-EXECUTION-PLAN.md`.
 
 ## Baseline (from V1, preserved)
 
@@ -87,6 +87,18 @@ Owner requests, built one PR at a time. Live services (Wikipedia, Pollinations, 
 | Landing page: three doors (look up, train for a job, practise), one search box, welcome-back bar for returning learners only — PR #23 | Tested | Audit: first visit in a fresh browser context (`data-visitor="first"`), returning learner sees the bar, “Search terms” opens search; Do next and focus timer moved to Daily plan |
 | Landing page v2: four topic cards with each lesson's tested worked result, progress panel from saved data, 12 domain cards, 8 tool/skill tiles, footer link columns from the menu — PR #24 | Tested | `src/content/landing.test.ts` (card results match recomputed examples; 12 real domains); audit checks the cards; screenshots light/dark/phone |
 | Last-7-days activity row uses calendar days (no repeated or skipped date at a daylight-saving change) | Tested | `lastDays()` in `src/lib/store.ts`; DST test in `src/lib/store.test.ts` |
+## PLC machine lab: bottle filler (branch `v3/plc-bottle-filler`, 2026-11-27)
+
+Owner request: integrate Zubayer's standalone PLC Ladder Lab (github.com/zubayer/PLCLadderLogic) into the PLC studio. Owner chose option 3: embed the lab and verify its logic on the studio engine. The original repo stays separate; merging the two later is the owner's call.
+
+| Feature | Status | Evidence |
+|---|---|---|
+| Embedded lab at `/studio/plc/lab/bottle-filler` (iframe of `public/labs/plc-bottle-filler/`), credits and source link, S7 ↔ Logix address table, link from the studio index | Tested | Audit loads the route and waits for the ladder inside the frame |
+| Accessibility fixes in the embedded copy (step-button contrast, `role="group"` on clickable drawings, readable scale and scrolling under 900 px, relative favicon, keyboard focus kept across ladder redraws), listed at the top of the file | Tested | Audit runs axe on the embedded page itself at 1366 and 390 px: 0 violations (the original had contrast 1, nested-interactive 2, target-size 14 on phones); the audit also checks a focused ladder symbol keeps focus while the timer runs (the original lost it within 1.2 s) |
+| Auto cycle as a worked example in the Sequences lesson (`BOTTLE_FILLER` in `src/content/plc/course.ts`) | Tested | `src/lib/plc.test.ts`: the six-step scenario (arrive, fill 3 s, latch Full, restart, leave, reset, next bottle) passes on the ladder engine |
+| Common mistake “Full as a plain coil” | Tested | Same suite: the OTE version fails (the valve reopens and refills the same bottle) and the OTL fix passes |
+
+Limits: the lab keeps its own simulation code and dark look (no light theme), and loads Google Fonts when online (it falls back to system fonts offline). Updates to the original repo are copied over by hand.
 
 ## Known limitations
 

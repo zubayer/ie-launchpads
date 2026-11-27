@@ -265,7 +265,7 @@ export default function Layout() {
         <div className="flex h-full flex-col">
           <div className="flex items-start justify-between gap-2 px-5 pb-4 pt-5">
             <NavLink to="/" className="block">
-              <span className="display block text-[1.42rem] leading-none">IE Launchpad V2</span>
+              <span className="display block text-[1.42rem] leading-none">Zubayer's Industrial Zoo</span>
               <span className="mt-1 block text-sm text-ink-2">Coursework to job offer</span>
             </NavLink>
             {wide ? (
@@ -317,7 +317,7 @@ export default function Layout() {
               Menu
             </button>
           )}
-          {!docked && <NavLink to="/" className="display hidden shrink-0 text-lg sm:block">IE Launchpad</NavLink>}
+          {!docked && <NavLink to="/" className="display hidden shrink-0 text-lg sm:block">Zubayer's Industrial Zoo</NavLink>}
           <button type="button" onClick={() => setPalette(true)} aria-label={`Search ${CONCEPTS.length} terms`}
             className="flex min-w-0 max-w-3xl flex-1 items-center justify-between gap-3 rounded-md border border-line bg-sheet px-3 py-1.5 text-left text-sm text-ink-2 hover:border-ink">
             <span className="truncate">Search {CONCEPTS.length} terms: FMEA, takt time, Cpk…</span>
@@ -340,7 +340,7 @@ export default function Layout() {
               </div>
             ))}
           </nav>
-          <p className="mt-8">IE Launchpad V2. Progress is saved in this browser. Export it from <NavLink className="underline" to="/progress">Progress</NavLink> to move devices.</p>
+          <p className="mt-8">Zubayer's Industrial Zoo. Progress is saved in this browser. Export it from <NavLink className="underline" to="/progress">Progress</NavLink> to move devices.</p>
         </footer>
       </div>
       <SearchPalette open={palette} onClose={() => setPalette(false)} />
