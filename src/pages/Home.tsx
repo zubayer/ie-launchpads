@@ -37,7 +37,8 @@ export default function Home() {
   const returning = Object.values(progress).some((p) => p.opened) || Object.keys(cards).length > 0
 
   return (
-    <div>
+    // data-visitor is decided synchronously (the welcome bar itself loads lazily), so tests can rely on it.
+    <div data-visitor={returning ? 'returning' : 'first'}>
       {returning && <Suspense fallback={null}><WelcomeBack /></Suspense>}
 
       <section className="grid items-start gap-8 xl:grid-cols-[1.15fr_1fr] xl:gap-10">

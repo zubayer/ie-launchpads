@@ -100,21 +100,29 @@ for (const theme of ['light', 'dark']) {
     await page.getByRole('heading',{name:'Engineering abbreviation dictionary',exact:true}).waitFor()
   } catch(e) { failures++; console.log('✗ ['+theme+'] dictionary: '+e.message) }
   // Owner decision (2026-11-26, "Option A"): the landing page opens on three doors and a lesson preview;
-  // first-time visitors see no zero counters, and the top bar holds the only search box.
+  // first-time visitors see no welcome bar, returning learners do, and the top bar holds the only search box.
+  // This page has already opened lessons above, so it is a returning learner; the first visit runs in a fresh context.
   try {
     await page.setViewportSize({ width: 1366, height: 900 })
-    await page.goto(`${BASE}?landing=1#/`)
-    await page.waitForSelector('#main h1')
-    for (const door of ['Look up a term', 'Train for a job', 'Practise hands-on']) {
-      if (!(await page.getByRole('heading', { name: door, exact: true }).isVisible())) throw new Error(`door "${door}" is missing`)
-    }
-    if (await page.locator('#main input').count()) throw new Error('a second search box is back on the landing page')
-    if (await page.getByText(/Welcome back/).count()) throw new Error('a first-time visitor sees the welcome-back bar')
-    await page.getByRole('tab', { name: 'The math' }).waitFor()
-    await page.getByRole('button', { name: /Search terms/ }).click()
-    await page.waitForTimeout(250)
-    if (!(await page.getByRole('dialog').count())) throw new Error('"Search terms" did not open the search')
-    await page.keyboard.press('Escape')
+    await page.goto(`${BASE}?landing=back#/`)
+    if (await page.locator('[data-visitor="returning"]').count() !== 1) throw new Error('a learner with saved progress is not treated as returning')
+    await page.getByRole('heading', { name: 'Welcome back.' }).waitFor({ timeout: 5000 }).catch(() => { throw new Error('a returning learner does not see the welcome-back bar') })
+    const fresh = await browser.newContext({ viewport: { width: 1366, height: 900 }, reducedMotion: 'reduce' })
+    await fresh.route(/^https?:\/\/(?!localhost)/, (r) => r.abort())
+    await fresh.addInitScript((t) => { if (!localStorage.getItem('ie-launchpads-v2')) localStorage.setItem('ie-launchpads-v2', JSON.stringify({ state: { settings: { theme: t } }, version: 3 })) }, theme)
+    const first = await fresh.newPage()
+    try {
+      await first.goto(`${BASE}?landing=first#/`)
+      await first.waitForSelector('#main h1')
+      for (const door of ['Look up a term', 'Train for a job', 'Practise hands-on']) {
+        if (!(await first.getByRole('heading', { name: door, exact: true }).isVisible())) throw new Error(`door "${door}" is missing`)
+      }
+      if (await first.locator('#main input').count()) throw new Error('a second search box is back on the landing page')
+      // The welcome bar loads lazily, so its absence proves nothing at a given instant; the visitor decision is synchronous.
+      if (await first.locator('[data-visitor="first"]').count() !== 1) throw new Error('a first-time visitor is treated as returning (would see the welcome-back bar)')
+      await first.getByRole('button', { name: /Search terms/ }).click()
+      await first.getByRole('dialog').waitFor({ timeout: 2000 }).catch(() => { throw new Error('"Search terms" did not open the search') })
+    } finally { await fresh.close() }
   } catch (e) { failures++; console.log(`✗ [${theme}] landing page: ${e.message}`) }
   // Owner decision (2026-11-26): on desktop the menu is hidden until asked for, search stays in the top bar.
   try {
