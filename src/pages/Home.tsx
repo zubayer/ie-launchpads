@@ -1,33 +1,42 @@
-import { Suspense, lazy, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { Suspense, lazy, useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { CONCEPTS, CONCEPT_MAP } from '../content'
 import { DOMAINS, DOMAIN_MAP } from '../content/domains'
 import { ROLES } from '../content/roles'
-import { useConcept } from '../content/load'
+import { HERO_CARDS, LANDING_DOMAINS, type HeroCard } from '../content/landing'
 import { SIM_META } from '../sims/registry'
 import { useStore } from '../lib/store'
 import { Tex } from '../components/ui'
 import { openSearch } from '../components/Layout'
-import type { Concept } from '../types'
+import { LandingIcon } from '../components/LandingIcons'
 
 /*
- * Landing page, owner decision 2026-11-26 ("Option A — three doors"):
- * 1. returning learners get one "welcome back" bar (first-time visitors never see zeros);
- * 2. the hero asks what the visitor came to do: look up a term, train for a job, or practise hands-on;
- * 3. a real lesson can be tried right on the page; 4. the four moves every lesson follows;
- * 5. role paths as cards; 6. the studios; 7. every domain. The top bar holds the only search box.
+ * Landing page. Owner decisions 2026-11-26: "Option A — three doors", then ideas taken from the owner's
+ * reference image: four topic cards in the hero, a progress panel for returning learners, the learning
+ * steps with icons, twelve domain cards, featured tools and skills, and footer link columns (in Layout).
+ * Every number on the page comes from the lessons (tested in landing.test.ts) or the learner's saved data.
  */
+
+const FEATURED_ROLES = ['industrial-engineer', 'quality-engineer', 'manufacturing-engineer', 'process-engineer-semi', 'ci-engineer', 'data-analyst']
 
 const WelcomeBack = lazy(() => import('../components/WelcomeBack'))
 
-const PREVIEW_ID = 'lean.takt-time'
-const FEATURED_ROLES = ['industrial-engineer', 'quality-engineer', 'manufacturing-engineer', 'process-engineer-semi', 'ci-engineer', 'data-analyst']
+const STEPS = [
+  { name: 'Understand', icon: 'understand', color: 'var(--color-sblue)', text: 'Plain meaning, an analogy, a picture and live sources from the web.', parts: 'Keyword · Live from the web · Plain meaning · Analogy · Picture it' },
+  { name: 'Calculate', icon: 'calculate', color: 'var(--color-tape-ink)', text: 'The formula and a worked example whose numbers are checked.', parts: 'Why it matters · The math · Worked example' },
+  { name: 'Apply', icon: 'apply', color: 'var(--color-sgreen)', text: 'Where it shows up at work, which jobs use it, and a simulator.', parts: 'On the job · Jobs that need it · Simulate it' },
+  { name: 'Prove it', icon: 'prove', color: 'var(--color-sred)', text: 'A quick check, an interview question and a teach-back.', parts: 'Check yourself · Interview · Teach it back' },
+]
 
-const MOVES = [
-  { name: 'Understand', q: 'What is it, in plain words?', color: 'var(--color-sblue)', parts: ['Keyword', 'Live from the web', 'Plain meaning', 'Analogy', 'Picture it'] },
-  { name: 'Calculate', q: 'How do I work it out?', color: 'var(--color-tape)', parts: ['Why it matters', 'The math', 'Worked example'] },
-  { name: 'Apply', q: 'Where does it show up at work?', color: 'var(--color-sgreen)', parts: ['On the job', 'Jobs that need it', 'Simulate it'] },
-  { name: 'Prove it', q: 'Can I explain it under pressure?', color: 'var(--color-sred)', parts: ['Check yourself', 'Interview', 'Teach it back', 'Review deck'] },
+const FEATURES: { to: string; icon: string; title: string; text: string }[] = [
+  { to: '/c/lean.takt-time', icon: 'studio', title: 'Topic Intelligence Studio', text: 'Every lesson in stages: discover, visualize, experiment, master.' },
+  { to: '/compare', icon: 'compare', title: 'Advanced comparison', text: 'Put related concepts side by side: Cp vs Cpk, SPC vs capability.' },
+  { to: '/formulas', icon: 'equation', title: 'Equation Explorer', text: 'Key IE equations with notation, variables and live examples.' },
+  { to: '/dictionary', icon: 'dictionary', title: 'Engineering dictionary', text: 'Abbreviations and terms, linked to their lessons.' },
+  { to: '/interview', icon: 'interview', title: 'Interview prep', text: 'Practice questions with hints, follow-ups and model answers.' },
+  { to: '/mysteries', icon: 'cases', title: 'Shop-floor cases', text: 'Illustrative factory problems to diagnose with IE methods.' },
+  { to: '/tools', icon: 'tools', title: 'Tools & software', text: 'What Excel, Minitab, simulation and PLC tools are used for.' },
+  { to: '/subway', icon: 'career', title: 'IE career map', text: 'How the domains connect to the jobs, line by line.' },
 ]
 
 export default function Home() {
@@ -37,11 +46,11 @@ export default function Home() {
   const returning = Object.values(progress).some((p) => p.opened) || Object.keys(cards).length > 0
 
   return (
-    // data-visitor is decided synchronously (the welcome bar itself loads lazily), so tests can rely on it.
+    // data-visitor is decided synchronously (the progress panel itself loads lazily), so tests can rely on it.
     <div data-visitor={returning ? 'returning' : 'first'}>
       {returning && <Suspense fallback={null}><WelcomeBack /></Suspense>}
 
-      <section className="grid items-start gap-8 xl:grid-cols-[1.15fr_1fr] xl:gap-10">
+      <section className="grid items-start gap-8 xl:grid-cols-[1.1fr_1fr] xl:gap-10">
         <div>
           <h1 className="display text-[2.4rem] sm:text-6xl">Learn industrial engineering the way the job uses it.</h1>
           <p className="measure mt-4 text-lg text-ink-2">
@@ -57,29 +66,70 @@ export default function Home() {
               action={<Link to="/lab" className="door-go">Open the lab →</Link>} />
           </ul>
         </div>
-        <LessonPreview />
+        <section aria-labelledby="sample-h">
+          <h2 id="sample-h" className="sr-only">Sample lessons</h2>
+          <ul className="grid grid-cols-2 gap-3">
+            {HERO_CARDS.map((c) => <TopicCard key={c.id} card={c} />)}
+          </ul>
+          <p className="mt-2 text-xs text-ink-2">Results are from each lesson's own worked example.</p>
+        </section>
       </section>
 
-      <section className="mt-14" aria-labelledby="moves-h">
-        <h2 id="moves-h" className="wide text-2xl">Every lesson follows the same four moves</h2>
-        <p className="mt-1 text-ink-2">Stop after any move. Come back to the next one when you need it.</p>
-        <ol className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4 xl:gap-0">
-          {MOVES.map((m, i) => (
-            <li key={m.name} className={`sheet relative rounded-lg p-4 md:p-5 xl:rounded-none ${i === 0 ? 'xl:rounded-l-lg' : 'xl:border-l-0'} ${i === MOVES.length - 1 ? 'xl:rounded-r-lg' : ''}`}>
-              <h3 className="flex items-center gap-2 text-lg font-bold">
-                <span aria-hidden className="h-2.5 w-2.5 rounded-sm" style={{ background: m.color }} />
-                <span><span className="sr-only">Move {i + 1}: </span>{m.name}</span>
-              </h3>
-              <p className="mt-1 text-sm text-ink-2">{m.q}</p>
-              <ul className="mt-3 hidden flex-wrap gap-1.5 md:flex" aria-label={`${m.name} sections`}>
-                {m.parts.map((p) => <li key={p} className="rounded border border-line px-2 py-0.5 text-[0.8rem]">{p}</li>)}
-              </ul>
-              {i < MOVES.length - 1 && (
-                <span aria-hidden className="absolute -right-3 top-1/2 z-10 hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-paper text-[0.7rem] text-tape xl:flex">▶</span>
-              )}
+      <section className="mt-14" aria-labelledby="steps-h">
+        <h2 id="steps-h" className="wide text-2xl">How every lesson works</h2>
+        <p className="mt-1 text-ink-2">Four steps, from the plain meaning to the interview answer. Stop after any step.</p>
+        <ol className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
+          {STEPS.map((st, i) => (
+            <li key={st.name} className="sheet relative flex items-center gap-3 rounded-lg p-3 sm:items-start md:p-5">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-grid" style={{ color: st.color }}><LandingIcon name={st.icon} className="h-6 w-6" /></span>
+              <span className="min-w-0">
+                <h3 className="text-lg font-bold"><span className="sr-only">Step {i + 1}: </span>{st.name}</h3>
+                <span className="hidden text-sm text-ink-2 sm:block">{st.text}</span>
+                <span className="mt-2 hidden text-xs text-ink-2 md:block">{st.parts}</span>
+              </span>
+              {i < STEPS.length - 1 && <span aria-hidden className="absolute -right-3 top-1/2 z-10 hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-paper text-[0.7rem] text-tape xl:flex">▶</span>}
             </li>
           ))}
         </ol>
+      </section>
+
+      <section className="mt-14" aria-labelledby="domains-h">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="domains-h" className="wide text-2xl">Explore core IE domains</h2>
+          <Link to="/domains" className="font-semibold text-sblue hover:underline">All {DOMAINS.length} domains →</Link>
+        </div>
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          {LANDING_DOMAINS.map((id, i) => {
+            const d = DOMAIN_MAP[id]
+            return (
+              <li key={id} className={i >= 6 ? 'hidden sm:block' : ''}>
+                <Link to={`/d/${id}`} className="sheet flex h-full gap-3 rounded-lg p-4 hover:border-sblue">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg" style={{ background: `color-mix(in srgb, ${d.tape} 16%, transparent)`, color: `color-mix(in srgb, ${d.tape} 70%, var(--color-ink))` }}><LandingIcon name={id} className="h-6 w-6" /></span>
+                  <span className="min-w-0">
+                    <span className="flex items-baseline justify-between gap-2"><span className="font-bold">{d.name}</span><span className="shrink-0 text-xs text-ink-2">{CONCEPTS.filter((c) => c.domain === id).length} lessons</span></span>
+                    <span className="mt-0.5 line-clamp-2 hidden text-sm text-ink-2 sm:block">{d.blurb}</span>
+                  </span>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+
+      <section className="mt-14" aria-labelledby="features-h">
+        <h2 id="features-h" className="wide text-2xl">Tools and skills for the real job</h2>
+        <p className="mt-1 text-ink-2">Look things up, compare, calculate, then practise the interview and the shop floor.</p>
+        <ul className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {FEATURES.map((f) => (
+            <li key={f.to}>
+              <Link to={f.to} className="sheet flex h-full flex-col gap-2 rounded-lg p-4 hover:border-sblue">
+                <LandingIcon name={f.icon} className="h-7 w-7 text-sblue" />
+                <span className="font-bold leading-snug">{f.title}</span>
+                <span className="hidden text-sm text-ink-2 sm:block">{f.text}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <Roles path={path} />
@@ -94,20 +144,6 @@ export default function Home() {
           <Tool to="/studio/sql" title="SQL studio" text="Query a practice plant database in your browser." art={<SqlArt />} />
           <Tool to="/studio/plc" title="PLC studio" text="Write ladder logic and run it against a scenario." art={<LadderArt />} />
           <Tool to="/studio/cad" title="CAD studio" text="Constrain a sketch, mate parts, check a beam by hand." art={<CadArt />} />
-        </ul>
-      </section>
-
-      <section className="mt-14" aria-labelledby="domains-h">
-        <h2 id="domains-h" className="wide text-2xl">Or browse all {DOMAINS.length} domains</h2>
-        <ul className="mt-4 flex flex-wrap gap-2">
-          {DOMAINS.map((d) => (
-            <li key={d.id}>
-              <Link to={`/d/${d.id}`} className="sheet flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold hover:border-sblue">
-                <span aria-hidden className="h-2.5 w-2.5 rounded-sm" style={{ background: d.tape }} />
-                {d.name} <span className="font-normal text-ink-2">{CONCEPTS.filter((c) => c.domain === d.id).length}</span>
-              </Link>
-            </li>
-          ))}
         </ul>
       </section>
     </div>
@@ -125,77 +161,54 @@ function Door({ n, title, text, action, primary }: { n: number; title: string; t
   )
 }
 
-/* ---------- 2. A real lesson, tried on the page ---------- */
+/* ---------- Hero: four topic cards, results from the lessons' own worked examples ---------- */
 
-const TABS = ['Plain meaning', 'The math', 'On the job', 'Interview'] as const
-
-function LessonPreview() {
-  const idx = CONCEPT_MAP[PREVIEW_ID]
-  const full = useConcept(PREVIEW_ID)
-  const [tab, setTab] = useState(1)
-  const [answer, setAnswer] = useState(false)
-  const base = useId()
-  const refs = useRef<(HTMLButtonElement | null)[]>([])
-  const key = (e: KeyboardEvent) => {
-    const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0
-    if (!d) return
-    e.preventDefault()
-    const n = (tab + d + TABS.length) % TABS.length
-    setTab(n); refs.current[n]?.focus()
-  }
-  if (!idx) return null
-  const c = full.data as Concept | undefined
+function TopicCard({ card }: { card: HeroCard }) {
+  const c = CONCEPT_MAP[card.id]
+  if (!c) return null
+  const d = DOMAIN_MAP[c.domain]
   return (
-    <section aria-labelledby={`${base}-h`} className="sheet overflow-hidden rounded-lg">
-      <div className="px-5 pb-3 pt-5">
-        <p className="text-sm text-ink-2">A lesson, tried right here</p>
-        <h2 id={`${base}-h`} className="display mt-2 text-3xl">{idx.term}</h2>
-        <p className="mt-1 text-ink-2">{idx.one}</p>
-      </div>
-      <div role="tablist" aria-label={`${idx.term} lesson parts`} className="flex gap-1 overflow-x-auto border-b border-line px-3" onKeyDown={key}>
-        {TABS.map((t, i) => (
-          <button key={t} ref={(el) => { refs.current[i] = el }} type="button" role="tab" id={`${base}-t${i}`} aria-selected={tab === i} aria-controls={`${base}-p`}
-            tabIndex={tab === i ? 0 : -1} onClick={() => setTab(i)}
-            className={`shrink-0 border-b-[3px] px-3 py-2 text-sm font-semibold ${tab === i ? 'border-tape text-ink' : 'border-transparent text-ink-2 hover:text-ink'}`}>{t}</button>
-        ))}
-      </div>
-      <div role="tabpanel" id={`${base}-p`} aria-labelledby={`${base}-t${tab}`} className="min-h-[13rem] px-5 py-4 text-[0.95rem]">
-        {!c ? <p className="text-ink-2">{full.error ? 'This lesson could not load. Open the full lesson instead.' : 'Loading the lesson…'}</p>
-          : tab === 0 ? <p>{c.def}</p>
-          : tab === 1 ? (
-            <>
-              {c.formula && <div className="overflow-x-auto py-1 text-center"><Tex tex={c.formula.tex} block /></div>}
-              {c.example && (
-                <div className="mt-3 rounded-md bg-grid px-4 py-3">
-                  <p><span className="font-semibold">Worked example:</span> {c.example.q}</p>
-                  <ol className="mt-1 list-decimal pl-5 text-ink-2">{c.example.steps.map((s) => <li key={s}>{s}</li>)}</ol>
-                  <p className="mt-1 font-semibold text-tape-ink">{c.example.a}</p>
-                </div>
-              )}
-            </>
-          )
-          : tab === 2 ? (
-            c.real ? (
-              <div>
-                <p className="label">{c.real.where}{c.real.kind !== 'documented' && <span className="ml-2 chip">Illustrative</span>}</p>
-                <p className="mt-1">{c.real.story}</p>
-                {c.used?.roles?.length ? <p className="mt-3 text-sm text-ink-2">Used by: {c.used.roles.slice(0, 4).join(', ')}</p> : null}
-              </div>
-            ) : <p className="text-ink-2">Open the full lesson to see how it is used at work.</p>
-          )
-          : c.iq?.[0] ? (
-            <div className="rounded-r-md border-l-[3px] border-sblue bg-sblue/5 px-4 py-3">
-              <p className="font-semibold">“{c.iq[0].q}”</p>
-              <button type="button" className="mt-2 text-sm underline" aria-expanded={answer} onClick={() => setAnswer(!answer)}>{answer ? 'Hide' : 'Show'} a model answer</button>
-              {answer && <p className="mt-2 text-ink-2">{c.iq[0].a}</p>}
-            </div>
-          ) : <p className="text-ink-2">Open the full lesson for interview practice.</p>}
-      </div>
-      <div className="flex flex-wrap gap-2 px-5 pb-5">
-        <Link to={`/c/${PREVIEW_ID}`} className="btn btn-ghost">Open the full lesson</Link>
-        {c?.sim && SIM_META.some((s) => s.id === c.sim) && <Link to={`/lab/${c.sim}`} className="btn btn-ghost">Try it in the {SIM_META.find((s) => s.id === c.sim)!.name.toLowerCase()} lab</Link>}
-      </div>
-    </section>
+    <li>
+      <Link to={card.to || `/c/${card.id}`} className="sheet flex h-full flex-col rounded-lg p-3 hover:border-sblue sm:p-4">
+        <span className="flex items-center justify-between gap-2">
+          <span className="font-bold">{card.title}</span>
+          <span className="hidden shrink-0 sm:block"><span className="chip"><span aria-hidden className="h-2 w-2 rounded-sm" style={{ background: d.tape }} />{d.short}</span></span>
+        </span>
+        <span className="mt-2 flex h-16 items-center sm:h-24 justify-center overflow-hidden rounded-md bg-grid px-2" aria-hidden>
+          {card.visual === 'formula' && (card.tex || c.formula) ? <span className="text-[0.7rem] sm:text-[0.95rem]"><Tex tex={card.tex || c.formula!.tex} /></span>
+            : card.visual === 'bell' ? <BellArt />
+            : card.visual === 'bars' ? <CashArt />
+            : <LadderArt />}
+        </span>
+        <span className="mt-3 inline-flex self-start rounded-md bg-tape/15 px-2 py-0.5 text-xs font-semibold text-tape-ink sm:text-sm">{card.result}</span>
+        <span className="mt-1 hidden text-sm text-ink-2 sm:block">{c.one}</span>
+      </Link>
+    </li>
+  )
+}
+
+/** The Cp/Cpk lesson's shaft: spec 10.00 ± 0.06, process mean 10.02 — capable spread, off-centre. */
+function BellArt() {
+  const xs = Array.from({ length: 61 }, (_, i) => i)
+  const mu = 34, sd = 7
+  const y = (x: number) => 78 - 62 * Math.exp(-((x - mu) ** 2) / (2 * sd * sd))
+  return (
+    <svg viewBox="0 0 60 84" preserveAspectRatio="none" className="h-full w-full max-w-[16rem]">
+      <path d={xs.map((x) => `${x ? 'L' : 'M'}${x} ${y(x)}`).join(' ')} fill="none" stroke="var(--color-sblue)" strokeWidth="1.6" vectorEffect="non-scaling-stroke" />
+      <line x1="12" x2="12" y1="8" y2="80" stroke="var(--color-sred)" strokeDasharray="3 3" vectorEffect="non-scaling-stroke" />
+      <line x1="48" x2="48" y1="8" y2="80" stroke="var(--color-sred)" strokeDasharray="3 3" vectorEffect="non-scaling-stroke" />
+      <line x1={mu} x2={mu} y1="14" y2="80" stroke="var(--color-sgreen)" vectorEffect="non-scaling-stroke" />
+    </svg>
+  )
+}
+/** The NPV lesson's cash flows: −$40,000 now, then +$12,000 a year for five years. */
+function CashArt() {
+  return (
+    <svg viewBox="0 0 120 70" className="h-full w-full max-w-[16rem]">
+      <line x1="4" x2="116" y1="30" y2="30" stroke="var(--color-ink-2)" />
+      <rect x="10" y="30" width="12" height="36" fill="var(--color-sred)" rx="1" />
+      {[0, 1, 2, 3, 4].map((i) => <rect key={i} x={30 + i * 17} y="19" width="12" height="11" fill="var(--color-sgreen)" rx="1" />)}
+    </svg>
   )
 }
 

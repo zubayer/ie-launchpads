@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased — branch `v3/landing-v2` (2026-11-26)
+
+### Changed
+- **Landing page, second pass** (owner request, with ideas taken from the owner's reference image):
+  - **Four topic cards** replace the single Takt time preview: Takt time, Cp / Cpk, NPV and PLC ladder logic. Each shows a formula or a small picture and its lesson's own worked result. `src/content/landing.test.ts` fails if a lesson's answer stops matching the card.
+  - **Your progress** panel for returning learners, built only from saved data: lessons opened out of 503, recently started lessons, the last 7 days of activity, streak, due cards and the next step. No badges, because the app has no badge system.
+  - **How every lesson works**: the four steps with icons and one sentence each.
+  - **Explore core IE domains**: 12 domain cards with icon, description and lesson count, plus "All 22 domains".
+  - **Tools and skills for the real job**: Topic Intelligence Studio, Advanced comparison, Equation Explorer, Engineering dictionary, Interview prep, Shop-floor cases (labelled illustrative), Tools & software, IE career map.
+  - Role cards and the studio row stay.
+- **Footer link columns** on every page, generated from the menu so the two can't drift apart.
+- Phones get compact versions: two topic cards per row, step names only, 6 domain cards, short feature tiles.
+
+### Not taken from the reference
+- Invented figures (e.g. "NPV = $125,430", "68%, 34 of 50 topics"), the "Academically credible" claim, badges without a badge system, and stock 3D artwork.
+
 ## Unreleased — branch `v3/landing-three-doors` (2026-11-26)
 
 ### Changed

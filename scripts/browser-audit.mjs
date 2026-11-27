@@ -118,6 +118,9 @@ for (const theme of ['light', 'dark']) {
         if (!(await first.getByRole('heading', { name: door, exact: true }).isVisible())) throw new Error(`door "${door}" is missing`)
       }
       if (await first.locator('#main input').count()) throw new Error('a second search box is back on the landing page')
+      for (const card of ['Takt time', 'Cp / Cpk', 'NPV', 'PLC ladder logic']) {
+        if (!(await first.getByRole('link', { name: new RegExp('^' + card.replace(/[/]/g, '\\/')) }).first().isVisible())) throw new Error(`topic card "${card}" is missing`)
+      }
       // The welcome bar loads lazily, so its absence proves nothing at a given instant; the visitor decision is synchronous.
       if (await first.locator('[data-visitor="first"]').count() !== 1) throw new Error('a first-time visitor is treated as returning (would see the welcome-back bar)')
       await first.getByRole('button', { name: /Search terms/ }).click()
