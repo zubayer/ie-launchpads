@@ -2,7 +2,7 @@
 
 The single registry of what exists. Statuses: **Planned** → **In development** → **Implemented** (code merged) → **Tested** (automated tests and a browser run passed) → **Verified** (a named human reviewed it). **Blocked** means it can't proceed without something outside the repo. Nothing here is Verified yet: no human expert review has happened.
 
-Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXECUTION-PLAN.md`.
+Last updated 2026-11-26, branch `v3/register-and-dst-fix` (adds PRs #18–#24). The V3 register is `docs/V3-EXECUTION-PLAN.md`.
 
 ## Baseline (from V1, preserved)
 
@@ -27,7 +27,7 @@ Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXE
 | Saved-progress hardening (versioned persist, merge with defaults) | Tested | Audit seeds partial saved state; no crashes |
 | Daily plan crash on a cleared date field | Fixed, Tested | Audit |
 | Learning modes (9) changing sections, order and depth | Tested | `src/lib/learning.test.ts`; browser run of all 9 modes |
-| Wikipedia + AI quick preview near the top of every topic | Implemented | Mocked-API browser run. Live services can't be reached from the build sandbox |
+| Wikipedia + AI quick preview near the top of every topic | Replaced (PR #20) | Superseded by “Live from the web” as section 2 of every lesson; see the UI section below |
 | Learn first / This unlocks / previous–next lesson pager | Tested | Browser run |
 | Formula library `/formulas` (91 formulas, pin + print sheet) | Tested | KaTeX renders every formula and symbol (test); route audit |
 | Error notebook `/notebook` (auto-logged wrong answers, recurring misses) | Tested | Store test; browser run |
@@ -72,6 +72,21 @@ Last updated 2026-11-25, branch `v3/foundation`. The V3 register is `docs/V3-EXE
 | Feature | Status | Evidence / notes |
 |---|---|---|
 | Compound-unit grading and bounded Do Next plans | In development | Regression tests added; PR CI and browser checks pending. See `docs/CHATGPT-LEARNING-QUALITY.md`. |
+
+## V3 UI, live sources and landing page (PRs #18–#24, merged 2026-11-26)
+
+Owner requests, built one PR at a time. Live services (Wikipedia, Pollinations, Chrome's on-device model) can't be reached from the build sandbox, so those parts were checked with mocked responses and the audit runs offline.
+
+| Feature | Status | Evidence |
+|---|---|---|
+| Live sources load without a click (Wikipedia summary and AI card open by default) — PR #18 | Implemented | Mocked-API browser run; audit checks the section loads with no script errors offline |
+| Parallel AI cards: Pollinations (paced, one request per ~15 s per visitor, abandoned requests skipped) and Chrome built-in Gemini Nano (hidden when unavailable) — PR #19 | Tested | `src/lib/ai.test.ts` (pacer, skip, cache keys); mocked browser run |
+| “Live from the web” is section 2 of every lesson in every learning mode; “Quick preview” removed — PR #20 | Tested | `src/lib/learning.test.ts`; audit checks the section order |
+| Auto-hide site menu: edge hover, Menu button or M; Pin to dock; search always in the top bar; page behind an open menu is inert — PR #21 | Tested | Audit: menu hidden by default, M opens, axe on the open menu, Tab never reaches covered controls, Escape returns focus. Saved-progress version 3 with `migrateSave()` (`src/lib/store.test.ts`) |
+| Full-width pages (cap 2,560 px) and a wider lesson section list — PR #22 | Tested | Measured at 1366, 1840 and 2560 px; audit |
+| Landing page: three doors (look up, train for a job, practise), one search box, welcome-back bar for returning learners only — PR #23 | Tested | Audit: first visit in a fresh browser context (`data-visitor="first"`), returning learner sees the bar, “Search terms” opens search; Do next and focus timer moved to Daily plan |
+| Landing page v2: four topic cards with each lesson's tested worked result, progress panel from saved data, 12 domain cards, 8 tool/skill tiles, footer link columns from the menu — PR #24 | Tested | `src/content/landing.test.ts` (card results match recomputed examples; 12 real domains); audit checks the cards; screenshots light/dark/phone |
+| Last-7-days activity row uses calendar days (no repeated or skipped date at a daylight-saving change) | Tested | `lastDays()` in `src/lib/store.ts`; DST test in `src/lib/store.test.ts` |
 
 ## Known limitations
 

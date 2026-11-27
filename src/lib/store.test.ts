@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { migrateSave } from './store'
+import { lastDays, migrateSave, today } from './store'
 
 const v2Save = {
   progress: { fmea: { opened: 1, results: [1, 0, 1], days: ['2026-11-01'], teach: 'RPN = S × O × D' } },
@@ -35,5 +35,21 @@ describe('saved-progress migration', () => {
   it('tolerates damaged saves', () => {
     expect(migrateSave(null, 0)).toEqual({ attempts: [], settings: { navPinned: false } })
     expect((migrateSave({ settings: ['bad'] }, 2).settings as object)).toEqual({ navPinned: false })
+  })
+})
+
+describe('last seven days (activity row)', () => {
+  it('gives seven distinct consecutive dates across a daylight-saving change', () => {
+    // Node re-reads TZ when it changes; the app's tsconfig has no Node types, so reach process via globalThis.
+    const env = (globalThis as unknown as { process: { env: Record<string, string | undefined> } }).process.env
+    const tz = env.TZ
+    env.TZ = 'America/New_York' // clocks went back at 02:00 on 1 November 2026
+    try {
+      const days = lastDays(7, new Date(2026, 10, 1, 23, 30)).map((d) => today(d))
+      expect(days).toEqual(['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30', '2026-10-31', '2026-11-01'])
+      const spring = lastDays(7, new Date(2026, 2, 8, 0, 30)).map((d) => today(d)) // clocks went forward on 8 March 2026
+      expect(new Set(spring).size).toBe(7)
+      expect(spring.at(-1)).toBe('2026-03-08')
+    } finally { env.TZ = tz }
   })
 })

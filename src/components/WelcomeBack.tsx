@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { CONCEPTS, CONCEPT_MAP } from '../content'
 import { isDue } from '../lib/srs'
-import { streak, today, useStore } from '../lib/store'
+import { lastDays, streak, today, useStore } from '../lib/store'
 import { suggestions } from '../lib/recommend'
 
 const DAY = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
@@ -24,10 +24,7 @@ export default function WelcomeBack() {
   const opened = Object.entries(progress).filter(([id, p]) => p.opened && CONCEPT_MAP[id])
   const pct = Math.round((opened.length / CONCEPTS.length) * 100)
   const recent = [...opened].sort((a, b) => (b[1].opened || 0) - (a[1].opened || 0)).slice(0, 4)
-  const week = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(Date.now() - (6 - i) * 86400000)
-    return { key: today(d), letter: DAY[d.getDay()], on: (activity[today(d)] || 0) > 0, isToday: i === 6 }
-  })
+  const week = lastDays(7).map((d, i) => ({ key: today(d), letter: DAY[d.getDay()], on: (activity[today(d)] || 0) > 0, isToday: i === 6 }))
   const r = 34, C = 2 * Math.PI * r
 
   return (

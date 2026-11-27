@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — branch `v3/register-and-dst-fix` (2026-11-26)
+
+### Fixed
+- The “Last 7 days” row on the landing page counts calendar days, so a daylight-saving change can no longer show one date twice and skip another (Codex review on PR #24). Test pinned to New York time on 1 November 2026.
+
+### Docs
+- `docs/IMPLEMENTATION-STATUS.md` now records PRs #18–#24 with their evidence, and marks the old quick preview as replaced. The register had fallen behind the changelog.
+
 ## Unreleased — branch `v3/landing-v2` (2026-11-26)
 
 ### Changed
