@@ -2,7 +2,7 @@
 
 The single registry of what exists. Statuses: **Planned** → **In development** → **Implemented** (code merged) → **Tested** (automated tests and a browser run passed) → **Verified** (a named human reviewed it). **Blocked** means it can't proceed without something outside the repo. Nothing here is Verified yet: no human expert review has happened.
 
-Last updated 2026-11-27 (adds PRs #18–#26). The V3 register is `docs/V3-EXECUTION-PLAN.md`.
+Last updated 2026-11-27 (adds PRs #18–#26 and certifications). The V3 register is `docs/V3-EXECUTION-PLAN.md`.
 
 ## Baseline (from V1, preserved)
 
@@ -99,6 +99,23 @@ Owner request: integrate Zubayer's standalone PLC Ladder Lab (github.com/zubayer
 | Common mistake “Full as a plain coil” | Tested | Same suite: the OTE version fails (the valve reopens and refills the same bottle) and the OTL fix passes |
 
 Limits: the lab keeps its own simulation code and dark look (no light theme), and loads Google Fonts when online (it falls back to system fonts offline). Updates to the original repo are copied over by hand.
+
+## Certifications (branch `v3/certifications`, 2026-11-27)
+
+Owner request: authentic, valued IE certifications with their facts, official syllabus headings and the lessons that teach them, plus help choosing the next one from job postings. Fees are linked, not copied.
+
+| Feature | Status | Evidence |
+|---|---|---|
+| `/certifications` hub: six certifications (IISE Lean Green Belt, IISE Six Sigma Green Belt, ASQ CSSGB, ASQ CQE, NCEES FE Industrial and Systems, ASCM CPIM) with student eligibility, coverage meter and your opened/mastered lessons; seven more in "Other certifications to know" | Tested | Audit: hub and three detail pages, light and dark, 0 axe violations; no horizontal scroll at 390 px |
+| Facts (experience, exam format, eligibility) each with a source link and as-of date; no fees | Source-checked | Each fact's page or PDF was opened on 2026-11-27; `certs.test.ts` fails on a fact without a link or with a `$` |
+| Syllabus headings per certification, with official weights where published (CSSGB 2022 BoK, CQE 2015 BoK, FE July 2020 spec, CPIM ECM 9.0, IISE Six Sigma GB units); IISE Lean GB topics are partner-listed and labelled so | Source-checked | Tests: CSSGB weights sum to 100, CQE to 160; every mapped lesson id exists |
+| Heading → lesson map (coverage 83–97%; gaps shown as "Not taught here yet") and a reverse index | Tested | `coverage()` and `certsForLesson()` tests |
+| "Which certification next?" guide: role family, years of experience, certifications held (not saved); ranks by can-sit-now, then postings that name it, then coverage | Tested | `rankNext` test: held certifications excluded, eligible first |
+| Job snapshot: 16 US postings read in full on 2026-11-27, with links, what each named and how (preferred/required) | Source-checked, small sample | Labelled on the page: 3 of 4 searches used certification keywords, so it leans towards postings that name one |
+| Lesson pages: "On these certification syllabi" badges replace the old free-text "Shows up in" line | Tested | Audit covers `c/quality.cpk` |
+| Menu (Career → Certifications) and landing tile (replaces the IE career map tile; the subway map stays in the menu) | Tested | Audit |
+
+Limits: rules, syllabi and fees change, so each page says when it was read and links the official page. Eligibility in the guide is a first filter, not a ruling (FE eligibility is set by each state board). The job snapshot is one day's sample, not market data.
 
 ## Known limitations
 

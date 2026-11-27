@@ -44,6 +44,7 @@ const NAV: { group: string; items: { to: string; label: string; end?: boolean }[
     { to: '/subway', label: 'IE subway map' },
     { to: '/roles', label: 'Role paths' },
     { to: '/interview', label: 'Interview prep' },
+    { to: '/certifications', label: 'Certifications' },
   ] },
   { group: 'You', items: [
     { to: '/plan', label: 'Daily plan' },
