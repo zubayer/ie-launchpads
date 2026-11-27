@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation, type SimulationNodeDatum } from 'd3-force'
 import { CONCEPTS, CONCEPT_MAP, byDomain, learningOrder } from '../content'
@@ -8,6 +8,9 @@ import { statusOf, streak, today, useStore } from '../lib/store'
 import { isDue } from '../lib/srs'
 import { Bar, ConceptRow, PageHead, Section } from '../components/ui'
 import type { DomainId } from '../types'
+import { FocusTimer } from '../components/FocusTimer'
+
+const DoNext = lazy(() => import('../components/DoNext'))
 
 /* ---------- Daily plan: one module per day through the target date ---------- */
 export function Plan() {
@@ -34,6 +37,13 @@ export function Plan() {
   return (
     <div>
       <PageHead title="Daily plan" sub="One module a day — a role or a domain — on a loop until your end date. Rate yourself on each skill daily; the trend is your evidence of progress." />
+      <div className="mb-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <section className="sheet rounded-lg p-5" aria-labelledby="session-h">
+          <h2 id="session-h" className="wide text-xl">Today's session</h2>
+          <Suspense fallback={<p className="mt-4 text-sm text-ink-2">Working out what to do next…</p>}><DoNext /></Suspense>
+        </section>
+        <FocusTimer />
+      </div>
       <div className="sheet mb-6 grid gap-3 rounded-lg p-4 sm:grid-cols-4">
         <label className="block"><span className="label">Start date</span><input type="date" className="input mt-1" value={settings.planStart} onChange={(e) => setSettings({ planStart: e.target.value })} /></label>
         <label className="block"><span className="label">End date</span><input type="date" className="input mt-1" value={settings.planEnd} onChange={(e) => setSettings({ planEnd: e.target.value })} /></label>
