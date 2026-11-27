@@ -328,8 +328,19 @@ export default function Layout() {
         <main id="main" className="mx-auto max-w-[160rem] px-4 py-6 sm:px-8 sm:py-10">
           <Outlet />
         </main>
-        <footer className="no-print mx-auto max-w-[160rem] px-4 pb-10 text-sm text-ink-2 sm:px-8">
-          Progress is saved in this browser. Export it from <NavLink className="underline" to="/progress">Progress</NavLink> to move devices.
+        <footer className="no-print mx-auto mt-6 max-w-[160rem] border-t border-line px-4 pb-10 pt-8 text-sm text-ink-2 sm:px-8">
+          {/* Link columns come from the menu itself, so the two never drift apart. */}
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
+            {NAV.filter((g) => g.group).map((g) => (
+              <div key={g.group}>
+                <h2 className="mb-2 font-bold text-ink">{g.group}</h2>
+                <ul className="space-y-1">
+                  {g.items.slice(0, 6).map((n) => <li key={n.to}><NavLink to={n.to} className="hover:text-ink hover:underline">{n.label}</NavLink></li>)}
+                </ul>
+              </div>
+            ))}
+          </nav>
+          <p className="mt-8">IE Launchpad V2. Progress is saved in this browser. Export it from <NavLink className="underline" to="/progress">Progress</NavLink> to move devices.</p>
         </footer>
       </div>
       <SearchPalette open={palette} onClose={() => setPalette(false)} />
