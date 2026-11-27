@@ -84,6 +84,9 @@ export function WebAnswer({ query }: { query: string }) {
   )
 }
 
+/** Open the site-wide search palette from anywhere on the page (the top bar owns the one search). */
+export const OPEN_SEARCH = 'ie:open-search'
+export const openSearch = () => window.dispatchEvent(new Event(OPEN_SEARCH))
 export const openGoogle = (q: string) => window.open(googleUrl(q), '_blank', 'noopener')
 
 export function SearchPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -226,6 +229,11 @@ export default function Layout() {
     window.scrollTo(0, 0)
   }, [loc.pathname])
   useEffect(() => () => clear(), [])
+  useEffect(() => {
+    const o = () => setPalette(true)
+    window.addEventListener(OPEN_SEARCH, o)
+    return () => window.removeEventListener(OPEN_SEARCH, o)
+  }, [])
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       const typing = !!(e.target as HTMLElement).closest('input,textarea,select,[contenteditable="true"]')

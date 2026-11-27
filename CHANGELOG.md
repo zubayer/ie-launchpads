@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased — branch `v3/landing-three-doors` (2026-11-26)
+
+### Changed
+- **New landing page** (owner choice, "Option A — three doors"). Top to bottom:
+  - **What brings you here today?** Three cards: look up a term (opens the top-bar search), train for a job (role paths), practise hands-on (the lab).
+  - **A lesson, tried right here:** the real Takt time lesson in four tabs (plain meaning, the math with its worked example, on the job, interview with a model answer), plus links to the full lesson and its lab.
+  - **Every lesson follows the same four moves:** Understand, Calculate, Apply, Prove it, with the lesson sections under each.
+  - **Where do you want to work?** Six role cards with lesson count, main domains and the first lesson; your own path, if chosen, comes first.
+  - **Practise with the tools engineers use:** control chart simulator and the SQL, PLC and CAD studios.
+  - **All 22 domains** as chips with lesson counts.
+- **Returning learners** get one "Welcome back" bar with the next suggested step; due cards and streak show only when above zero. First-time visitors never see zero counters.
+- **One search box:** the hero search is gone; the top bar holds the search, and "Search terms" opens it.
+- The "Do next" planner and the focus timer moved from the home page to **Daily plan** ("Today's session").
+- The browser audit checks the landing page: three doors, no second search box, no welcome bar for first-time visitors, and "Search terms" opens search.
+
 ## Unreleased — branch `v3/wider-lesson-layout` (2026-11-26)
 
 ### Changed

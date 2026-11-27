@@ -99,6 +99,23 @@ for (const theme of ['light', 'dark']) {
     await page.getByRole('link',{name:'Terminology & symbols',exact:true}).click()
     await page.getByRole('heading',{name:'Engineering abbreviation dictionary',exact:true}).waitFor()
   } catch(e) { failures++; console.log('✗ ['+theme+'] dictionary: '+e.message) }
+  // Owner decision (2026-11-26, "Option A"): the landing page opens on three doors and a lesson preview;
+  // first-time visitors see no zero counters, and the top bar holds the only search box.
+  try {
+    await page.setViewportSize({ width: 1366, height: 900 })
+    await page.goto(`${BASE}?landing=1#/`)
+    await page.waitForSelector('#main h1')
+    for (const door of ['Look up a term', 'Train for a job', 'Practise hands-on']) {
+      if (!(await page.getByRole('heading', { name: door, exact: true }).isVisible())) throw new Error(`door "${door}" is missing`)
+    }
+    if (await page.locator('#main input').count()) throw new Error('a second search box is back on the landing page')
+    if (await page.getByText(/Welcome back/).count()) throw new Error('a first-time visitor sees the welcome-back bar')
+    await page.getByRole('tab', { name: 'The math' }).waitFor()
+    await page.getByRole('button', { name: /Search terms/ }).click()
+    await page.waitForTimeout(250)
+    if (!(await page.getByRole('dialog').count())) throw new Error('"Search terms" did not open the search')
+    await page.keyboard.press('Escape')
+  } catch (e) { failures++; console.log(`✗ [${theme}] landing page: ${e.message}`) }
   // Owner decision (2026-11-26): on desktop the menu is hidden until asked for, search stays in the top bar.
   try {
     await page.setViewportSize({ width: 1366, height: 900 })

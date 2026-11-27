@@ -18,6 +18,7 @@
   --color-sgreen: #15803d;
   --color-sred: #c2283a;
   --color-sorange: #bd4f0c; /* 4.9:1 on white, 4.5:1 on paper (WCAG AA) */
+  --color-tape-ink: #7a5d00; /* tape yellow as text: ~6:1 on white and on the grid tint */
 }
 
 .dark {
@@ -31,7 +32,13 @@
   --color-sgreen: #4ade80;
   --color-sred: #f87185;
   --color-sorange: #fb9a5b;
+  --color-tape-ink: #f2b705;
 }
+
+/* Landing page "doors": the action at the foot of each card. */
+.door-go { display: inline-flex; align-items: center; gap: .4rem; font-weight: 700; color: var(--color-sblue); }
+.door-go:hover { text-decoration: underline; }
+.kbd { border: 1px solid var(--color-line); border-radius: 4px; padding: 0 .35rem; font-size: .75rem; font-weight: 500; color: var(--color-ink-2); }
 
 /* The top bar (menu, search) is sticky: keep focused and scrolled-to elements clear of it (WCAG 2.4.11). */
 html { -webkit-text-size-adjust: 100%; scroll-padding-top: 4.5rem; }
