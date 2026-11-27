@@ -80,7 +80,7 @@ Owner request: integrate Zubayer's standalone PLC Ladder Lab (github.com/zubayer
 | Feature | Status | Evidence |
 |---|---|---|
 | Embedded lab at `/studio/plc/lab/bottle-filler` (iframe of `public/labs/plc-bottle-filler/`), credits and source link, S7 ↔ Logix address table, link from the studio index | Tested | Audit loads the route and waits for the ladder inside the frame |
-| Accessibility fixes in the embedded copy (step-button contrast, `role="group"` on clickable drawings, readable scale and scrolling under 900 px, relative favicon), listed at the top of the file | Tested | Audit runs axe on the embedded page itself at 1366 and 390 px: 0 violations (the original had contrast 1, nested-interactive 2, target-size 14 on phones) |
+| Accessibility fixes in the embedded copy (step-button contrast, `role="group"` on clickable drawings, readable scale and scrolling under 900 px, relative favicon, keyboard focus kept across ladder redraws), listed at the top of the file | Tested | Audit runs axe on the embedded page itself at 1366 and 390 px: 0 violations (the original had contrast 1, nested-interactive 2, target-size 14 on phones); the audit also checks a focused ladder symbol keeps focus while the timer runs (the original lost it within 1.2 s) |
 | Auto cycle as a worked example in the Sequences lesson (`BOTTLE_FILLER` in `src/content/plc/course.ts`) | Tested | `src/lib/plc.test.ts`: the six-step scenario (arrive, fill 3 s, latch Full, restart, leave, reset, next bottle) passes on the ladder engine |
 | Common mistake “Full as a plain coil” | Tested | Same suite: the OTE version fails (the valve reopens and refills the same bottle) and the OTL fix passes |
 

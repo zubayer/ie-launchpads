@@ -9,6 +9,8 @@
    3. Narrower than 900 px, the dashboard keeps a readable scale (0.92) and scrolls, instead of shrinking
       every button to a few pixels.
    4. Favicon path is relative, so it works under any folder.
+   5. Keyboard focus survives ladder redraws (about every 0.1 s while the timer runs): keepFocus() puts focus back
+      on the same symbol, by data-id, so keyboard users can open the symbol inspector.
 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -518,6 +520,8 @@ function drawRung(r,ri,y,tr){
   else h+=w(x,y,x+30,y,p)+`<text class="qn" x="${x+38}" y="${y+4}">TON.Q is not wired to anything yet</text>`;
   return h;
 }
+// Redraws replace these nodes; put keyboard focus back on the same control (matched by attribute) afterwards.
+function keepFocus(box,attr,draw){const a=document.activeElement,k=a&&a!==box&&box.contains(a)?a.getAttribute(attr):null;draw();if(k!==null){const n=box.querySelector(`[${attr}="${CSS.escape(k)}"]`);if(n)n.focus({preventScroll:true})}}
 function renderLadder(){
   S.elmap={};const P=prog(),n=P.length;let y=8,body='';
   P.forEach((r,ri)=>{const hR=rungH(r),ly=y+44,tr=S.traces[ri]||null;
@@ -525,7 +529,7 @@ function renderLadder(){
     body+=`<rect class="band${cur?' cur':''}" x="2" y="${y}" width="896" height="${hR-6}" rx="10"/><text class="rn${cur?' cur':''}" x="16" y="${ly+4}">${ri+1}</text>`;
     body+=`<g class="${pend?'pend':''}">${drawRung(r,ri,ly,pend?null:tr)}</g>`;y+=hR});
   const H=y+4;$('#lad').setAttribute('viewBox',`0 0 900 ${H}`);
-  $('#lad').innerHTML=body+`<line class="rail" x1="${RL}" y1="6" x2="${RL}" y2="${H-6}"/><line class="railn" x1="${RR}" y1="6" x2="${RR}" y2="${H-6}"/>`;
+  keepFocus($('#lad'),'data-id',()=>{$('#lad').innerHTML=body+`<line class="rail" x1="${RL}" y1="6" x2="${RL}" y2="${H-6}"/><line class="railn" x1="${RR}" y1="6" x2="${RR}" y2="${H-6}"/>`});
 }
 
 /* equations */

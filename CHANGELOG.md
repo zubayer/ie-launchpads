@@ -15,6 +15,7 @@
   - interactive drawings marked as groups
   - a readable scale on phones, with scrolling instead of shrinking
   - a relative favicon path
+  - keyboard focus kept on a ladder symbol across redraws (the original lost it every ~0.1 s while the timer ran), so keyboard users can open the symbol inspector
 
 ## Unreleased — branch `v3/landing-v2` (2026-11-26)
 

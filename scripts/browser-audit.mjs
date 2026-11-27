@@ -140,6 +140,13 @@ for (const theme of ['light', 'dark']) {
       const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] })).violations.map((x) => `${x.id} (${x.nodes.length})`))
       if (v.length) throw new Error(`embedded lab at ${w}px: ${v.join(', ')}`)
     }
+    // Keyboard focus must survive the ladder redraws (about every 0.1 s while the fill timer runs).
+    await page.setViewportSize({ width: 1366, height: 768 })
+    await page.goto(`${BASE}labs/plc-bottle-filler/index.html?focus=1`)
+    await page.waitForTimeout(3500)
+    await page.evaluate(() => document.querySelector('#lad .el[data-id]').focus())
+    await page.waitForTimeout(1000)
+    if (!(await page.evaluate(() => !!document.activeElement?.closest?.('#lad')))) throw new Error('keyboard focus is lost when the ladder redraws')
     await page.setViewportSize({ width: 1366, height: 900 })
     await page.goto(`${BASE}?machine=1#/studio/plc/lab/bottle-filler`)
     const frame = page.frameLocator('iframe[title^="PLC Ladder Lab"]')
