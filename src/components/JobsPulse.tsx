@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { isSnapshot, trend, type RoleId, type Snapshot } from '../lib/jobsFeed'
-import { JobsDialog, SOURCE_LABEL, ago, placeLabel, type ListState } from './JobsBrowser'
+import { useEffect, useMemo, useState } from 'react'
+import { isSnapshot, pageWindow, paginate, trend, type RoleId, type Snapshot } from '../lib/jobsFeed'
+import { JobsDialog, SOURCE_LABEL, ago, placeLabel, useAllPostings, type ListState } from './JobsBrowser'
 import type { Posting } from '../lib/jobsFeed'
 
 /*
@@ -13,7 +13,7 @@ const fmt = (d: string, opts: Intl.DateTimeFormatOptions = { month: 'short', day
 
 type State = { kind: 'loading' } | { kind: 'error' } | { kind: 'ready'; snap: Snapshot }
 
-export default function JobsPulse({ limit = 6 }: { limit?: number }) {
+export default function JobsPulse({ perPage = 18 }: { perPage?: number }) {
   const [state, setState] = useState<State>({ kind: 'loading' })
   useEffect(() => {
     let live = true
@@ -32,12 +32,12 @@ export default function JobsPulse({ limit = 6 }: { limit?: number }) {
       </div>
       {state.kind === 'loading' && <p className="mt-3 text-sm text-ink-2">Loading this week’s postings…</p>}
       {state.kind === 'error' && <p className="mt-3 text-sm text-ink-2">The jobs file couldn’t be loaded. If you’re offline, it will show once you reconnect.</p>}
-      {state.kind === 'ready' && <Body snap={state.snap} limit={limit} />}
+      {state.kind === 'ready' && <Body snap={state.snap} perPage={perPage} />}
     </section>
   )
 }
 
-function Body({ snap, limit }: { snap: Snapshot; limit: number }) {
+function Body({ snap, perPage }: { snap: Snapshot; perPage: number }) {
   const [dialog, setDialog] = useState<ListState | null>(null)
   const openList = (role: RoleId | null) => setDialog({ role, page: 1, q: '' })
   if (!snap.generated) {
@@ -48,7 +48,6 @@ function Body({ snap, limit }: { snap: Snapshot; limit: number }) {
   const off = snap.sources.filter((s) => !s.ok)
   const employers = ok.filter((s) => s.id.startsWith('greenhouse:') || s.id.startsWith('lever:'))
   const adzuna = ok.some((s) => s.id === 'adzuna')
-  const latest = snap.latest.slice(0, limit)
   const total = snap.roles.reduce((n, r) => n + r.count, 0)
   return (
     <>
@@ -57,13 +56,13 @@ function Body({ snap, limit }: { snap: Snapshot; limit: number }) {
           ? 'US postings in the last 7 days with the role in the job title, as counted by Adzuna.'
           : `Roles open now on ${employers.length} employer careers page${employers.length === 1 ? '' : 's'}${ok.some((s) => s.id === 'usajobs') ? ', plus USAJOBS postings from the last 30 days' : ''}: a sample, not the whole market.`}
       </p>
-      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,21rem)_minmax(0,1fr)] lg:gap-0 xl:grid-cols-[minmax(0,27rem)_minmax(0,1fr)]">
+      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:gap-0 2xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
         <div className="flex flex-col rounded-lg bg-grid p-4">
           <div className="flex flex-wrap items-baseline justify-between gap-x-3">
             <h3 className="text-base font-bold">Open roles by type</h3>
-            <span className="text-xs text-ink-2">Select one to list them</span>
+            <span className="text-xs text-ink-2">Select one to list them{snap.history.length < 2 ? '; weekly trends start next week' : ''}</span>
           </div>
-          <ul className="mt-3 flex-1 space-y-1">
+          <ul className="mt-3 flex flex-1 flex-col justify-evenly gap-1">
             {snap.roles.map((r) => {
               const t = trend(snap, r.id)
               return (
@@ -79,7 +78,7 @@ function Body({ snap, limit }: { snap: Snapshot; limit: number }) {
                             <span className="text-sm font-semibold" style={{ color: t.pct > 0 ? 'var(--color-sgreen)' : t.pct < 0 ? 'var(--color-sorange)' : 'var(--color-ink-2)' }}>
                               {t.pct > 0 ? '▲' : t.pct < 0 ? '▼' : '–'} {Math.abs(t.pct)}%
                             </span>
-                          ) : <span className="hidden text-xs text-ink-2 sm:inline">trend next week</span>}
+                          ) : null}
                       </span>
                     </span>
                     <span aria-hidden className="mt-1.5 block h-2 overflow-hidden rounded-full bg-sheet"><span className="block h-full rounded-full bg-sblue" style={{ width: `${Math.max(1.5, (r.count / max) * 100)}%` }} /></span>
@@ -95,11 +94,8 @@ function Body({ snap, limit }: { snap: Snapshot; limit: number }) {
             <button type="button" className="btn" onClick={() => openList(null)}>Show all open roles</button>
           </div>
         </div>
-        <div className="lg:ml-8 lg:border-l lg:border-line lg:pl-8 xl:ml-10 xl:pl-10">
-          <h3 className="text-base font-bold">Latest postings</h3>
-          {latest.length ? (
-            <ul className="mt-3 grid gap-3 md:grid-cols-2">{latest.map((p, i) => <PostingCard key={p.url} p={p} phoneHidden={i >= 4} />)}</ul>
-          ) : <p className="mt-2 text-sm text-ink-2">No matching postings in the last 30 days.</p>}
+        <div className="flex flex-col lg:ml-8 lg:border-l lg:border-line lg:pl-8 xl:ml-10 xl:pl-10">
+          <LatestPostings snap={snap} perPage={perPage} onMore={() => openList(null)} />
         </div>
       </div>
       <div className="mt-5 border-t border-line pt-3 text-xs text-ink-2">
@@ -117,20 +113,68 @@ function Body({ snap, limit }: { snap: Snapshot; limit: number }) {
   )
 }
 
-/** A posting as a small card, two to a row on wide screens, so the column's width is used. */
-function PostingCard({ p, phoneHidden }: { p: Posting; phoneHidden?: boolean }) {
+/** Fewer per page on phones, where the rows stack in one column. */
+function usePerPage(wide: number): number {
+  const query = '(max-width: 639px)'
+  const [phone, setPhone] = useState(() => typeof matchMedia === 'function' && matchMedia(query).matches)
+  useEffect(() => {
+    if (typeof matchMedia !== 'function') return
+    const m = matchMedia(query)
+    const on = () => setPhone(m.matches)
+    m.addEventListener('change', on)
+    return () => m.removeEventListener('change', on)
+  }, [])
+  return phone ? Math.min(6, wide) : wide
+}
+
+/**
+ * Newest postings, paged inside the card. Page 1 shows from the small summary file at once; the full
+ * list (data/jobs-all.json, same order) loads in the background and drives the page numbers.
+ */
+function LatestPostings({ snap, perPage: wide, onMore }: { snap: Snapshot; perPage: number; onMore: () => void }) {
+  const perPage = usePerPage(wide)
+  const all = useAllPostings()
+  const list = useMemo(() => (all && all !== 'loading' && all.postings.length ? all.postings : snap.latest), [all, snap.latest])
+  const [page, setPage] = useState(1)
+  const pg = paginate(list, page, perPage)
+  if (!list.length) return <><h3 className="text-base font-bold">Latest postings</h3><p className="mt-2 text-sm text-ink-2">No matching postings in the last 30 days.</p></>
+  const from = (pg.page - 1) * perPage + 1
   return (
-    <li className={`flex ${phoneHidden ? 'max-sm:hidden' : ''}`}>
-      <a href={p.url} target="_blank" rel="noopener noreferrer" className="group flex w-full flex-col gap-1 rounded-lg border border-line p-3 hover:border-sblue">
-        <span className="line-clamp-2 text-[0.95rem] font-semibold leading-snug group-hover:text-sblue group-hover:underline">{p.title}</span>
-        <span className="text-sm">{p.company}</span>
-        <span className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-1 text-xs text-ink-2">
-          <span>{placeLabel(p.location)}</span>
-          <span aria-hidden>·</span>
-          <span>{p.posted && p.dated === 'updated' ? 'updated ' : ''}{ago(p.posted)}</span>
-          <span className="rounded border border-line px-1.5 py-0.5">{SOURCE_LABEL[p.source]}</span>
+    <div className="flex flex-1 flex-col">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+        <h3 className="text-base font-bold">Latest postings</h3>
+        <span className="text-xs text-ink-2" aria-live="polite">{from}–{from + pg.items.length - 1} of {pg.total.toLocaleString('en-US')}, newest first</span>
+      </div>
+      <ul className="mt-3 grid gap-2 sm:grid-cols-2 2xl:grid-cols-3">{pg.items.map((p) => <PostingRow key={p.url} p={p} />)}</ul>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+        {pg.pages > 1 ? (
+          <nav className="flex flex-wrap items-center gap-1" aria-label="Latest postings pages">
+            <button type="button" className="btn btn-ghost !h-8 !min-w-8 !px-2 !py-0 text-sm" disabled={pg.page === 1} onClick={() => setPage(pg.page - 1)} aria-label="Previous page">‹</button>
+            {pageWindow(pg.page, pg.pages).map((n, i) => n === null
+              ? <span key={`gap${i}`} aria-hidden className="px-1 text-ink-2">…</span>
+              : <button key={n} type="button" className={`btn !h-8 !min-w-8 !px-2 !py-0 text-sm ${n === pg.page ? '' : 'btn-ghost'}`} aria-current={n === pg.page ? 'page' : undefined} aria-label={`Page ${n}`} onClick={() => setPage(n)}>{n}</button>)}
+            <button type="button" className="btn btn-ghost !h-8 !min-w-8 !px-2 !py-0 text-sm" disabled={pg.page === pg.pages} onClick={() => setPage(pg.page + 1)} aria-label="Next page">›</button>
+          </nav>
+        ) : <span />}
+        <button type="button" className="btn btn-ghost !py-1.5 text-sm" onClick={onMore}>More jobs: filter and search</button>
+      </div>
+    </div>
+  )
+}
+
+/** One posting in two short lines, so a page holds many. The full title shows on hover when it is cut. */
+function PostingRow({ p }: { p: Posting }) {
+  return (
+    <li className="min-w-0">
+      <a href={p.url} target="_blank" rel="noopener noreferrer" title={p.title} className="group block rounded-md border border-line px-3 py-2 hover:border-sblue">
+        <span className="block truncate text-sm font-semibold group-hover:text-sblue group-hover:underline">{p.title}</span>
+        <span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-ink-2">
+          <span className="truncate">{p.company} · {placeLabel(p.location)}</span>
+          <span aria-hidden className="shrink-0">·</span>
+          <span className="shrink-0">{p.posted && p.dated === 'updated' ? 'updated ' : ''}{ago(p.posted)}</span>
+          <span className="shrink-0 rounded border border-line px-1 leading-4">{p.source === 'usajobs' ? 'USAJOBS' : 'Employer'}</span>
         </span>
-        <span className="sr-only"> (opens the posting)</span>
+        <span className="sr-only"> (opens the posting on {SOURCE_LABEL[p.source]})</span>
       </a>
     </li>
   )
