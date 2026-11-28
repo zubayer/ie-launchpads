@@ -3,6 +3,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    # Mondays 11:17 UTC (early morning in the US): refresh the "IE jobs this week" card.
+    - cron: '17 11 * * 1'
 permissions:
   contents: read
   pages: write
@@ -24,6 +27,14 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - name: Collect this week's IE job postings (never fails the build)
+        run: node scripts/fetch-jobs.mjs
+        continue-on-error: true
+        env:
+          USAJOBS_API_KEY: ${{ secrets.USAJOBS_API_KEY }}
+          USAJOBS_EMAIL: ${{ secrets.USAJOBS_EMAIL }}
+          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

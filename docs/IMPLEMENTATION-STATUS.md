@@ -2,7 +2,7 @@
 
 The single registry of what exists. Statuses: **Planned** → **In development** → **Implemented** (code merged) → **Tested** (automated tests and a browser run passed) → **Verified** (a named human reviewed it). **Blocked** means it can't proceed without something outside the repo. Nothing here is Verified yet: no human expert review has happened.
 
-Last updated 2026-11-27 (adds PRs #18–#26 and certifications). The V3 register is `docs/V3-EXECUTION-PLAN.md`.
+Last updated 2026-11-27 (adds PRs #18–#27 and the jobs card). The V3 register is `docs/V3-EXECUTION-PLAN.md`.
 
 ## Baseline (from V1, preserved)
 
@@ -116,6 +116,18 @@ Owner request: authentic, valued IE certifications with their facts, official sy
 | Menu (Career → Certifications) and landing tile (replaces the IE career map tile; the subway map stays in the menu) | Tested | Audit |
 
 Limits: rules, syllabi and fees change, so each page says when it was read and links the official page. Eligibility in the guide is a first filter, not a ruling (FE eligibility is set by each state board). The job snapshot is one day's sample, not market data.
+
+## IE jobs this week (branch `v3/jobs-pulse`, 2026-11-27)
+
+Owner request: a card showing current IE job postings from authentic sources, several together. Setup and source details: `docs/JOBS-FEED.md`.
+
+| Feature | Status | Evidence |
+|---|---|---|
+| Collector `scripts/fetch-jobs.mjs`: employer careers pages (Greenhouse, Lever; no key), USAJOBS (series 0896) and Adzuna (keys from GitHub secrets only); writes `data/jobs.json`; never fails the build and keeps the previous file if every source fails | Implemented | Runs in the deploy workflow (weekly schedule and every deploy); the PR check runs it against the live employer boards for information. USAJOBS and Adzuna parsing is untested against live data until the owner adds keys |
+| Title-based role matching, de-duplication (employer page preferred over aggregator), weekly history (one row per week, 12 kept) and like-for-like trends | Tested | `src/lib/jobsFeed.test.ts` (8 tests) |
+| Card on the landing page and Certifications: counts with trend, latest postings with source, sources and "Jobs by Adzuna" attribution, empty, loading and offline states | Tested | Audit covers both pages with the committed empty file; also checked with a local illustrative file in light, dark and at 390 px: 0 axe violations, no sideways scroll |
+
+Limits: the counts are a weekly snapshot, not live. Adzuna is off: its free tier is 25 test calls, then a paid plan. Without Adzuna they are the roles open on a handful of employer boards (plus USAJOBS), and the card says so. First PR run: 5 boards answered with 344 IE-type open roles; 3 tokens returned 404 and one Lever board was empty, so those were removed. Greenhouse dates use the first-published date when the board gives one; otherwise the card labels the date "updated". Undated roles count as open but are not listed. Second PR run: 10 of 12 boards answered (Rivian and Saronic tokens returned 404 and were removed). Codex review (4 P2s: update dates, undated Lever roles, Adzuna fallback basis, zero-count trend) fixed in the same push.
 
 ## Known limitations
 

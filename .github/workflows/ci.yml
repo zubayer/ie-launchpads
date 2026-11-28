@@ -16,6 +16,9 @@ jobs:
       - run: npm ci
       - name: Tests (content integrity, numeric QA, equations, pathways, recommendations)
         run: npm test
+      - name: Jobs feed smoke test (live employer boards, no keys; informational)
+        run: node scripts/fetch-jobs.mjs --out /tmp/jobs.json
+        continue-on-error: true
       - name: Type-check and build
         run: npm run build
       - name: Generate topic-by-topic inventory

@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — branch `v3/jobs-pulse` (2026-11-27)
+
+### Added
+- **IE jobs this week** card on the landing page and Certifications:
+  - this week's count for five role families (Industrial, Quality, Continuous Improvement / Lean, Manufacturing / Process, Production / Supply Planner), with the change from last week once two weeks exist
+  - the latest postings, each linked to the original ad with its source
+  - sources: employer careers pages (Greenhouse, Lever) and USAJOBS; Adzuna is supported but off (its free tier is 25 test calls)
+- `scripts/fetch-jobs.mjs` collects the postings on GitHub every Monday and on each deploy; keys stay in GitHub secrets. Setup: `docs/JOBS-FEED.md`.
+
 ## Unreleased — branch `v3/certifications` (2026-11-27)
 
 ### Added

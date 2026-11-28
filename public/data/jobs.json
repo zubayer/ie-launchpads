@@ -1,0 +1,36 @@
+{
+ "version": 1,
+ "generated": null,
+ "basis": "collected",
+ "sources": [],
+ "history": [],
+ "latest": [],
+ "roles": [
+  {
+   "id": "industrial",
+   "label": "Industrial Engineer",
+   "count": 0
+  },
+  {
+   "id": "quality",
+   "label": "Quality Engineer",
+   "count": 0
+  },
+  {
+   "id": "ci",
+   "label": "Continuous Improvement / Lean",
+   "count": 0
+  },
+  {
+   "id": "manufacturing",
+   "label": "Manufacturing / Process Engineer",
+   "count": 0
+  },
+  {
+   "id": "planning",
+   "label": "Production / Supply Planner",
+   "count": 0
+  }
+ ],
+ "note": "The first collection runs when the site is next deployed from main."
+}
