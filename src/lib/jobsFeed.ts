@@ -131,9 +131,49 @@ export function buildSnapshot(opts: {
     sources: opts.sources,
     roles: ROLES.map((r) => ({ id: r.id, label: r.label, count: counts[r.id] })),
     history,
-    latest: recent.sort((a, b) => b.posted.localeCompare(a.posted)).slice(0, 40),
+    latest: sortPostings(recent).slice(0, 40),
   }
 }
+
+/** Every open role, newest first; undated roles last (they are open, we just don't know since when). */
+export function sortPostings(list: Posting[]): Posting[] {
+  return [...list].sort((a, b) => (b.posted || '').localeCompare(a.posted || '') || a.title.localeCompare(b.title))
+}
+
+/** The full list, published as data/jobs-all.json and loaded only when someone opens the job list. */
+export interface AllPostings { version: 1; generated: string | null; postings: Posting[] }
+export const EMPTY_ALL: AllPostings = { version: 1, generated: null, postings: [] }
+export function allPostings(postings: Posting[], now: Date): AllPostings {
+  return { version: 1, generated: now.toISOString(), postings: sortPostings(dedupe(postings)) }
+}
+export function isAllPostings(x: unknown): x is AllPostings {
+  const a = x as AllPostings
+  return !!a && a.version === 1 && Array.isArray(a.postings)
+}
+
+export function filterPostings(list: Posting[], f: { role?: RoleId | null; q?: string }): Posting[] {
+  const words = norm(f.q || '').split(' ').filter(Boolean)
+  return list.filter((p) => (!f.role || p.role === f.role) && words.every((w) => norm(`${p.title} ${p.company} ${p.location}`).includes(w)))
+}
+
+export const PER_PAGE = 10
+/** One page of a list; out-of-range pages are clamped so a stale link still shows something. */
+export function paginate<T>(list: T[], page: number, per = PER_PAGE): { items: T[]; page: number; pages: number; total: number } {
+  const pages = Math.max(1, Math.ceil(list.length / per))
+  const p = Math.min(Math.max(1, Math.floor(page) || 1), pages)
+  return { items: list.slice((p - 1) * per, p * per), page: p, pages, total: list.length }
+}
+
+/** Page buttons to show: first, last, current ±1, with gaps marked null (1 … 4 5 6 … 20). */
+export function pageWindow(page: number, pages: number): (number | null)[] {
+  const keep = new Set([1, pages, page - 1, page, page + 1].filter((n) => n >= 1 && n <= pages))
+  const out: (number | null)[] = []
+  let last = 0
+  for (const n of [...keep].sort((a, b) => a - b)) { if (n - last > 1) out.push(null); out.push(n); last = n }
+  return out
+}
+
+export const isRole = (x: unknown): x is RoleId => ROLES.some((r) => r.id === x)
 
 /** Sanity check on a file fetched from the network before the app or the collector trusts it. */
 export function isSnapshot(x: unknown): x is Snapshot {

@@ -10,11 +10,12 @@
  *   - Adzuna Search API (aggregator, "Jobs by Adzuna"): needs ADZUNA_APP_ID and ADZUNA_APP_KEY.
  * Keys come from GitHub Actions secrets and never reach the site.
  *
- * Usage: node scripts/fetch-jobs.mjs [--out path] [--now ISO]
+ * Writes jobs.json (summary for the card) and jobs-all.json (every open role, for the job list) side by side.
+ * Usage: node scripts/fetch-jobs.mjs [--out path/jobs.json] [--now ISO]
  */
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { ROLES, EMPTY_SNAPSHOT, buildSnapshot, classify, isSnapshot } from '../src/lib/jobsFeed.ts'
+import { ROLES, EMPTY_SNAPSHOT, allPostings, buildSnapshot, classify, isAllPostings, isSnapshot } from '../src/lib/jobsFeed.ts'
 
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d }
 const OUT = arg('--out', 'public/data/jobs.json')
@@ -128,7 +129,7 @@ for (const b of BOARDS) {
 if (env.USAJOBS_API_KEY && env.USAJOBS_EMAIL) {
   try { const r = await usajobs(postings); sources.push({ id: 'usajobs', name: 'USAJOBS', url: 'https://www.usajobs.gov/', ok: true, count: r.matched, note: 'Industrial Engineering series (0896), last 30 days' }) }
   catch (e) { sources.push({ id: 'usajobs', name: 'USAJOBS', url: 'https://www.usajobs.gov/', ok: false, count: 0, note: String(e.message || e) }) }
-} else sources.push({ id: 'usajobs', name: 'USAJOBS', url: 'https://www.usajobs.gov/', ok: false, count: 0, note: 'no key yet' })
+} // No key: USAJOBS is simply not used (not listed as a failed source).
 
 if (env.ADZUNA_APP_ID && env.ADZUNA_APP_KEY) {
   try {
@@ -138,18 +139,26 @@ if (env.ADZUNA_APP_ID && env.ADZUNA_APP_KEY) {
     adzunaTotals = r.totals
     sources.push({ id: 'adzuna', name: 'Adzuna', url: 'https://www.adzuna.com/', ok: true, count: found.length, note: 'US totals by job title, last 7 days' })
   } catch (e) { sources.push({ id: 'adzuna', name: 'Adzuna', url: 'https://www.adzuna.com/', ok: false, count: 0, note: String(e.message || e) }) }
-} else sources.push({ id: 'adzuna', name: 'Adzuna', url: 'https://www.adzuna.com/', ok: false, count: 0, note: 'no key yet' })
+} // Off by default: the free tier is 25 test calls (docs/JOBS-FEED.md).
 
 let previous = null
+let previousAll = null
 try { const p = await getJson(LIVE); if (isSnapshot(p)) previous = p } catch { /* first run, or the site is unreachable */ }
+try { const p = await getJson(LIVE.replace(/jobs\.json$/, 'jobs-all.json')); if (isAllPostings(p)) previousAll = p } catch { /* first run */ }
 
-let snap
-if (sources.some((s) => s.ok)) snap = buildSnapshot({ now: NOW, postings, sources, adzunaTotals, previous })
-else snap = previous ? { ...previous, note: `Last collection failed on ${NOW.toISOString().slice(0, 10)}; showing the previous week.` } : { ...EMPTY_SNAPSHOT, sources, note: 'No source answered in the last collection.' }
+let snap, all
+if (sources.some((s) => s.ok)) {
+  snap = buildSnapshot({ now: NOW, postings, sources, adzunaTotals, previous })
+  all = allPostings(postings, NOW)
+} else {
+  snap = previous ? { ...previous, note: `Last collection failed on ${NOW.toISOString().slice(0, 10)}; showing the previous week.` } : { ...EMPTY_SNAPSHOT, sources, note: 'No source answered in the last collection.' }
+  all = previousAll ?? { version: 1, generated: null, postings: [] }
+}
 
 mkdirSync(dirname(OUT), { recursive: true })
 writeFileSync(OUT, JSON.stringify(snap, null, 1) + '\n')
+writeFileSync(OUT.replace(/\.json$/, '-all.json'), JSON.stringify(all) + '\n')
 
-console.log(`jobs feed → ${OUT} (basis: ${snap.basis}, ${snap.latest.length} recent postings, ${snap.history.length} week(s) of history)`)
+console.log(`jobs feed → ${OUT} (basis: ${snap.basis}, ${all.postings.length} open roles listed, ${snap.latest.length} from the last 30 days, ${snap.history.length} week(s) of history)`)
 for (const s of sources) console.log(`  ${s.ok ? '✓' : '✗'} ${s.name.padEnd(18)} ${s.note ?? ''}`)
 for (const r of snap.roles) console.log(`  ${r.label.padEnd(34)} ${r.count}`)

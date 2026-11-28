@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { EMPTY_SNAPSHOT, buildSnapshot, classify, dedupe, isSnapshot, mergeHistory, trend, weekOf, type Posting } from './jobsFeed'
+import { EMPTY_SNAPSHOT, allPostings, buildSnapshot, classify, dedupe, filterPostings, isAllPostings, isRole, isSnapshot, mergeHistory, pageWindow, paginate, sortPostings, trend, weekOf, type Posting } from './jobsFeed'
 
 const p = (title: string, extra: Partial<Posting> = {}): Posting => ({
   title, company: 'Acme', location: 'Austin, TX', posted: '2026-11-25', url: `https://x/${title}`, source: 'greenhouse', role: classify(title)!, ...extra,
@@ -76,5 +76,37 @@ describe('jobs feed', () => {
     expect(isSnapshot({ version: 2 })).toBe(false)
     expect(isSnapshot(null)).toBe(false)
     expect(isSnapshot(EMPTY_SNAPSHOT)).toBe(true)
+  })
+
+  it('lists every open role newest first, undated last, without duplicates', () => {
+    const list = [p('Quality Engineer', { posted: '' , url: 'u1', location: 'Reno, NV' }), p('Production Planner', { posted: '2026-11-20' }), p('Industrial Engineer', { posted: '2026-11-26' }), p('Industrial Engineer', { posted: '2026-11-26', source: 'adzuna', url: 'dup' })]
+    expect(sortPostings(list).map((x) => x.posted)).toEqual(['2026-11-26', '2026-11-26', '2026-11-20', ''])
+    const all = allPostings(list, new Date('2026-11-27T12:00:00Z'))
+    expect(all.postings).toHaveLength(3)
+    expect(all.postings.at(-1)!.posted).toBe('')
+    expect(isAllPostings(all)).toBe(true)
+    expect(isAllPostings({ version: 1 })).toBe(false)
+  })
+
+  it('filters by role and by every search word across title, company and place', () => {
+    const list = [p('Quality Engineer', { company: 'SpaceX', location: 'Hawthorne, CA' }), p('Supplier Quality Engineer', { company: 'Anduril', location: 'Austin, TX', url: 'b' }), p('Industrial Engineer', { location: 'Austin, TX', url: 'c' })]
+    expect(filterPostings(list, { role: 'quality' })).toHaveLength(2)
+    expect(filterPostings(list, { q: 'austin' })).toHaveLength(2)
+    expect(filterPostings(list, { role: 'quality', q: 'Anduril, TX' }).map((x) => x.url)).toEqual(['b'])
+    expect(filterPostings(list, { role: null, q: '  ' })).toHaveLength(3)
+  })
+
+  it('pages a list, clamping stale page numbers, and shows a compact page window', () => {
+    const n = Array.from({ length: 23 }, (_, i) => i)
+    expect(paginate(n, 1)).toMatchObject({ page: 1, pages: 3, total: 23, items: n.slice(0, 10) })
+    expect(paginate(n, 3).items).toEqual([20, 21, 22])
+    expect(paginate(n, 99).page).toBe(3)
+    expect(paginate(n, 0).page).toBe(1)
+    expect(paginate([], 2)).toMatchObject({ page: 1, pages: 1, items: [] })
+    expect(pageWindow(5, 20)).toEqual([1, null, 4, 5, 6, null, 20])
+    expect(pageWindow(1, 3)).toEqual([1, 2, 3])
+    expect(pageWindow(2, 4)).toEqual([1, 2, 3, 4])
+    expect(isRole('quality')).toBe(true)
+    expect(isRole('ceo')).toBe(false)
   })
 })

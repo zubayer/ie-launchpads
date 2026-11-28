@@ -129,6 +129,18 @@ Owner request: a card showing current IE job postings from authentic sources, se
 
 Limits: the counts are a weekly snapshot, not live. Adzuna is off: its free tier is 25 test calls, then a paid plan. Without Adzuna they are the roles open on a handful of employer boards (plus USAJOBS), and the card says so. First PR run: 5 boards answered with 344 IE-type open roles; 3 tokens returned 404 and one Lever board was empty, so those were removed. Greenhouse dates use the first-published date when the board gives one; otherwise the card labels the date "updated". Undated roles count as open but are not listed. Second PR run: 10 of 12 boards answered (Rivian and Saronic tokens returned 404 and were removed). Codex review (4 P2s: update dates, undated Lever roles, Adzuna fallback basis, zero-count trend) fixed in the same push.
 
+## Job list and landing placement (branch `v3/jobs-browser`, 2026-11-27)
+
+Owner request: move the jobs card into the place of "How every lesson works", add a way to see more jobs (pop-up with page numbers, or a new tab), and open a role's listings by clicking its bar.
+
+| Feature | Status | Evidence |
+|---|---|---|
+| Landing: jobs card replaces "How every lesson works" (removed) | Tested | Audit fails if that heading returns |
+| Role rows are buttons that open the list filtered to that role; "Show all open roles" opens everything | Tested | Audit (synthetic data, labelled in the script): Quality row opens 8 of 8 quality roles |
+| Job list dialog (native `<dialog>`): role filter, search, 10 per page with Previous, numbers and Next; focus moves to the list heading on page change; Esc closes and returns focus | Tested | Audit: page 4 of 37 shows 31–37, Next disabled, 0 axe violations with the dialog open, focus returns to the role row |
+| `/jobs` page with role, page and search in the address (the dialog's "Open this list in a new tab"); stale page numbers clamp | Tested | Audit: `/jobs?role=manufacturing&page=2` shows 1–7 of 7 at 390 px with no sideways scroll; `jobsFeed.test.ts` covers filtering, paging and the page window |
+| Collector also writes `data/jobs-all.json` (every open role, loaded only when the list opens); sources with no key are no longer listed as failed | Implemented | Runs in the deploy workflow |
+
 ## Known limitations
 
 - Review statuses on Lean, Quality, automation and OR lessons are AI-assisted; treat `source-checked` as "a source was matched", not expert review.

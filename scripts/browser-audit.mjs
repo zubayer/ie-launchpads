@@ -13,7 +13,7 @@ const sims = [...registry.matchAll(/id: '([a-z0-9-]+)'/g)].map((m) => `lab/${m[1
 const routes = [
   '', 'directory', 'domains', 'd/lean', 'd/lean/cheatsheet', 'c/quality.cpk', 'c/quality.cp', 'c/or.newton-raphson', 'c/engecon.npv', 'c/lean.takt-time', 'c/lean.takt-time?mode=quick', 'c/or.lp', 'c/or.branch-bound', 'c/or.mmc?mode=interview', 'formulas/mmc', 'formulas/newsvendor', 'c/safety.fmea',
   'review', 'practice', 'lab', 'roles', 'roles/quality-engineer', 'interview', 'plan', 'graph', 'progress', 'academy',
-  'curriculum', 'formulas', 'notebook', 'table', 'table?el=engecon.npv', 'chains', 'chains?chain=safety-case&step=2', 'sheets/engecon', 'method', 'formulas/oee', 'formulas/mm1', 'formulas/irr-newton', 'formulas/calibration?x=2', 'formulas/nope', 'paths', 'paths/lean-throughput', 'studio/sql', 'studio/sql/select', 'studio/sql/joins', 'studio/sql/windows', 'studio/sql/design', 'c/datasci.sql-joins', 'studio/plc', 'studio/plc/scan', 'studio/plc/nonc', 'studio/plc/sealin', 'studio/plc/timers', 'studio/plc/sequence', 'studio/plc/debug', 'studio/plc/safety', 'studio/plc/nope', 'studio/plc/lab/bottle-filler', 'studio/cad', 'studio/cad/sketch', 'studio/cad/intent', 'studio/cad/features', 'studio/cad/mates', 'studio/cad/drawings', 'studio/cad/analysis', 'studio/cad/dfx', 'c/automation.ladder-logic', 'c/automation.solidworks', 'guide', 'guide?path=root,flow,l-capacity', 'pairs', 'compare', 'compare?concepts=lean.takt-time%2Clean.cycle-time%2Clean.lead-time', 'dictionary', 'dictionary?concept=quality.cpk', 'mysteries', 'mysteries?case=beats-takt', 'subway', 'tools', 'spot-waste', 'certifications', 'certifications/asq-cssgb', 'certifications/iise-lean-green-belt', 'certifications/ncees-fe-industrial', 'certifications/nope', 'no-such-page', ...sims,
+  'curriculum', 'formulas', 'notebook', 'table', 'table?el=engecon.npv', 'chains', 'chains?chain=safety-case&step=2', 'sheets/engecon', 'method', 'formulas/oee', 'formulas/mm1', 'formulas/irr-newton', 'formulas/calibration?x=2', 'formulas/nope', 'paths', 'paths/lean-throughput', 'studio/sql', 'studio/sql/select', 'studio/sql/joins', 'studio/sql/windows', 'studio/sql/design', 'c/datasci.sql-joins', 'studio/plc', 'studio/plc/scan', 'studio/plc/nonc', 'studio/plc/sealin', 'studio/plc/timers', 'studio/plc/sequence', 'studio/plc/debug', 'studio/plc/safety', 'studio/plc/nope', 'studio/plc/lab/bottle-filler', 'studio/cad', 'studio/cad/sketch', 'studio/cad/intent', 'studio/cad/features', 'studio/cad/mates', 'studio/cad/drawings', 'studio/cad/analysis', 'studio/cad/dfx', 'c/automation.ladder-logic', 'c/automation.solidworks', 'guide', 'guide?path=root,flow,l-capacity', 'pairs', 'compare', 'compare?concepts=lean.takt-time%2Clean.cycle-time%2Clean.lead-time', 'dictionary', 'dictionary?concept=quality.cpk', 'mysteries', 'mysteries?case=beats-takt', 'subway', 'tools', 'spot-waste', 'jobs', 'jobs?role=quality&page=2', 'certifications', 'certifications/asq-cssgb', 'certifications/iise-lean-green-belt', 'certifications/ncees-fe-industrial', 'certifications/nope', 'no-such-page', ...sims,
 ]
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] })
@@ -127,6 +127,43 @@ for (const theme of ['light', 'dark']) {
       await first.getByRole('dialog').waitFor({ timeout: 2000 }).catch(() => { throw new Error('"Search terms" did not open the search') })
     } finally { await fresh.close() }
   } catch (e) { failures++; console.log(`✗ [${theme}] landing page: ${e.message}`) }
+  // Owner request (2026-11-27): the jobs card replaces "How every lesson works"; a role row or "Show all open roles"
+  // opens a paged job list in a dialog, which can also open as its own page. The committed data files are empty
+  // until the first weekly collection, so this check serves SYNTHETIC data (labelled as such) for the two files.
+  try {
+    const roles = ['industrial', 'quality', 'ci', 'manufacturing', 'planning']
+    const titles = { industrial: 'Industrial Engineer', quality: 'Quality Engineer', ci: 'Continuous Improvement Engineer', manufacturing: 'Manufacturing Engineer', planning: 'Production Planner' }
+    const postings = Array.from({ length: 37 }, (_, i) => { const role = roles[i % 5]; return { title: `${titles[role]} ${i + 1}`, company: 'Synthetic Co', location: 'Testville, TX', posted: `2026-11-${String(27 - (i % 20)).padStart(2, '0')}`, dated: 'published', url: `https://example.com/synthetic/${i}`, source: 'greenhouse', role } })
+    const counts = Object.fromEntries(roles.map((r) => [r, postings.filter((x) => x.role === r).length]))
+    const snap = { version: 1, generated: '2026-11-28T12:00:00Z', basis: 'collected', sources: [{ id: 'greenhouse:synthetic', name: 'Synthetic Co', url: 'https://example.com/', ok: true, count: 37 }], roles: roles.map((r) => ({ id: r, label: titles[r], count: counts[r] })), history: [{ week: '2026-11-23', basis: 'collected', counts }], latest: postings.slice(0, 10) }
+    await page.route('**/data/jobs.json', (r) => r.fulfill({ json: snap }))
+    await page.route('**/data/jobs-all.json', (r) => r.fulfill({ json: { version: 1, generated: snap.generated, postings } }))
+    await page.setViewportSize({ width: 1366, height: 900 })
+    await page.goto(`${BASE}?jobs=1#/`)
+    if (await page.getByRole('heading', { name: 'How every lesson works' }).count()) throw new Error('"How every lesson works" is back on the landing page')
+    const role = page.getByRole('button', { name: /^Quality Engineer, 8 open\b.*Show these roles$/ })
+    await role.click()
+    const dlg = page.getByRole('dialog', { name: 'Open IE roles' })
+    await dlg.waitFor({ timeout: 4000 })
+    await dlg.getByText('Quality Engineer: 1–8 of 8').waitFor({ timeout: 4000 }).catch(() => { throw new Error('the role row did not open its own roles') })
+    await dlg.getByRole('button', { name: /^All/ }).click()
+    await dlg.getByText('All IE roles: 1–10 of 37').waitFor()
+    await dlg.getByRole('button', { name: 'Page 4' }).click()
+    await dlg.getByText('All IE roles: 31–37 of 37').waitFor()
+    if (!(await dlg.getByRole('button', { name: 'Next →' }).isDisabled())) throw new Error('Next is enabled on the last page')
+    if (!(await dlg.getByRole('link', { name: /Open this list in a new tab/ }).getAttribute('href')).endsWith('#/jobs?page=4')) throw new Error('the new-tab link does not keep the page')
+    await page.addScriptTag({ content: axe })
+    const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] })).violations.map((x) => `${x.id} ${x.nodes[0]?.target}`))
+    if (v.length) throw new Error('open job list accessibility: ' + v.join(', '))
+    await page.keyboard.press('Escape')
+    await dlg.waitFor({ state: 'hidden', timeout: 2000 })
+    if (!(await role.evaluate((el) => el === document.activeElement))) throw new Error('focus did not return to the role that opened the list')
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto(`${BASE}?jobs=2#/jobs?role=manufacturing&page=2`)
+    await page.getByText('Manufacturing / Process Engineer: 1–7 of 7').waitFor().catch(() => { throw new Error('a stale page number is not clamped on /jobs') })
+    if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)) throw new Error('/jobs scrolls sideways on a phone')
+    await page.unroute('**/data/jobs.json'); await page.unroute('**/data/jobs-all.json')
+  } catch (e) { failures++; console.log(`✗ [${theme}] jobs list: ${e.message}`) }
   // Owner decision (2026-11-27): Zubayer's PLC Ladder Lab (github.com/zubayer/PLCLadderLogic) is embedded in the PLC
   // studio. axe does not look inside iframes, so the embedded page is audited on its own, wide and phone-sized.
   try {

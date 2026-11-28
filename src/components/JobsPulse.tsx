@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { isSnapshot, trend, type Posting, type Snapshot } from '../lib/jobsFeed'
+import { isSnapshot, trend, type RoleId, type Snapshot } from '../lib/jobsFeed'
+import { JobsDialog, PostingItem, type ListState } from './JobsBrowser'
 
 /*
  * "IE jobs this week": reads data/jobs.json, which the deploy workflow refreshes weekly from
@@ -7,12 +8,7 @@ import { isSnapshot, trend, type Posting, type Snapshot } from '../lib/jobsFeed'
  * job sites in the browser, so no keys are exposed and the card shows the last file when offline.
  */
 
-const SOURCE_LABEL: Record<Posting['source'], string> = { greenhouse: 'employer page', lever: 'employer page', usajobs: 'USAJOBS', adzuna: 'Adzuna' }
 const fmt = (d: string, opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }) => new Date(d.length === 10 ? d + 'T12:00:00Z' : d).toLocaleDateString('en-US', { ...opts, timeZone: 'UTC' })
-const ago = (d: string) => {
-  const days = Math.max(0, Math.round((Date.now() - new Date(d + 'T12:00:00Z').getTime()) / 86_400_000))
-  return days === 0 ? 'today' : days === 1 ? '1 day ago' : `${days} days ago`
-}
 
 type State = { kind: 'loading' } | { kind: 'error' } | { kind: 'ready'; snap: Snapshot }
 
@@ -41,6 +37,8 @@ export default function JobsPulse({ limit = 6 }: { limit?: number }) {
 }
 
 function Body({ snap, limit }: { snap: Snapshot; limit: number }) {
+  const [dialog, setDialog] = useState<ListState | null>(null)
+  const openList = (role: RoleId | null) => setDialog({ role, page: 1, q: '' })
   if (!snap.generated) {
     return <p className="mt-3 text-sm text-ink-2">{snap.note ?? 'No postings collected yet.'} Each week this card will list new industrial, quality, continuous-improvement, manufacturing and planning roles from employer careers pages and USAJOBS, with the change from the week before.</p>
   }
@@ -58,42 +56,41 @@ function Body({ snap, limit }: { snap: Snapshot; limit: number }) {
           : `Roles open now on ${employers.length} employer careers page${employers.length === 1 ? '' : 's'}${ok.some((s) => s.id === 'usajobs') ? ', plus USAJOBS postings from the last 30 days' : ''}: a sample, not the whole market.`}
       </p>
       <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+        <div>
+        <p className="mb-2 text-xs text-ink-2">Select a role to see its listings.</p>
         <ul className="space-y-3">
           {snap.roles.map((r) => {
             const t = trend(snap, r.id)
             return (
               <li key={r.id}>
-                <div className="flex items-baseline justify-between gap-2 text-sm">
-                  <span className="font-semibold">{r.label}</span>
+                <button type="button" onClick={() => openList(r.id)} className="group block w-full rounded-md p-1.5 -m-1.5 text-left hover:bg-grid"
+                  aria-label={`${r.label}, ${r.count.toLocaleString('en-US')} open${!t ? '' : t.pct === null ? ', new this week' : t.pct === 0 ? ', no change from last week' : `, ${t.pct > 0 ? 'up' : 'down'} ${Math.abs(t.pct)}% from the week of ${fmt(t.from)}`}. Show these roles`}>
+                <span className="flex items-baseline justify-between gap-2 text-sm">
+                  <span className="font-semibold group-hover:text-sblue group-hover:underline">{r.label}</span>
                   <span className="whitespace-nowrap">
                     <span className="font-bold">{r.count.toLocaleString('en-US')}</span>
                     {t && t.pct === null ? (
-                      <span className="ml-2 text-xs text-ink-2">new<span className="sr-only">: none in the week of {fmt(t.from)}</span></span>
+                      <span className="ml-2 text-xs text-ink-2">new</span>
                     ) : t && t.pct !== null ? (
                       <span className="ml-2" style={{ color: t.pct > 0 ? 'var(--color-sgreen)' : t.pct < 0 ? 'var(--color-sorange)' : 'var(--color-ink-2)' }}>
-                        <span aria-hidden>{t.pct > 0 ? '▲' : t.pct < 0 ? '▼' : '–'} {Math.abs(t.pct)}%</span>
-                        <span className="sr-only">{t.pct === 0 ? ', no change' : `, ${t.pct > 0 ? 'up' : 'down'} ${Math.abs(t.pct)}%`} from the week of {fmt(t.from)}</span>
+                        {t.pct > 0 ? '▲' : t.pct < 0 ? '▼' : '–'} {Math.abs(t.pct)}%
                       </span>
                     ) : <span className="ml-2 text-xs text-ink-2">trend next week</span>}
                   </span>
-                </div>
+                </span>
                 <span aria-hidden className="mt-1 block h-1.5 overflow-hidden rounded-full bg-grid"><span className="block h-full rounded-full bg-sblue" style={{ width: `${(r.count / max) * 100}%` }} /></span>
+                </button>
               </li>
             )
           })}
         </ul>
+        </div>
         <div>
           <h3 className="text-sm font-bold">Latest postings</h3>
           {latest.length ? (
-            <ul className="mt-2 divide-y divide-line/60 text-sm">
-              {latest.map((p) => (
-                <li key={p.url} className="py-2">
-                  <a className="font-semibold hover:text-sblue hover:underline" href={p.url} target="_blank" rel="noopener noreferrer">{p.title}<span className="sr-only"> (opens the posting on {SOURCE_LABEL[p.source]})</span></a>
-                  <span className="block text-ink-2">{p.company} · {p.location} · {p.dated === 'updated' ? 'updated ' : ''}{ago(p.posted)} · via {SOURCE_LABEL[p.source]}</span>
-                </li>
-              ))}
-            </ul>
+            <ul className="mt-2 divide-y divide-line/60 text-sm">{latest.map((p) => <PostingItem key={p.url} p={p} />)}</ul>
           ) : <p className="mt-2 text-sm text-ink-2">No matching postings in the last 30 days.</p>}
+          <button type="button" className="btn mt-3" onClick={() => openList(null)}>Show all open roles</button>
         </div>
       </div>
       <div className="mt-4 border-t border-line pt-3 text-xs text-ink-2">
@@ -106,6 +103,7 @@ function Body({ snap, limit }: { snap: Snapshot; limit: number }) {
         {snap.note && <p className="mt-1">{snap.note}</p>}
         {off.length > 0 && <p className="mt-1">Not included this week: {off.map((s) => `${s.name} (${s.note ?? 'no answer'})`).join('; ')}.</p>}
       </div>
+      <JobsDialog open={!!dialog} initial={dialog ?? { role: null, page: 1, q: '' }} onClose={() => setDialog(null)} />
     </>
   )
 }
