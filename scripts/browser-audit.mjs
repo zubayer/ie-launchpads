@@ -109,7 +109,7 @@ for (const theme of ['light', 'dark']) {
     await page.getByRole('heading', { name: 'Welcome back.' }).waitFor({ timeout: 5000 }).catch(() => { throw new Error('a returning learner does not see the welcome-back bar') })
     const fresh = await browser.newContext({ viewport: { width: 1366, height: 900 }, reducedMotion: 'reduce' })
     await fresh.route(/^https?:\/\/(?!localhost)/, (r) => r.abort())
-    await fresh.addInitScript((t) => { if (!localStorage.getItem('ie-launchpads-v2')) localStorage.setItem('ie-launchpads-v2', JSON.stringify({ state: { settings: { theme: t } }, version: 3 })) }, theme)
+    await fresh.addInitScript((t) => { if (!localStorage.getItem('ie-launchpads-v2')) localStorage.setItem('ie-launchpads-v2', JSON.stringify({ state: { settings: { theme: t } }, version: 4 })) }, theme)
     const first = await fresh.newPage()
     try {
       await first.goto(`${BASE}?landing=first#/`)
@@ -290,6 +290,60 @@ for (const theme of ['light', 'dark']) {
   if (errors.length) { failures += errors.length; console.log(`✗ [${theme}] script errors:\n  ${errors.join('\n  ')}`) }
   await page.close()
 }
+// Owner request (2026-11-28): more colour themes and a text-size setting. All routes run in Day and Night above;
+// the other themes run on a sample that covers every kind of page, and the Display menu is driven once.
+const SAMPLE = ['', 'c/quality.cpk', 'c/lean.takt-time', 'c/engecon.npv', 'formulas/oee', 'certifications', 'certifications/asq-cssgb', 'jobs', 'studio/plc', 'studio/plc/lab/bottle-filler', 'studio/sql/select', 'studio/cad/sketch', 'dictionary', 'compare', 'roles/quality-engineer', 'interview', 'plan', 'progress', 'review', 'practice', 'graph', 'table', 'mysteries', 'guide', 'paths/lean-throughput', ...sims.slice(0, 6)]
+for (const theme of ['sepia', 'contrast', 'contrast-dark']) {
+  const page = await browser.newPage({ viewport: { width: 1366, height: 900 }, reducedMotion: 'reduce' })
+  const errors = []
+  page.on('pageerror', (e) => errors.push(`${page.url()}: ${e.message}`))
+  await page.route(/^https?:\/\/(?!localhost)/, (r) => r.abort())
+  await page.addInitScript((t) => localStorage.setItem('ie-launchpads-v2', JSON.stringify({ state: { settings: { theme: t } }, version: 4 })), theme)
+  for (const [i, r] of SAMPLE.entries()) {
+    await page.goto(`${BASE}?t=${theme}&n=${i}#/${r}`)
+    await page.waitForSelector('h1', { timeout: 5000 }).catch(() => {})
+    await page.waitForTimeout(300)
+    if (!(await page.evaluate((t) => document.documentElement.classList.contains(`theme-${t}`), theme))) { failures++; console.log(`✗ [${theme}] /${r}: theme class not applied`) }
+    await page.addScriptTag({ content: axe })
+    const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] })).violations.map((x) => `${x.id} (${x.nodes.length}) ${x.nodes[0]?.target?.join(' ')}`))
+    if (v.length) { failures++; console.log(`✗ [${theme}] /${r}\n    ${v.join('\n    ')}`) }
+  }
+  if (errors.length) { failures += errors.length; console.log(`✗ [${theme}] script errors:\n  ${errors.join('\n  ')}`) }
+  await page.close()
+}
+// The Display menu: pick a theme and a text size, see them applied and kept after a reload; larger text must not
+// make pages scroll sideways on a phone.
+try {
+  const page = await browser.newPage({ viewport: { width: 1366, height: 900 }, reducedMotion: 'reduce' })
+  await page.route(/^https?:\/\/(?!localhost)/, (r) => r.abort())
+  await page.goto(`${BASE}?display=1#/`)
+  await page.waitForSelector('#main h1')
+  const open = page.getByRole('button', { name: /^Display/ })
+  await open.click()
+  const menu = page.getByRole('group', { name: 'Display settings' })
+  // The radios are visually hidden inside choice cards, so pick the card the way a person does.
+  await menu.getByText('Paper', { exact: true }).click()
+  await menu.getByText('Larger', { exact: true }).click()
+  if (!(await menu.getByRole('radio', { name: /^Paper/ }).isChecked())) throw new Error('Paper is not checked after choosing it')
+  const state = () => page.evaluate(() => ({ cls: document.documentElement.className, size: getComputedStyle(document.documentElement).fontSize }))
+  let st = await state()
+  if (!st.cls.includes('theme-sepia') || st.size !== '20px') throw new Error(`choices not applied: ${JSON.stringify(st)}`)
+  await page.addScriptTag({ content: axe })
+  const v = await page.evaluate(async () => (await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] })).violations.map((x) => `${x.id} ${x.nodes[0]?.target}`))
+  if (v.length) throw new Error('open Display menu accessibility: ' + v.join(', '))
+  await page.keyboard.press('Escape')
+  if (!(await open.evaluate((el) => el === document.activeElement))) throw new Error('Esc did not return focus to the Display button')
+  await page.reload(); await page.waitForSelector('#main h1')
+  st = await state()
+  if (!st.cls.includes('theme-sepia') || st.size !== '20px') throw new Error(`choices not kept after reload: ${JSON.stringify(st)}`)
+  await page.setViewportSize({ width: 390, height: 844 })
+  for (const r of ['', 'c/quality.cpk', 'certifications', 'jobs', 'studio/plc', 'formulas/oee']) {
+    await page.goto(`${BASE}?large=${r.length}#/${r}`); await page.waitForSelector('h1'); await page.waitForTimeout(300)
+    const wide = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
+    if (wide > 1) throw new Error(`/${r} scrolls sideways by ${wide}px on a phone with larger text`)
+  }
+  await page.close()
+} catch (e) { failures++; console.log(`✗ display settings: ${e.message}`) }
 await browser.close()
-console.log(failures ? `\n${failures} problem(s) across ${routes.length} routes × 2 themes` : `✓ ${routes.length} routes × 2 themes: no script errors, no axe WCAG 2.2 AA violations`)
+console.log(failures ? `\n${failures} problem(s) across ${routes.length} routes × 2 themes` : `✓ ${routes.length} routes × 2 themes, plus ${SAMPLE.length} sample pages × 3 more themes: no script errors, no axe WCAG 2.2 AA violations`)
 process.exit(failures ? 1 : 0)

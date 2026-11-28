@@ -6,6 +6,7 @@ import { DOMAINS, DOMAIN_MAP } from '../content/domains'
 import { ROLES } from '../content/roles'
 import { statusOf, streak, today, useStore } from '../lib/store'
 import { isDue } from '../lib/srs'
+import { TEXT_SIZES, THEMES, type TextSize } from '../lib/display'
 import { Bar, ConceptRow, PageHead, Section } from '../components/ui'
 import type { DomainId } from '../types'
 import { FocusTimer } from '../components/FocusTimer'
@@ -212,7 +213,9 @@ export function Progress() {
       <Section title="Settings & data">
         <div className="sheet grid gap-4 rounded-lg p-5 sm:grid-cols-2">
           <label className="block"><span className="label">Theme</span>
-            <select className="input mt-1" value={settings.theme} onChange={(e) => setSettings({ theme: e.target.value as typeof settings.theme })}><option value="system">Match device</option><option value="light">Light (engineering pad)</option><option value="dark">Dark (night shift)</option></select></label>
+            <select className="input mt-1" value={settings.theme} onChange={(e) => setSettings({ theme: e.target.value as typeof settings.theme })}>{THEMES.map((t) => <option key={t.id} value={t.id}>{t.label}: {t.hint.toLowerCase()}</option>)}</select></label>
+          <label className="block"><span className="label">Text size</span>
+            <select className="input mt-1" value={settings.textSize ?? 'standard'} onChange={(e) => setSettings({ textSize: e.target.value as TextSize })}>{TEXT_SIZES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}</select></label>
           <label className="block"><span className="label">Focus block length (minutes)</span>
             <input type="number" min={5} max={90} className="input mt-1" value={settings.focusMin} onChange={(e) => setSettings({ focusMin: Number(e.target.value) })} /></label>
           <div className="flex flex-wrap items-end gap-2 sm:col-span-2">

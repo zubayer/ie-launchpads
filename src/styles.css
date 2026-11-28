@@ -35,6 +35,61 @@
   --color-tape-ink: #f2b705;
 }
 
+/* Paper (sepia): warm, low-glare reading page. Every text colour ≥ 4.5:1 (src/lib/display.test.ts). */
+.theme-sepia {
+  --color-paper: #f3ead7;
+  --color-sheet: #fbf6ea;
+  --color-grid: #ece1c8;
+  --color-line: #dccdab;
+  --color-ink: #33291b;
+  --color-ink-2: #5f4f3a;
+  --color-sblue: #1d5596;
+  --color-sgreen: #2d6a2d;
+  --color-sred: #a3302a;
+  --color-sorange: #9c4510;
+  --color-tape-ink: #6a4f00;
+}
+
+/* High contrast: black on white, text ≥ 7:1, borders ≥ 3:1 (WCAG AAA text, AA non-text). */
+.theme-contrast {
+  --color-paper: #ffffff;
+  --color-sheet: #ffffff;
+  --color-grid: #eeeeee;
+  --color-line: #5c5c5c;
+  --color-ink: #000000;
+  --color-ink-2: #2b2b2b;
+  --color-sblue: #0037a0;
+  --color-sgreen: #005c1f;
+  --color-sred: #a1001b;
+  --color-sorange: #8a3300;
+  --color-tape-ink: #5a4300;
+}
+
+/* High contrast dark: white on black, bright accents (also gets .dark). */
+.theme-contrast-dark {
+  --color-paper: #000000;
+  --color-sheet: #000000;
+  --color-grid: #141414;
+  --color-line: #9a9a9a;
+  --color-ink: #ffffff;
+  --color-ink-2: #dedede;
+  --color-sblue: #8fc8ff;
+  --color-sgreen: #7cf29a;
+  --color-sred: #ff9aa8;
+  --color-sorange: #ffb27a;
+  --color-tape-ink: #ffd34d;
+}
+.theme-contrast .sheet, .theme-contrast-dark .sheet { box-shadow: none; }
+.theme-contrast a:not(.btn):not(.chip), .theme-contrast-dark a:not(.btn):not(.chip) { text-decoration-thickness: 2px; }
+.theme-contrast :focus-visible, .theme-contrast-dark :focus-visible { outline: 3px solid var(--color-sblue) !important; outline-offset: 2px; }
+
+/* Choice cards built from a visually hidden radio: show keyboard focus on the card. */
+label:has(> input.sr-only:focus-visible) { outline: 2px solid var(--color-sblue); outline-offset: 2px; }
+
+/* Text size: scales every rem-based size (type, spacing, controls) together. */
+html.text-large { font-size: 112.5%; }
+html.text-larger { font-size: 125%; }
+
 /* Landing page "doors": the action at the foot of each card. */
 .door-go { display: inline-flex; align-items: center; gap: .4rem; font-weight: 700; color: var(--color-sblue); }
 .door-go:hover { text-decoration: underline; }
@@ -46,7 +101,7 @@ body {
   background-color: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
-  font-size: 17px;
+  font-size: 1.0625rem; /* 17px at standard size; grows with the text-size setting */
   line-height: 1.55;
   font-variant-numeric: tabular-nums;
 }

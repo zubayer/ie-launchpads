@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { isTextSize, isTheme, type TextSize, type ThemeId } from './display'
 import { persist } from 'zustand/middleware'
 import { newCard, schedule, type Rating, type SrsCard } from './srs'
 
@@ -22,7 +23,8 @@ export interface StarStory {
 }
 
 export interface Settings {
-  theme: 'light' | 'dark' | 'system'
+  theme: ThemeId
+  textSize?: TextSize // display text size (src/lib/display.ts); standard when missing
   dailyNew: number
   path: string | null // role path id
   planStart: string // YYYY-MM-DD
@@ -107,12 +109,14 @@ const defaultSettings: Settings = {
   planEnd: today(new Date(Date.now() + 90 * 86400000)),
   focusMin: 25,
   navPinned: false,
+  textSize: 'standard',
 }
 
 /**
  * Upgrade a save written by an older version of the app. Never drops learner data.
  * v0 → v1 changed no fields. v1 → v2 adds `attempts` (EDU-03 evidence); older saves start with none.
  * v2 → v3 adds `settings.navPinned` (auto-hide menu); older saves start unpinned, so the menu hides by default.
+ * v3 → v4 adds `settings.textSize` (standard) and more colour themes; an unknown theme falls back to Match device.
  */
 export function migrateSave(persisted: unknown, version: number): Record<string, unknown> {
   let s: Record<string, unknown> = persisted && typeof persisted === 'object' ? { ...(persisted as Record<string, unknown>) } : {}
@@ -120,6 +124,10 @@ export function migrateSave(persisted: unknown, version: number): Record<string,
   if (version < 3) {
     const settings = s.settings && typeof s.settings === 'object' && !Array.isArray(s.settings) ? (s.settings as Record<string, unknown>) : {}
     s = { ...s, settings: { ...settings, navPinned: typeof settings.navPinned === 'boolean' ? settings.navPinned : false } }
+  }
+  if (version < 4) {
+    const settings = s.settings && typeof s.settings === 'object' && !Array.isArray(s.settings) ? (s.settings as Record<string, unknown>) : {}
+    s = { ...s, settings: { ...settings, theme: isTheme(settings.theme) ? settings.theme : 'system', textSize: isTextSize(settings.textSize) ? settings.textSize : 'standard' } }
   }
   return s
 }
@@ -182,7 +190,7 @@ export const useStore = create<State>()(
     }),
     {
       name: 'ie-launchpads-v2',
-      version: 3,
+      version: 4,
       migrate: (persisted, version) => migrateSave(persisted, version) as unknown as State,
       // Saved data can be partial (older versions, manual edits, an interrupted write). Keep what is valid,
       // fall back to defaults for the rest, so a damaged save can't crash a page.
@@ -196,7 +204,10 @@ export const useStore = create<State>()(
           ratings: obj(p.ratings, current.ratings), stories: arr(p.stories, current.stories), bookmarks: arr(p.bookmarks, current.bookmarks),
           mockLog: arr(p.mockLog, current.mockLog), mistakes: arr(p.mistakes, current.mistakes), pinnedFormulas: arr(p.pinnedFormulas, current.pinnedFormulas),
           attempts: arr<Attempt>(p.attempts, current.attempts).filter((a) => a && typeof a.item === 'string' && typeof a.correct === 'boolean'),
-          settings: { ...defaultSettings, ...obj<Partial<Settings>>(p.settings, {}) },
+          settings: (() => {
+            const st = { ...defaultSettings, ...obj<Partial<Settings>>(p.settings, {}) }
+            return { ...st, theme: isTheme(st.theme) ? st.theme : 'system', textSize: isTextSize(st.textSize) ? st.textSize : 'standard' }
+          })(),
         }
       },
     },

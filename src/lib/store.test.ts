@@ -16,7 +16,7 @@ describe('saved-progress migration', () => {
     expect(out.cards).toEqual(v2Save.cards)
     expect(out.bookmarks).toEqual(v2Save.bookmarks)
     expect(out.attempts).toEqual(v2Save.attempts)
-    expect(out.settings).toEqual({ ...v2Save.settings, navPinned: false })
+    expect(out.settings).toEqual({ ...v2Save.settings, navPinned: false, textSize: 'standard' })
   })
 
   it('v1 saves gain attempts and the nav setting', () => {
@@ -33,8 +33,18 @@ describe('saved-progress migration', () => {
   })
 
   it('tolerates damaged saves', () => {
-    expect(migrateSave(null, 0)).toEqual({ attempts: [], settings: { navPinned: false } })
-    expect((migrateSave({ settings: ['bad'] }, 2).settings as object)).toEqual({ navPinned: false })
+    expect(migrateSave(null, 0)).toEqual({ attempts: [], settings: { navPinned: false, theme: 'system', textSize: 'standard' } })
+    expect((migrateSave({ settings: ['bad'] }, 2).settings as object)).toEqual({ navPinned: false, theme: 'system', textSize: 'standard' })
+  })
+})
+
+describe('v3 → v4 display settings', () => {
+  it('keeps a valid theme, adds standard text size, and resets an unknown theme to Match device', () => {
+    const v3 = { ...structuredClone(v2Save), settings: { ...v2Save.settings, navPinned: true } }
+    expect(migrateSave(v3, 3).settings).toEqual({ ...v3.settings, textSize: 'standard' })
+    expect((migrateSave({ settings: { theme: 'neon', textSize: 'huge' } }, 3).settings as object)).toEqual({ theme: 'system', textSize: 'standard' })
+    expect((migrateSave({ settings: { theme: 'sepia', textSize: 'larger' } }, 3).settings as object)).toEqual({ theme: 'sepia', textSize: 'larger' })
+    expect(migrateSave(v3, 3).progress).toEqual(v2Save.progress)
   })
 })
 
