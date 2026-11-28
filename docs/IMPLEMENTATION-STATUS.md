@@ -2,7 +2,7 @@
 
 The single registry of what exists. Statuses: **Planned** → **In development** → **Implemented** (code merged) → **Tested** (automated tests and a browser run passed) → **Verified** (a named human reviewed it). **Blocked** means it can't proceed without something outside the repo. Nothing here is Verified yet: no human expert review has happened.
 
-Last updated 2026-11-27 (adds PRs #18–#27 and the jobs card). The V3 register is `docs/V3-EXECUTION-PLAN.md`.
+Last updated 2026-11-28 (adds PRs #18–#32 and display themes). The V3 register is `docs/V3-EXECUTION-PLAN.md`.
 
 ## Baseline (from V1, preserved)
 
@@ -144,6 +144,19 @@ Owner request: move the jobs card into the place of "How every lesson works", ad
 | Card layout: roles panel with total and "Show all", divider, postings as cards two per row on wide screens, 4 on phones (owner request) | Tested | Audit 0 violations both themes; screenshots at 1440, 1100 and 390 px |
 | Latest postings paged inside the card: 18 a page (6 on phones), compact two-line rows, ‹ numbers › and "More jobs" (owner request, 2026-11-28) | Tested | Audit (synthetic data): 1–18 of 37, Next → 19–36, page 3 → 37, Next disabled; 0 axe violations both themes |
 | Collector also writes `data/jobs-all.json` (every open role, loaded only when the list opens); sources with no key are no longer listed as failed | Implemented | Runs in the deploy workflow |
+
+## Display themes and text size (branch `v3/display-themes`, 2026-11-28)
+
+Owner request: more colour choices (day, dark, others) with the best contrast and standard combinations, and better font visibility.
+
+| Feature | Status | Evidence |
+|---|---|---|
+| Display menu (top bar, keyboard and screen-reader operable radios; Esc returns focus) and Settings page selects | Tested | Audit: pick Paper and Larger, classes and 20 px root size applied and kept after reload, 0 axe violations with the menu open |
+| Themes: Day, Night, Paper (sepia), High contrast, High contrast dark, Match device | Tested | `display.test.ts` reads `styles.css`: text ≥ 4.5:1 on page, card and tint in every theme; ≥ 7:1 for ink, secondary text and links in both high-contrast themes; borders ≥ 3:1 there. Audit: all routes in Day and Night, 31 sample pages in each other theme, 0 violations |
+| Text size Standard / Large / Larger (root font 100 / 112.5 / 125%) | Tested | Audit: six key pages at 390 px with Larger text, no sideways scroll |
+| Persist v4 migration (`textSize`, theme validation) | Tested | `store.test.ts` |
+
+Limits: a few drawings use fixed colours, so they keep their Day/Night look in Paper and High contrast.
 
 ## Known limitations
 

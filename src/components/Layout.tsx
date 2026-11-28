@@ -7,6 +7,7 @@ import { DOMAIN_MAP } from '../content/domains'
 import { googleUrl, wiki, wikiSearchUrl } from '../lib/web'
 import { SelectionLookup, WikiCard, useWiki } from './Glossary'
 import { v1Href } from '../lib/version'
+import DisplayMenu, { useDisplay } from './DisplayMenu'
 
 const NAV: { group: string; items: { to: string; label: string; end?: boolean }[] }[] = [
   { group: '', items: [{ to: '/', label: 'Today', end: true }] },
@@ -55,20 +56,6 @@ const NAV: { group: string; items: { to: string; label: string; end?: boolean }[
   ] },
 ]
 
-function useTheme() {
-  const theme = useStore((s) => s.settings.theme)
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)')
-    const apply = () => {
-      const dark = theme === 'dark' || (theme === 'system' && mq.matches)
-      document.documentElement.classList.toggle('dark', dark)
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0f1522' : '#f4f6fa')
-    }
-    apply()
-    mq.addEventListener('change', apply)
-    return () => mq.removeEventListener('change', apply)
-  }, [theme])
-}
 
 export function WebAnswer({ query }: { query: string }) {
   const [dq, setDq] = useState(query)
@@ -186,7 +173,7 @@ const HOVER_OPEN_MS = 250 // dwell at the left edge before the menu slides in, s
 const HOVER_CLOSE_MS = 350
 
 export default function Layout() {
-  useTheme()
+  useDisplay()
   // Owner decision (2026-11-26): on desktop the menu is hidden by default so lessons get the full width. It slides in
   // when the pointer rests at the left edge, from the Menu button, or with the M key, and Pin keeps it docked open.
   // Search stays in the top bar on every page and screen size.
@@ -247,7 +234,6 @@ export default function Layout() {
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
   })
-  const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light'
 
   return (
     <div className="min-h-screen lg:flex">
@@ -303,11 +289,6 @@ export default function Layout() {
               </div>
             ))}
           </nav>
-          <div className="border-t border-line px-4 py-3 text-sm">
-            <button className="text-ink-2 hover:text-ink" onClick={() => setSettings({ theme: nextTheme })}>
-              Theme: {theme === 'system' ? 'match device' : theme}
-            </button>
-          </div>
         </div>
       </aside>
       {overlay && <div className={`no-print fixed inset-0 z-30 ${byHover ? '' : 'bg-ink/30'}`} onClick={close} aria-hidden />}
@@ -325,6 +306,7 @@ export default function Layout() {
             <span className="truncate">Search {CONCEPTS.length} terms: FMEA, takt time, Cpk…</span>
             <kbd className="hidden rounded border border-line px-1.5 text-xs sm:inline">/</kbd>
           </button>
+          <DisplayMenu />
           {!docked && <span className="hidden shrink-0 sm:block"><VersionSwitch compact /></span>}
         </div>
         <main id="main" className="mx-auto max-w-[160rem] px-4 py-6 sm:px-8 sm:py-10">

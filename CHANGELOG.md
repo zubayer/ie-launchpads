@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased — branch `v3/display-themes` (2026-11-28)
+
+### Added
+- **Display menu** in the top bar (half-filled circle icon, "Display"), also on the Settings page. Owner request: more colour choices with the best contrast and standard combinations.
+  - **Colour themes**, each shown with a small preview:
+    - Match device
+    - Day
+    - Night
+    - **Paper**: a warm, low-glare page for long reading
+    - **High contrast**: black on white, with stronger borders and focus rings
+    - **High contrast dark**: white on black, with bright accents
+  - **Text size**: Standard, Large (112.5%) or Larger (125%). Type, spacing and controls all scale together.
+  - Your choices are saved in this browser, and the browser bar colour on phones follows the theme.
+
+### Changed
+- The menu's old "Theme: …" cycling button is replaced by the Display menu.
+- The Display panel fits short screens (a phone held sideways) and scrolls inside, so Text size stays reachable (Codex P1 on PR #33).
+- The saved-progress format moves to version 4. It adds `textSize`, and an unknown theme falls back to Match device. Existing progress is kept (tested).
+
 ## Unreleased — branch `v3/jobs-latest-pager` (2026-11-28)
 
 ### Changed
