@@ -15,7 +15,7 @@ The card on the landing page and on Certifications reads `data/jobs.json`. The s
 |---|---|---|
 | Employer careers pages on Greenhouse and Lever (list in `BOARDS` in the script) | IE-type postings straight from the employer | None |
 | USAJOBS Search API | Federal postings in the Industrial Engineering series (0896), last 30 days | `USAJOBS_API_KEY` + `USAJOBS_EMAIL` |
-| Adzuna Search API | US totals per role for the last 7 days (the card's counts) and the newest postings; shown as "Jobs by Adzuna" | `ADZUNA_APP_ID` + `ADZUNA_APP_KEY` |
+| Adzuna Search API (optional, not used) | US totals per role for the last 7 days and the newest postings; shown as "Jobs by Adzuna" | `ADZUNA_APP_ID` + `ADZUNA_APP_KEY` |
 
 What the counts mean, stated on the card: with Adzuna, the US total of postings in the last 7 days with the role in the job title; without it, the IE-type roles open right now on the employer pages plus USAJOBS postings from the last 30 days (a sample; employer boards keep roles open for months, so a 7-day window left almost nothing). Trends only compare weeks counted the same way.
 
@@ -23,16 +23,17 @@ Dates: Greenhouse's list gives the last-edited date unless a board includes the 
 
 Role matching is by job title (`ROLES` in `src/lib/jobsFeed.ts`), so a Quality Inspector or a Financial Planner is not counted.
 
-## Turning on USAJOBS and Adzuna (owner, about 10 minutes)
+## Adzuna is off
+
+Checked 2026-11-27: a new Adzuna key is on "Pending activation" with 25 test calls in total; ongoing access needs a card and a paid plan. One collection uses 5 calls and the collector runs weekly and on every deploy, so the free tier can't sustain it. The code stays: it only runs if the two Adzuna secrets exist, so leave them unset.
+
+## Turning on USAJOBS (owner, about 5 minutes)
 
 1. **USAJOBS key:** fill in the request form at https://developer.usajobs.gov/apirequest/ . The key arrives by email. Keep the email address you used: it is sent with every request.
-2. **Adzuna key:** register at https://developer.adzuna.com/ and copy the Application ID and Application Key from your dashboard.
-3. **Add them to GitHub:** repo `zubayer/ie-launchpads` → Settings → Secrets and variables → Actions → New repository secret. Add four secrets with exactly these names:
+2. **Add it to GitHub:** repo `zubayer/ie-launchpads` → Settings → Secrets and variables → Actions → New repository secret. Add two secrets with exactly these names:
    - `USAJOBS_API_KEY`
    - `USAJOBS_EMAIL`
-   - `ADZUNA_APP_ID`
-   - `ADZUNA_APP_KEY`
-4. **Run it once:** Actions → "Deploy V2 to GitHub Pages" → Run workflow (branch `main`). The "Collect this week's IE job postings" step prints each source with ✓ or ✗.
+3. **Run it once:** Actions → "Deploy V2 to GitHub Pages" → Run workflow (branch `main`). The "Collect this week's IE job postings" step prints each source with ✓ or ✗.
 
 The keys live only in GitHub secrets; they are never written into the site.
 

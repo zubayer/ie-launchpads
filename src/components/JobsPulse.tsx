@@ -3,7 +3,7 @@ import { isSnapshot, trend, type Posting, type Snapshot } from '../lib/jobsFeed'
 
 /*
  * "IE jobs this week": reads data/jobs.json, which the deploy workflow refreshes weekly from
- * employer careers pages, USAJOBS and Adzuna (scripts/fetch-jobs.mjs). Nothing is fetched from
+ * employer careers pages and USAJOBS (scripts/fetch-jobs.mjs; Adzuna optional). Nothing is fetched from
  * job sites in the browser, so no keys are exposed and the card shows the last file when offline.
  */
 
@@ -42,7 +42,7 @@ export default function JobsPulse({ limit = 6 }: { limit?: number }) {
 
 function Body({ snap, limit }: { snap: Snapshot; limit: number }) {
   if (!snap.generated) {
-    return <p className="mt-3 text-sm text-ink-2">{snap.note ?? 'No postings collected yet.'} Each week this card will list new industrial, quality, continuous-improvement, manufacturing and planning roles from employer careers pages, USAJOBS and Adzuna, with the change from the week before.</p>
+    return <p className="mt-3 text-sm text-ink-2">{snap.note ?? 'No postings collected yet.'} Each week this card will list new industrial, quality, continuous-improvement, manufacturing and planning roles from employer careers pages and USAJOBS, with the change from the week before.</p>
   }
   const max = Math.max(1, ...snap.roles.map((r) => r.count))
   const ok = snap.sources.filter((s) => s.ok)
