@@ -67,7 +67,7 @@ export default function DisplayMenu() {
       </button>
       {open && (
         <div ref={panel} id={id} role="group" aria-label="Display settings"
-          className="sheet absolute right-0 top-full z-50 mt-2 w-[min(22rem,calc(100vw-1.5rem))] rounded-lg p-4 shadow-xl">
+          className="sheet absolute right-0 top-full z-50 mt-2 max-h-[calc(100dvh-4.5rem)] w-[min(22rem,calc(100vw-1.5rem))] overflow-y-auto overscroll-contain rounded-lg p-4 shadow-xl">
           <fieldset>
             <legend className="text-sm font-bold">Colour theme</legend>
             <div className="mt-2 space-y-1">

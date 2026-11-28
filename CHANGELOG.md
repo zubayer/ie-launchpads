@@ -16,6 +16,7 @@
 
 ### Changed
 - The menu's old "Theme: …" cycling button is replaced by the Display menu.
+- The Display panel fits short screens (a phone held sideways) and scrolls inside, so Text size stays reachable (Codex P1 on PR #33).
 - The saved-progress format moves to version 4. It adds `textSize`, and an unknown theme falls back to Match device. Existing progress is kept (tested).
 
 ## Unreleased — branch `v3/jobs-latest-pager` (2026-11-28)

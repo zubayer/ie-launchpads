@@ -336,6 +336,15 @@ try {
   await page.reload(); await page.waitForSelector('#main h1')
   st = await state()
   if (!st.cls.includes('theme-sepia') || st.size !== '20px') throw new Error(`choices not kept after reload: ${JSON.stringify(st)}`)
+  // A phone held sideways: the panel must fit the screen and scroll inside, so Text size stays reachable (Codex P1, #33).
+  await page.setViewportSize({ width: 844, height: 390 })
+  await open.click()
+  const box = await menu.boundingBox()
+  if (!box || box.y + box.height > 391) throw new Error(`the Display panel runs off a 390 px-tall screen (bottom at ${box && Math.round(box.y + box.height)} px)`)
+  await menu.getByText('Standard', { exact: true }).click()
+  if ((await state()).size !== '16px') throw new Error('Text size could not be reached on a short screen')
+  await menu.getByText('Larger', { exact: true }).click()
+  await page.keyboard.press('Escape')
   await page.setViewportSize({ width: 390, height: 844 })
   for (const r of ['', 'c/quality.cpk', 'certifications', 'jobs', 'studio/plc', 'formulas/oee']) {
     await page.goto(`${BASE}?large=${r.length}#/${r}`); await page.waitForSelector('h1'); await page.waitForTimeout(300)
