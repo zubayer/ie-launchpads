@@ -15,7 +15,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { ROLES, EMPTY_SNAPSHOT, allPostings, buildSnapshot, classify, isAllPostings, isSnapshot } from '../src/lib/jobsFeed.ts'
+import { ROLES, EMPTY_SNAPSHOT, US_STATES, allPostings, buildSnapshot, classify, isAllPostings, isSnapshot, placeWords } from '../src/lib/jobsFeed.ts'
 
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d }
 const OUT = arg('--out', 'public/data/jobs.json')
@@ -162,3 +162,14 @@ writeFileSync(OUT.replace(/\.json$/, '-all.json'), JSON.stringify(all) + '\n')
 console.log(`jobs feed → ${OUT} (basis: ${snap.basis}, ${all.postings.length} open roles listed, ${snap.latest.length} from the last 30 days, ${snap.history.length} week(s) of history)`)
 for (const s of sources) console.log(`  ${s.ok ? '✓' : '✗'} ${s.name.padEnd(18)} ${s.note ?? ''}`)
 for (const r of snap.roles) console.log(`  ${r.label.padEnd(34)} ${r.count}`)
+
+// Where the roles are, so the log answers "why nothing in my state?" without opening the file.
+const byState = {}
+for (const p of all.postings) {
+  const words = new Set(placeWords(p.location).split(' '))
+  const code = Object.keys(US_STATES).find((c) => words.has(c.toLowerCase()) && words.has(US_STATES[c].toLowerCase().split(' ')[0]))
+  byState[code ?? 'unknown'] = (byState[code ?? 'unknown'] || 0) + 1
+}
+console.log('  by state: ' + Object.entries(byState).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', '))
+const tx = all.postings.filter((p) => /\b(TX|Texas)\b/.test(p.location))
+console.log(`  Texas places: ${[...new Set(tx.map((p) => p.location))].join('; ') || 'none'}`)

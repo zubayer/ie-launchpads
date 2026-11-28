@@ -70,13 +70,13 @@ export function JobsList({ state, onChange }: { state: ListState; onChange: (s: 
         ))}
       </div>
       <label htmlFor={searchId} className="label mt-3 block">Search title, company or place</label>
-      <input id={searchId} type="search" className="input mt-1" value={state.q} placeholder="e.g. quality, Texas, SpaceX" onChange={(e) => onChange({ ...state, q: e.target.value, page: 1 })} />
+      <input id={searchId} type="search" className="input mt-1" value={state.q} placeholder="e.g. quality, Texas or TX, SpaceX" onChange={(e) => onChange({ ...state, q: e.target.value, page: 1 })} />
 
       <h3 ref={listRef} tabIndex={-1} className="mt-4 text-sm font-bold outline-none" aria-live="polite">
         {roleLabel}: {pg.total ? `${(pg.page - 1) * 10 + 1}–${(pg.page - 1) * 10 + pg.items.length} of ${pg.total}` : 'no matches'}
       </h3>
       {pg.items.length ? <ul className="mt-1 divide-y divide-line/60 text-sm">{pg.items.map((p) => <PostingItem key={p.url} p={p} />)}</ul>
-        : <p className="mt-1 text-sm text-ink-2">Nothing matches. Try another role or clear the search.</p>}
+        : <p className="mt-1 text-sm text-ink-2">Nothing matches. Try a state instead of a city (e.g. Texas), another role, or clear the search.</p>}
 
       {pg.pages > 1 && (
         <nav className="mt-4 flex flex-wrap items-center gap-1.5" aria-label="Pages">

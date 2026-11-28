@@ -21,6 +21,8 @@ What the counts mean, stated on the card: with Adzuna, the US total of postings 
 
 Dates: Greenhouse's list gives the last-edited date unless a board includes the first-published date, so those postings say "updated N days ago" on the card, never "posted". A role with no date still counts as open but is not listed under Latest postings. Adzuna is queried by job title only; if any of its requests fails, Adzuna is left out that week rather than mixing in a different way of counting.
 
+Search: every typed word must start a word in the title, company or place; places also carry the other spelling of their state ("Austin, TX" also matches "Texas", and "Austin, Texas" matches "TX").
+
 Role matching is by job title (`ROLES` in `src/lib/jobsFeed.ts`), so a Quality Inspector or a Financial Planner is not counted.
 
 ## Adzuna is off

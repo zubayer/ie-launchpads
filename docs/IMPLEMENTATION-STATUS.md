@@ -139,6 +139,7 @@ Owner request: move the jobs card into the place of "How every lesson works", ad
 | Role rows are buttons that open the list filtered to that role; "Show all open roles" opens everything | Tested | Audit (synthetic data, labelled in the script): Quality row opens 8 of 8 quality roles |
 | Job list dialog (native `<dialog>`): role filter, search, 10 per page with Previous, numbers and Next; focus moves to the list heading on page change; Esc closes and returns focus | Tested | Audit: page 4 of 37 shows 31–37, Next disabled, 0 axe violations with the dialog open, focus returns to the role row |
 | `/jobs` page with role, page and search in the address (the dialog's "Open this list in a new tab"); stale page numbers clamp | Tested | Audit: `/jobs?role=manufacturing&page=2` shows 1–7 of 7 at 390 px with no sideways scroll; `jobsFeed.test.ts` covers filtering, paging and the page window |
+| Place-aware search: state names, codes and any start of either ("te", "Texas", "TX"; "new y") match both spellings in a posting; word-start matching (owner request, 2026-11-27) | Tested | `jobsFeed.test.ts`: Texas and New York cases both ways round, Arkansas is not Kansas, a mid-word fragment doesn't match |
 | Collector also writes `data/jobs-all.json` (every open role, loaded only when the list opens); sources with no key are no longer listed as failed | Implemented | Runs in the deploy workflow |
 
 ## Known limitations
