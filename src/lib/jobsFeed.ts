@@ -28,7 +28,8 @@ export interface Posting {
   title: string
   company: string
   location: string
-  posted: string // ISO date (YYYY-MM-DD)
+  posted: string // ISO date (YYYY-MM-DD), or '' when the source gives none (still counted as open, never listed as latest)
+  dated?: 'published' | 'updated' // 'updated' when the source only gives a last-edited date
   url: string
   source: SourceId
   role: RoleId
@@ -89,15 +90,18 @@ export function mergeHistory(prev: WeekCounts[] | undefined, row: WeekCounts): W
   return [...rest, row].sort((a, b) => a.week.localeCompare(b.week)).slice(-12)
 }
 
-/** Change against the most recent earlier week counted the same way; null when there is nothing to compare. */
-export function trend(s: Snapshot, role: RoleId): { pct: number; from: string } | null {
+/**
+ * Change against the most recent earlier week counted the same way; null when there is no such week.
+ * `pct` is null when that week had none (a percentage of zero is meaningless), so the card says "new".
+ */
+export function trend(s: Snapshot, role: RoleId): { pct: number | null; from: string } | null {
   const cur = s.history[s.history.length - 1]
   if (!cur) return null
-  const prev = [...s.history].reverse().find((h) => h.week < cur.week && h.basis === cur.basis && (h.counts[role] ?? 0) > 0)
+  const prev = [...s.history].reverse().find((h) => h.week < cur.week && h.basis === cur.basis)
   const now = cur.counts[role]
-  if (!prev || now == null) return null
+  if (!prev || now == null || prev.counts[role] == null) return null
   const before = prev.counts[role] as number
-  return { pct: Math.round(((now - before) / before) * 100), from: prev.week }
+  return { pct: before === 0 ? null : Math.round(((now - before) / before) * 100), from: prev.week }
 }
 
 /**

@@ -67,7 +67,9 @@ function Body({ snap, limit }: { snap: Snapshot; limit: number }) {
                   <span className="font-semibold">{r.label}</span>
                   <span className="whitespace-nowrap">
                     <span className="font-bold">{r.count.toLocaleString('en-US')}</span>
-                    {t ? (
+                    {t && t.pct === null ? (
+                      <span className="ml-2 text-xs text-ink-2">new<span className="sr-only">: none in the week of {fmt(t.from)}</span></span>
+                    ) : t && t.pct !== null ? (
                       <span className="ml-2" style={{ color: t.pct > 0 ? 'var(--color-sgreen)' : t.pct < 0 ? 'var(--color-sorange)' : 'var(--color-ink-2)' }}>
                         <span aria-hidden>{t.pct > 0 ? '▲' : t.pct < 0 ? '▼' : '–'} {Math.abs(t.pct)}%</span>
                         <span className="sr-only">{t.pct === 0 ? ', no change' : `, ${t.pct > 0 ? 'up' : 'down'} ${Math.abs(t.pct)}%`} from the week of {fmt(t.from)}</span>
@@ -87,7 +89,7 @@ function Body({ snap, limit }: { snap: Snapshot; limit: number }) {
               {latest.map((p) => (
                 <li key={p.url} className="py-2">
                   <a className="font-semibold hover:text-sblue hover:underline" href={p.url} target="_blank" rel="noopener noreferrer">{p.title}<span className="sr-only"> (opens the posting on {SOURCE_LABEL[p.source]})</span></a>
-                  <span className="block text-ink-2">{p.company} · {p.location} · {ago(p.posted)} · via {SOURCE_LABEL[p.source]}</span>
+                  <span className="block text-ink-2">{p.company} · {p.location} · {p.dated === 'updated' ? 'updated ' : ''}{ago(p.posted)} · via {SOURCE_LABEL[p.source]}</span>
                 </li>
               ))}
             </ul>

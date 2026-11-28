@@ -54,7 +54,21 @@ describe('jobs feed', () => {
     const s = buildSnapshot({ now, sources: [], postings: [], adzunaTotals: totals, previous: prev })
     expect(s.basis).toBe('adzuna-total')
     expect(trend(s, 'quality')).toEqual({ pct: 50, from: '2026-11-09' }) // skips the week counted the other way
-    expect(trend(s, 'ci')).toBeNull()
+    expect(trend(s, 'ci')).toBeNull() // that week has no count for this role
+  })
+
+  it('compares with the latest comparable week even when it was zero (10, 0, 5 is a rise, not a fall)', () => {
+    const counts = (n: number) => ({ quality: n })
+    const s = { ...EMPTY_SNAPSHOT, history: [{ week: '2026-11-09', basis: 'collected' as const, counts: counts(10) }, { week: '2026-11-16', basis: 'collected' as const, counts: counts(0) }, { week: '2026-11-23', basis: 'collected' as const, counts: counts(5) }] }
+    expect(trend(s, 'quality')).toEqual({ pct: null, from: '2026-11-16' })
+    expect(trend({ ...s, history: s.history.slice(0, 2) }, 'quality')).toEqual({ pct: -100, from: '2026-11-09' })
+  })
+
+  it('counts undated open roles but never lists them as latest', () => {
+    const now = new Date('2026-11-27T12:00:00Z')
+    const s = buildSnapshot({ now, sources: [], postings: [p('Quality Engineer', { posted: '' }), p('Production Planner')] })
+    expect(s.roles.find((r) => r.id === 'quality')!.count).toBe(1)
+    expect(s.latest.map((x) => x.title)).toEqual(['Production Planner'])
     expect(buildSnapshot({ now, sources: [], postings: [], adzunaTotals: { quality: 5 } }).basis).toBe('collected')
   })
 

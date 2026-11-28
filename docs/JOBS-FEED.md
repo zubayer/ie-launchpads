@@ -5,7 +5,7 @@ The card on the landing page and on Certifications reads `data/jobs.json`. The s
 ## When it runs
 
 - Every Monday at 11:17 UTC (scheduled run of `.github/workflows/deploy.yml`), and on every deploy from `main`.
-- History keeps one row per week (the latest run in a week replaces that week's row), up to 12 weeks, carried over from the live file.
+- History keeps one row per week. A trend compares with the latest earlier week counted the same way; if that week had none, the card says "new" instead of a percentage (the latest run in a week replaces that week's row), up to 12 weeks, carried over from the live file.
 - If every source fails, the previous live file is kept, with a note on the card.
 - The pull-request check also runs the collector against the live employer boards (no keys), only to show in the log that the boards still answer. It never fails the check.
 
@@ -18,6 +18,8 @@ The card on the landing page and on Certifications reads `data/jobs.json`. The s
 | Adzuna Search API | US totals per role for the last 7 days (the card's counts) and the newest postings; shown as "Jobs by Adzuna" | `ADZUNA_APP_ID` + `ADZUNA_APP_KEY` |
 
 What the counts mean, stated on the card: with Adzuna, the US total of postings in the last 7 days with the role in the job title; without it, the IE-type roles open right now on the employer pages plus USAJOBS postings from the last 30 days (a sample; employer boards keep roles open for months, so a 7-day window left almost nothing). Trends only compare weeks counted the same way.
+
+Dates: Greenhouse's list gives the last-edited date unless a board includes the first-published date, so those postings say "updated N days ago" on the card, never "posted". A role with no date still counts as open but is not listed under Latest postings. Adzuna is queried by job title only; if any of its requests fails, Adzuna is left out that week rather than mixing in a different way of counting.
 
 Role matching is by job title (`ROLES` in `src/lib/jobsFeed.ts`), so a Quality Inspector or a Financial Planner is not counted.
 
