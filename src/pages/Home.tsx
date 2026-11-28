@@ -20,6 +20,7 @@ import { LandingIcon } from '../components/LandingIcons'
 const FEATURED_ROLES = ['industrial-engineer', 'quality-engineer', 'manufacturing-engineer', 'process-engineer-semi', 'ci-engineer', 'data-analyst']
 
 const WelcomeBack = lazy(() => import('../components/WelcomeBack'))
+const JobsPulse = lazy(() => import('../components/JobsPulse'))
 
 const STEPS = [
   { name: 'Understand', icon: 'understand', color: 'var(--color-sblue)', text: 'Plain meaning, an analogy, a picture and live sources from the web.', parts: 'Keyword · Live from the web · Plain meaning · Analogy · Picture it' },
@@ -131,6 +132,8 @@ export default function Home() {
           ))}
         </ul>
       </section>
+
+      <div className="mt-14"><Suspense fallback={null}><JobsPulse /></Suspense></div>
 
       <Roles path={path} />
 

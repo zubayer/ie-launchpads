@@ -7,6 +7,7 @@ import {
 } from '../content/certs'
 import { statusOf, useStore, type Status } from '../lib/store'
 import { PageHead } from '../components/ui'
+import JobsPulse from '../components/JobsPulse'
 
 // Inline colours: the .chip class sets its own border and text colour, which would win over utility classes.
 const tone = (v: string) => ({ color: `var(--color-${v})`, borderColor: `var(--color-${v})` })
@@ -100,6 +101,8 @@ export function Certifications() {
         </ol>
         {!picks.length && <p className="mt-4 text-sm text-ink-2">You hold all six. See the other certifications below.</p>}
       </section>
+
+      <div className="mt-10"><JobsPulse limit={4} /></div>
 
       <section className="mt-10" aria-labelledby="all-h">
         <h2 id="all-h" className="wide text-xl">Six certifications, mapped to lessons</h2>
