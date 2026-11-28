@@ -142,6 +142,7 @@ Owner request: move the jobs card into the place of "How every lesson works", ad
 | Place-aware search: state names, codes and any start of either ("te", "Texas", "TX"; "new y") match both spellings in a posting; word-start matching (owner request, 2026-11-27) | Tested | `jobsFeed.test.ts`: Texas and New York cases both ways round, Arkansas is not Kansas, a mid-word fragment doesn't match |
 | One state per place (`stateOf`): explicit code wins, else a whole address part equal to a state name, longest first, never the city part (Codex P2 on PR #30) | Tested | `jobsFeed.test.ts`: Kansas City MO, Charleston WV, Washington DC, ZIP codes, single-part "New York" |
 | Card layout: roles panel with total and "Show all", divider, postings as cards two per row on wide screens, 4 on phones (owner request) | Tested | Audit 0 violations both themes; screenshots at 1440, 1100 and 390 px |
+| Latest postings paged inside the card: 18 a page (6 on phones), compact two-line rows, ‹ numbers › and "More jobs" (owner request, 2026-11-28) | Tested | Audit (synthetic data): 1–18 of 37, Next → 19–36, page 3 → 37, Next disabled; 0 axe violations both themes |
 | Collector also writes `data/jobs-all.json` (every open role, loaded only when the list opens); sources with no key are no longer listed as failed | Implemented | Runs in the deploy workflow |
 
 ## Known limitations

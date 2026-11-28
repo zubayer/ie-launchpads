@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — branch `v3/jobs-latest-pager` (2026-11-28)
+
+### Changed
+- **Latest postings show 18 a page instead of 6** (owner request). Each posting is a compact two-line box: the title, then company, place, age and source. A title that doesn't fit is cut, and the full title shows on hover.
+- **Paging inside the card:** ‹ page numbers › walks through every open role, newest first. The full list loads in the background, and the first page shows at once.
+- **More jobs button:** opens the filter-and-search list.
+- **Layout:** two columns of postings on laptops and three on wide screens. Phones show 6 a page.
+- **Trend note:** the "trend next week" text on each role is replaced by one note under "Open roles by type".
+
 ## Unreleased — branch `v3/jobs-card-polish` (2026-11-27)
 
 ### Changed

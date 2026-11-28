@@ -102,7 +102,7 @@ export function Certifications() {
         {!picks.length && <p className="mt-4 text-sm text-ink-2">You hold all six. See the other certifications below.</p>}
       </section>
 
-      <div className="mt-10"><JobsPulse limit={4} /></div>
+      <div className="mt-10"><JobsPulse perPage={6} /></div>
 
       <section className="mt-10" aria-labelledby="all-h">
         <h2 id="all-h" className="wide text-xl">Six certifications, mapped to lessons</h2>
