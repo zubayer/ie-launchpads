@@ -161,15 +161,32 @@ export const US_STATES: Record<string, string> = {
   PA: 'Pennsylvania', PR: 'Puerto Rico', RI: 'Rhode Island', SC: 'South Carolina', SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas',
   UT: 'Utah', VT: 'Vermont', VA: 'Virginia', WA: 'Washington', WV: 'West Virginia', WI: 'Wisconsin', WY: 'Wyoming',
 }
-const STATE_BY_NAME = Object.entries(US_STATES).map(([code, name]) => ({ code, name, re: new RegExp(`(^|[^a-z])${name.toLowerCase()}([^a-z]|$)`) }))
+// Longest names first, so "West Virginia" is found before "Virginia" can be.
+const STATE_BY_NAME = Object.entries(US_STATES).map(([code, name]) => ({ code, name: name.toLowerCase() })).sort((a, b) => b.name.length - a.name.length)
 
-/** The place as written plus the other spelling of any state in it: "Austin, TX" → "… texas tx". */
+/**
+ * The one US state a location is in, or null. An explicit code wins ("Kansas City, MO" → MO). Otherwise a
+ * comma-separated part after the city must be a state name on its own ("Charleston, West Virginia" → WV);
+ * a state name inside a city ("Kansas City", "Washington, DC") never counts.
+ */
+export function stateOf(location: string): string | null {
+  const parts = location.split(',').map((x) => x.trim()).filter(Boolean)
+  for (const part of [...parts].reverse()) {
+    const m = part.match(/^([A-Z]{2})(\s+\d{5}(-\d{4})?)?$/) // "TX" or "TX 78701"
+    if (m && US_STATES[m[1]]) return m[1]
+  }
+  for (const part of parts.slice(parts.length > 1 ? 1 : 0)) {
+    const low = part.toLowerCase()
+    const hit = STATE_BY_NAME.find((st) => low === st.name)
+    if (hit) return hit.code
+  }
+  return null
+}
+
+/** The place as written plus the other spelling of its state: "Austin, TX" → "… texas tx". */
 export function placeWords(location: string): string {
-  const extra = new Set<string>()
-  for (const m of location.matchAll(/\b([A-Z]{2})\b/g)) if (US_STATES[m[1]]) { extra.add(m[1]); extra.add(US_STATES[m[1]]) }
-  const low = location.toLowerCase()
-  for (const s of STATE_BY_NAME) if (s.re.test(low)) { extra.add(s.code); extra.add(s.name) }
-  return norm(`${location} ${[...extra].join(' ')}`)
+  const code = stateOf(location)
+  return norm(code ? `${location} ${code} ${US_STATES[code]}` : location)
 }
 
 /**

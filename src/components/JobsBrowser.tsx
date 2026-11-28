@@ -14,11 +14,14 @@ export function ago(d: string): string {
   return days === 0 ? 'today' : days === 1 ? '1 day ago' : `${days} days ago`
 }
 
+/** "Santa Ana, California, United States" → "Santa Ana, California": every role here is in the US. */
+export const placeLabel = (l: string) => l.replace(/,\s*(United States( of America)?|USA|US)$/i, '') || 'location not given'
+
 export function PostingItem({ p }: { p: Posting }) {
   return (
     <li className="py-2">
       <a className="font-semibold hover:text-sblue hover:underline" href={p.url} target="_blank" rel="noopener noreferrer">{p.title}<span className="sr-only"> (opens the posting on {SOURCE_LABEL[p.source]})</span></a>
-      <span className="block text-ink-2">{p.company} · {p.location || 'location not given'} · {p.posted && p.dated === 'updated' ? 'updated ' : ''}{ago(p.posted)} · via {SOURCE_LABEL[p.source]}</span>
+      <span className="block text-ink-2">{p.company} · {placeLabel(p.location)} · {p.posted && p.dated === 'updated' ? 'updated ' : ''}{ago(p.posted)} · via {SOURCE_LABEL[p.source]}</span>
     </li>
   )
 }

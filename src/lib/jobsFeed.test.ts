@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { EMPTY_SNAPSHOT, allPostings, matchesQuery, placeWords, buildSnapshot, classify, dedupe, filterPostings, isAllPostings, isRole, isSnapshot, mergeHistory, pageWindow, paginate, sortPostings, trend, weekOf, type Posting } from './jobsFeed'
+import { EMPTY_SNAPSHOT, allPostings, matchesQuery, placeWords, stateOf, buildSnapshot, classify, dedupe, filterPostings, isAllPostings, isRole, isSnapshot, mergeHistory, pageWindow, paginate, sortPostings, trend, weekOf, type Posting } from './jobsFeed'
 
 const p = (title: string, extra: Partial<Posting> = {}): Posting => ({
   title, company: 'Acme', location: 'Austin, TX', posted: '2026-11-25', url: `https://x/${title}`, source: 'greenhouse', role: classify(title)!, ...extra,
@@ -125,5 +125,24 @@ describe('jobs feed', () => {
     expect(matchesQuery(p('Planner', { location: 'Little Rock, AR' }), 'kansas')).toBe(false) // Arkansas is not Kansas
     expect(placeWords('Denver County, Colorado')).toContain('co')
     expect(matchesQuery(tx, 'xas')).toBe(false) // words match from their start, so a fragment from the middle doesn't
+  })
+
+  it('resolves one state per place, so a state name inside a city or a longer state name never adds another state', () => {
+    expect(stateOf('Kansas City, MO')).toBe('MO')
+    expect(stateOf('Washington, DC')).toBe('DC')
+    expect(stateOf('Charleston, West Virginia')).toBe('WV')
+    expect(stateOf('Santa Ana, California, United States')).toBe('CA')
+    expect(stateOf('Austin, TX 78701')).toBe('TX')
+    expect(stateOf('Denver County, Colorado')).toBe('CO')
+    expect(stateOf('Remote')).toBeNull()
+    expect(stateOf('New York')).toBe('NY') // a single part may be the state itself
+    const kc = p('Industrial Engineer', { location: 'Kansas City, MO' })
+    expect(matchesQuery(kc, 'missouri')).toBe(true)
+    expect(matchesQuery(kc, 'kansas city')).toBe(true) // the city name itself still matches
+    expect(matchesQuery(kc, 'ks')).toBe(false)
+    expect(matchesQuery(p('Planner', { location: 'Washington, DC' }), 'wa')).toBe(true) // "Washington" is in the text
+    expect(matchesQuery(p('Planner', { location: 'Washington, DC' }), 'district')).toBe(true)
+    expect(matchesQuery(p('Planner', { location: 'Charleston, West Virginia' }), 'va')).toBe(false)
+    expect(matchesQuery(p('Planner', { location: 'Charleston, West Virginia' }), 'wv')).toBe(true)
   })
 })

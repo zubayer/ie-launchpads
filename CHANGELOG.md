@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased — branch `v3/jobs-card-polish` (2026-11-27)
+
+### Changed
+- **IE jobs card layout** (owner request: wasted space on the right, columns too close, readability):
+  - Roles sit in their own panel with larger labels and counts, taller bars, and a footer showing the total open roles and the "Show all open roles" button.
+  - A divider and wider gap separate the roles from the latest postings.
+  - Latest postings are cards, two per row on wider screens, with title, company, place, age and a source tag.
+  - "United States" is dropped from places, since every role is in the US.
+  - On phones, the card shows 4 postings and hides "trend next week" (screen readers still hear the trend).
+
+### Fixed
+- **A state named inside a city or a longer state no longer adds the wrong state** (Codex review on PR #30). Each place now resolves to one state:
+  - "Kansas City, MO" is Missouri, not Kansas.
+  - "Charleston, West Virginia" is not Virginia.
+  - "Washington, DC" is not Washington State.
+- The collector's by-state log uses the same rule.
+
 ## Unreleased — branch `v3/jobs-place-search` (2026-11-27)
 
 ### Fixed
