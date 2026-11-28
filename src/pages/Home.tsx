@@ -22,12 +22,6 @@ const FEATURED_ROLES = ['industrial-engineer', 'quality-engineer', 'manufacturin
 const WelcomeBack = lazy(() => import('../components/WelcomeBack'))
 const JobsPulse = lazy(() => import('../components/JobsPulse'))
 
-const STEPS = [
-  { name: 'Understand', icon: 'understand', color: 'var(--color-sblue)', text: 'Plain meaning, an analogy, a picture and live sources from the web.', parts: 'Keyword · Live from the web · Plain meaning · Analogy · Picture it' },
-  { name: 'Calculate', icon: 'calculate', color: 'var(--color-tape-ink)', text: 'The formula and a worked example whose numbers are checked.', parts: 'Why it matters · The math · Worked example' },
-  { name: 'Apply', icon: 'apply', color: 'var(--color-sgreen)', text: 'Where it shows up at work, which jobs use it, and a simulator.', parts: 'On the job · Jobs that need it · Simulate it' },
-  { name: 'Prove it', icon: 'prove', color: 'var(--color-sred)', text: 'A quick check, an interview question and a teach-back.', parts: 'Check yourself · Interview · Teach it back' },
-]
 
 const FEATURES: { to: string; icon: string; title: string; text: string }[] = [
   { to: '/c/lean.takt-time', icon: 'studio', title: 'Topic Intelligence Studio', text: 'Every lesson in stages: discover, visualize, experiment, master.' },
@@ -76,23 +70,7 @@ export default function Home() {
         </section>
       </section>
 
-      <section className="mt-14" aria-labelledby="steps-h">
-        <h2 id="steps-h" className="wide text-2xl">How every lesson works</h2>
-        <p className="mt-1 text-ink-2">Four steps, from the plain meaning to the interview answer. Stop after any step.</p>
-        <ol className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
-          {STEPS.map((st, i) => (
-            <li key={st.name} className="sheet relative flex items-center gap-3 rounded-lg p-3 sm:items-start md:p-5">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-grid" style={{ color: st.color }}><LandingIcon name={st.icon} className="h-6 w-6" /></span>
-              <span className="min-w-0">
-                <h3 className="text-lg font-bold"><span className="sr-only">Step {i + 1}: </span>{st.name}</h3>
-                <span className="hidden text-sm text-ink-2 sm:block">{st.text}</span>
-                <span className="mt-2 hidden text-xs text-ink-2 md:block">{st.parts}</span>
-              </span>
-              {i < STEPS.length - 1 && <span aria-hidden className="absolute -right-3 top-1/2 z-10 hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-paper text-[0.7rem] text-tape xl:flex">▶</span>}
-            </li>
-          ))}
-        </ol>
-      </section>
+      <div className="mt-14"><Suspense fallback={null}><JobsPulse /></Suspense></div>
 
       <section className="mt-14" aria-labelledby="domains-h">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -132,8 +110,6 @@ export default function Home() {
           ))}
         </ul>
       </section>
-
-      <div className="mt-14"><Suspense fallback={null}><JobsPulse /></Suspense></div>
 
       <Roles path={path} />
 

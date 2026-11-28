@@ -16,6 +16,7 @@ const Lab = page(() => import('./pages/Lab'), 'Lab')
 const LabPage = page(() => import('./pages/Lab'), 'LabPage')
 const Roles = page(() => import('./pages/Career'), 'Roles')
 const RolePage = page(() => import('./pages/Career'), 'RolePage')
+const Jobs = page(() => import('./pages/Jobs'), 'Jobs')
 const Certifications = page(() => import('./pages/Certifications'), 'Certifications')
 const CertificationPage = page(() => import('./pages/Certifications'), 'CertificationPage')
 const Interview = page(() => import('./pages/Career'), 'Interview')
@@ -77,6 +78,7 @@ export default function App() {
           <Route path="roles" element={<Roles />} />
           <Route path="roles/:id" element={<RolePage />} />
           <Route path="interview" element={<Interview />} />
+          <Route path="jobs" element={<Jobs />} />
           <Route path="certifications" element={<Certifications />} />
           <Route path="certifications/:id" element={<CertificationPage />} />
           <Route path="plan" element={<Plan />} />

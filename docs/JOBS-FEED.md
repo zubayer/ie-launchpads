@@ -1,6 +1,6 @@
 # IE jobs feed ("IE jobs this week" card)
 
-The card on the landing page and on Certifications reads `data/jobs.json`. The site never calls a job site from the browser: `scripts/fetch-jobs.mjs` collects postings on GitHub, and the deploy workflow publishes the file with the site.
+The card on the landing page (where "How every lesson works" used to be) and on Certifications reads `data/jobs.json`. Selecting a role, or "Show all open roles", opens the full list from `data/jobs-all.json` in a dialog with a role filter, search and page numbers (10 per page); "Open this list in a new tab" goes to `/jobs`, where role, page and search are in the address. The site never calls a job site from the browser: `scripts/fetch-jobs.mjs` collects postings on GitHub, and the deploy workflow publishes the file with the site.
 
 ## When it runs
 
@@ -14,7 +14,7 @@ The card on the landing page and on Certifications reads `data/jobs.json`. The s
 | Source | What it adds | Key |
 |---|---|---|
 | Employer careers pages on Greenhouse and Lever (list in `BOARDS` in the script) | IE-type postings straight from the employer | None |
-| USAJOBS Search API | Federal postings in the Industrial Engineering series (0896), last 30 days | `USAJOBS_API_KEY` + `USAJOBS_EMAIL` |
+| USAJOBS Search API (on since 2026-11-27) | Federal postings in the Industrial Engineering series (0896), last 30 days | `USAJOBS_API_KEY` + `USAJOBS_EMAIL` |
 | Adzuna Search API (optional, not used) | US totals per role for the last 7 days and the newest postings; shown as "Jobs by Adzuna" | `ADZUNA_APP_ID` + `ADZUNA_APP_KEY` |
 
 What the counts mean, stated on the card: with Adzuna, the US total of postings in the last 7 days with the role in the job title; without it, the IE-type roles open right now on the employer pages plus USAJOBS postings from the last 30 days (a sample; employer boards keep roles open for months, so a 7-day window left almost nothing). Trends only compare weeks counted the same way.

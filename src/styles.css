@@ -195,3 +195,6 @@ input[type="range"] { accent-color: var(--color-sblue); width: 100%; }
 .spot-hint { border: 3px solid var(--color-sblue); background: color-mix(in srgb, var(--color-sblue) 14%, transparent); }
 .spot-found { border: 3px solid var(--color-sgreen); background: color-mix(in srgb, var(--color-sgreen) 16%, transparent); color: var(--color-sgreen); font-size: 1.6rem; }
 .spot-active { box-shadow: 0 0 0 4px var(--color-tape); }
+
+/* Job list dialog (native <dialog>): dim the page behind it. */
+.jobs-dialog::backdrop { background: rgb(15 23 42 / 0.55); }

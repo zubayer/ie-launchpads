@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased — branch `v3/jobs-browser` (2026-11-27)
+
+### Changed
+- **Landing page:** "IE jobs this week" now sits where "How every lesson works" was; that section is removed.
+
+### Added
+- **Full job list:**
+  - Select a role on the jobs card to see its open roles, or "Show all open roles" to see every one. The list opens in a pop-up with role filters, search, and page numbers with Previous and Next.
+  - "Open this list in a new tab" goes to the new **Open IE roles** page (`/jobs`, also in the menu under Career). Role, page and search are kept in the address.
+- The collector also publishes every open role (`data/jobs-all.json`), loaded only when the list is opened.
+
+### Fixed
+- Sources that aren't set up (Adzuna) no longer show as "Not included this week".
+
 ## Unreleased — branch `v3/jobs-pulse` (2026-11-27)
 
 ### Added
