@@ -27,13 +27,17 @@ const env = process.env
 export const BOARDS = [
   { kind: 'greenhouse', token: 'spacex', name: 'SpaceX' },
   { kind: 'greenhouse', token: 'andurilindustries', name: 'Anduril' },
-  { kind: 'greenhouse', token: 'jobyaviation', name: 'Joby Aviation' },
   { kind: 'greenhouse', token: 'formlabs', name: 'Formlabs' },
   { kind: 'greenhouse', token: 'redwoodmaterials', name: 'Redwood Materials' },
   { kind: 'greenhouse', token: 'relativity', name: 'Relativity Space' },
-  { kind: 'greenhouse', token: 'hadrian', name: 'Hadrian' },
-  { kind: 'greenhouse', token: 'formenergy', name: 'Form Energy' },
-  { kind: 'lever', token: 'shieldai', name: 'Shield AI' },
+  // Candidates to confirm on the next run (unconfirmed tokens show as ✗ and are pruned):
+  { kind: 'greenhouse', token: 'rivian', name: 'Rivian' },
+  { kind: 'greenhouse', token: 'lucidmotors', name: 'Lucid Motors' },
+  { kind: 'greenhouse', token: 'flyzipline', name: 'Zipline' },
+  { kind: 'greenhouse', token: 'astranis', name: 'Astranis' },
+  { kind: 'greenhouse', token: 'vardaspace', name: 'Varda Space' },
+  { kind: 'greenhouse', token: 'saronic', name: 'Saronic' },
+  { kind: 'lever', token: 'zoox', name: 'Zoox' },
 ]
 
 const NOT_US = /\b(united kingdom|england|london|germany|munich|berlin|india|bangalore|canada|toronto|vancouver|australia|japan|tokyo|mexico|poland|ireland|france|paris|netherlands|spain|italy|singapore|taiwan|korea|israel|brazil|china|philippines|romania|ukraine|sweden|norway|denmark|finland|switzerland|czech)\b/i

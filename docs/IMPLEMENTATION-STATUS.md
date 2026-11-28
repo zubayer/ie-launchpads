@@ -127,7 +127,7 @@ Owner request: a card showing current IE job postings from authentic sources, se
 | Title-based role matching, de-duplication (employer page preferred over aggregator), weekly history (one row per week, 12 kept) and like-for-like trends | Tested | `src/lib/jobsFeed.test.ts` (6 tests) |
 | Card on the landing page and Certifications: counts with trend, latest postings with source, sources and "Jobs by Adzuna" attribution, empty, loading and offline states | Tested | Audit covers both pages with the committed empty file; also checked with a local illustrative file in light, dark and at 390 px: 0 axe violations, no sideways scroll |
 
-Limits: the counts are a weekly snapshot, not live. Without Adzuna they come from a handful of employer boards and USAJOBS, and the card says so. Greenhouse dates use the first-published date when the board gives one, otherwise the last update.
+Limits: the counts are a weekly snapshot, not live. Without Adzuna they are the roles open on a handful of employer boards (plus USAJOBS), and the card says so. First PR run: 5 boards answered with 344 IE-type open roles; 3 tokens returned 404 and one Lever board was empty, so those were removed. Greenhouse dates use the first-published date when the board gives one, otherwise the last update.
 
 ## Known limitations
 

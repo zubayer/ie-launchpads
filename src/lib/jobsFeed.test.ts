@@ -37,13 +37,13 @@ describe('jobs feed', () => {
     expect(mergeHistory(Array.from({ length: 14 }, (_, i) => ({ week: `2026-0${1 + Math.floor(i / 5)}-1${i % 5}`, basis: 'collected' as const, counts: {} })), { week: '2026-12-01', basis: 'collected', counts: {} })).toHaveLength(12)
   })
 
-  it('counts the last 7 days from collected postings and drops ads older than 30 days', () => {
+  it('without Adzuna, counts every open collected role and lists only the last 30 days', () => {
     const now = new Date('2026-11-27T12:00:00Z')
-    const s = buildSnapshot({ now, sources: [], postings: [p('Quality Engineer'), p('Industrial Engineer', { posted: '2026-11-10' }), p('Industrial Engineer', { posted: '2026-09-01', url: 'old' })] })
+    const s = buildSnapshot({ now, sources: [], postings: [p('Quality Engineer'), p('Industrial Engineer', { posted: '2026-11-10' }), p('Industrial Engineer', { posted: '2026-09-01', url: 'old', location: 'Reno, NV' })] })
     expect(s.basis).toBe('collected')
     expect(s.roles.find((r) => r.id === 'quality')!.count).toBe(1)
-    expect(s.roles.find((r) => r.id === 'industrial')!.count).toBe(0) // posted 17 days ago: listed, not counted this week
-    expect(s.latest.map((x) => x.url)).not.toContain('old')
+    expect(s.roles.find((r) => r.id === 'industrial')!.count).toBe(2) // both still open, whatever their date
+    expect(s.latest.map((x) => x.url)).not.toContain('old') // but only the last 30 days are listed as latest
     expect(isSnapshot(s)).toBe(true)
   })
 

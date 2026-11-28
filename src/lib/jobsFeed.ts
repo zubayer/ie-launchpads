@@ -101,9 +101,10 @@ export function trend(s: Snapshot, role: RoleId): { pct: number; from: string } 
 }
 
 /**
- * Build the snapshot. Role counts: when Adzuna answered, its US total for each role phrase in
- * the last 7 days (a market-wide number); otherwise the de-duplicated postings collected here
- * from employer pages and USAJOBS in the last 7 days (a small sample). `basis` records which.
+ * Build the snapshot. Role counts: when Adzuna answered, its US total for each role in the last
+ * 7 days (a market-wide number); otherwise the de-duplicated roles open right now on the employer
+ * pages, plus USAJOBS postings from the last 30 days (a sample). `basis` records which.
+ * (Employer boards keep roles open for months, so a 7-day window there leaves almost nothing.)
  */
 export function buildSnapshot(opts: {
   now: Date
@@ -113,11 +114,11 @@ export function buildSnapshot(opts: {
   previous?: Snapshot | null
 }): Snapshot {
   const { now } = opts
-  const recent = dedupe(opts.postings.filter((p) => within(p.posted, 30, now)))
-  const week = recent.filter((p) => within(p.posted, 7, now))
+  const all = dedupe(opts.postings)
+  const recent = all.filter((p) => within(p.posted, 30, now))
   const totals = opts.adzunaTotals
   const basis: Basis = totals && ROLES.every((r) => typeof totals[r.id] === 'number') ? 'adzuna-total' : 'collected'
-  const counts = Object.fromEntries(ROLES.map((r) => [r.id, basis === 'adzuna-total' ? (totals![r.id] as number) : week.filter((p) => p.role === r.id).length])) as Record<RoleId, number>
+  const counts = Object.fromEntries(ROLES.map((r) => [r.id, basis === 'adzuna-total' ? (totals![r.id] as number) : all.filter((p) => p.role === r.id).length])) as Record<RoleId, number>
   const history = mergeHistory(opts.previous?.history, { week: weekOf(now.toISOString()), basis, counts })
   return {
     version: 1,

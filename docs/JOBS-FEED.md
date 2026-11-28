@@ -17,7 +17,7 @@ The card on the landing page and on Certifications reads `data/jobs.json`. The s
 | USAJOBS Search API | Federal postings in the Industrial Engineering series (0896), last 30 days | `USAJOBS_API_KEY` + `USAJOBS_EMAIL` |
 | Adzuna Search API | US totals per role for the last 7 days (the card's counts) and the newest postings; shown as "Jobs by Adzuna" | `ADZUNA_APP_ID` + `ADZUNA_APP_KEY` |
 
-What the counts mean, stated on the card: with Adzuna, the US total of postings in the last 7 days with the role in the job title; without it, the postings found on the employer pages and USAJOBS in the last 7 days (a small sample). Trends only compare weeks counted the same way.
+What the counts mean, stated on the card: with Adzuna, the US total of postings in the last 7 days with the role in the job title; without it, the IE-type roles open right now on the employer pages plus USAJOBS postings from the last 30 days (a sample; employer boards keep roles open for months, so a 7-day window left almost nothing). Trends only compare weeks counted the same way.
 
 Role matching is by job title (`ROLES` in `src/lib/jobsFeed.ts`), so a Quality Inspector or a Financial Planner is not counted.
 

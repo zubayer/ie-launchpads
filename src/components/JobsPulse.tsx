@@ -55,7 +55,7 @@ function Body({ snap, limit }: { snap: Snapshot; limit: number }) {
       <p className="mt-1 text-sm text-ink-2">
         {snap.basis === 'adzuna-total'
           ? 'US postings in the last 7 days with the role in the job title, as counted by Adzuna.'
-          : `Postings from the last 7 days found on ${employers.length} employer careers page${employers.length === 1 ? '' : 's'}${ok.some((s) => s.id === 'usajobs') ? ' and USAJOBS' : ''}: a small sample, not the whole market.`}
+          : `Roles open now on ${employers.length} employer careers page${employers.length === 1 ? '' : 's'}${ok.some((s) => s.id === 'usajobs') ? ', plus USAJOBS postings from the last 30 days' : ''}: a sample, not the whole market.`}
       </p>
       <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <ul className="space-y-3">
