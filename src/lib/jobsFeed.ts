@@ -151,9 +151,40 @@ export function isAllPostings(x: unknown): x is AllPostings {
   return !!a && a.version === 1 && Array.isArray(a.postings)
 }
 
+// US states and territories, so "Texas", "tex" and "TX" all find "Austin, TX" and "Austin, Texas".
+export const US_STATES: Record<string, string> = {
+  AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware',
+  DC: 'District of Columbia', FL: 'Florida', GA: 'Georgia', HI: 'Hawaii', ID: 'Idaho', IL: 'Illinois', IN: 'Indiana', IA: 'Iowa',
+  KS: 'Kansas', KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland', MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota',
+  MS: 'Mississippi', MO: 'Missouri', MT: 'Montana', NE: 'Nebraska', NV: 'Nevada', NH: 'New Hampshire', NJ: 'New Jersey',
+  NM: 'New Mexico', NY: 'New York', NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma', OR: 'Oregon',
+  PA: 'Pennsylvania', PR: 'Puerto Rico', RI: 'Rhode Island', SC: 'South Carolina', SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas',
+  UT: 'Utah', VT: 'Vermont', VA: 'Virginia', WA: 'Washington', WV: 'West Virginia', WI: 'Wisconsin', WY: 'Wyoming',
+}
+const STATE_BY_NAME = Object.entries(US_STATES).map(([code, name]) => ({ code, name, re: new RegExp(`(^|[^a-z])${name.toLowerCase()}([^a-z]|$)`) }))
+
+/** The place as written plus the other spelling of any state in it: "Austin, TX" → "… texas tx". */
+export function placeWords(location: string): string {
+  const extra = new Set<string>()
+  for (const m of location.matchAll(/\b([A-Z]{2})\b/g)) if (US_STATES[m[1]]) { extra.add(m[1]); extra.add(US_STATES[m[1]]) }
+  const low = location.toLowerCase()
+  for (const s of STATE_BY_NAME) if (s.re.test(low)) { extra.add(s.code); extra.add(s.name) }
+  return norm(`${location} ${[...extra].join(' ')}`)
+}
+
+/**
+ * Search: every typed word must start a word in the title, company or place (with both spellings of the
+ * state), so "tex", "te", "Texas" and "TX" find Texas, and "new y" finds New York.
+ */
+export function matchesQuery(p: Posting, q: string): boolean {
+  const words = norm(q).split(' ').filter(Boolean)
+  if (!words.length) return true
+  const hay = ` ${norm(`${p.title} ${p.company}`)} ${placeWords(p.location)}`
+  return words.every((w) => hay.includes(` ${w}`))
+}
+
 export function filterPostings(list: Posting[], f: { role?: RoleId | null; q?: string }): Posting[] {
-  const words = norm(f.q || '').split(' ').filter(Boolean)
-  return list.filter((p) => (!f.role || p.role === f.role) && words.every((w) => norm(`${p.title} ${p.company} ${p.location}`).includes(w)))
+  return list.filter((p) => (!f.role || p.role === f.role) && matchesQuery(p, f.q || ''))
 }
 
 export const PER_PAGE = 10

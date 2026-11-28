@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { EMPTY_SNAPSHOT, allPostings, buildSnapshot, classify, dedupe, filterPostings, isAllPostings, isRole, isSnapshot, mergeHistory, pageWindow, paginate, sortPostings, trend, weekOf, type Posting } from './jobsFeed'
+import { EMPTY_SNAPSHOT, allPostings, matchesQuery, placeWords, buildSnapshot, classify, dedupe, filterPostings, isAllPostings, isRole, isSnapshot, mergeHistory, pageWindow, paginate, sortPostings, trend, weekOf, type Posting } from './jobsFeed'
 
 const p = (title: string, extra: Partial<Posting> = {}): Posting => ({
   title, company: 'Acme', location: 'Austin, TX', posted: '2026-11-25', url: `https://x/${title}`, source: 'greenhouse', role: classify(title)!, ...extra,
@@ -108,5 +108,22 @@ describe('jobs feed', () => {
     expect(pageWindow(2, 4)).toEqual([1, 2, 3, 4])
     expect(isRole('quality')).toBe(true)
     expect(isRole('ceo')).toBe(false)
+  })
+
+  it('finds a state by its name, any start of its name, or its code, whichever way the posting writes it', () => {
+    const tx = p('Quality Engineer', { location: 'Austin, TX' })
+    const texas = p('Quality Engineer', { location: 'Austin, Texas, United States' })
+    for (const q of ['texas', 'Texas', 'TEX', 'te', 'tx', 'Tx', 'austin tex', 'texas quality']) {
+      expect(matchesQuery(tx, q), q).toBe(true)
+      expect(matchesQuery(texas, q), q).toBe(true)
+    }
+    const ny = p('Industrial Engineer', { location: 'Albany, NY' })
+    const nyc = p('Industrial Engineer', { location: 'New York, New York, United States' })
+    for (const q of ['new y', 'New York', 'ny', 'NEW YO', 'new']) { expect(matchesQuery(ny, q), q).toBe(true); expect(matchesQuery(nyc, q), q).toBe(true) }
+    expect(matchesQuery(tx, 'new y')).toBe(false)
+    expect(matchesQuery(tx, 'california')).toBe(false)
+    expect(matchesQuery(p('Planner', { location: 'Little Rock, AR' }), 'kansas')).toBe(false) // Arkansas is not Kansas
+    expect(placeWords('Denver County, Colorado')).toContain('co')
+    expect(matchesQuery(tx, 'xas')).toBe(false) // words match from their start, so a fragment from the middle doesn't
   })
 })

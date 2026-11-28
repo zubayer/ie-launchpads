@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — branch `v3/jobs-place-search` (2026-11-27)
+
+### Fixed
+- **Job search finds states however you type them.** "Texas", "tex", "te" and "TX" all find roles listed as "Austin, TX" or "Austin, Texas", and "new y" finds New York, for all 50 states, DC and Puerto Rico. Each typed word must start a word in the title, company or place, so a fragment from the middle of a word no longer matches (owner request).
+- The empty result suggests searching by state, since a city may have no roles in this week's sources.
+
+### Added
+- The collector's log lists roles by state and the Texas locations.
+
 ## Unreleased — branch `v3/jobs-browser` (2026-11-27)
 
 ### Changed
